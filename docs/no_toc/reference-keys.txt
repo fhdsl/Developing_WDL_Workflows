@@ -1,6 +1,7 @@
-available-course-formats
-introduction
 target-audience
 curriculum
 introduction-to-wdl
+a-simple-linear-chain-workflow
+workflow-development-principles
+example-somatic-variation-workflow
 references
