@@ -1,20 +1,16 @@
 
 
-
 # Introduction
 
+An excellent WDL resource that is not platform dependent is [OpenWDL Docs](https://docs.openwdl.org/en/stable/). OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. This guide is an applied companion to these fundamentals to show a user how to strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used.
 
-## Motivation
+## Target Audience
 
+The course is intended for first time developers of the [WDL workflow language](https://github.com/openwdl/wdl), who wants to iteratively develop a WDL bioinformatics workflow.
 
-## Target Audience  
-
-The course is intended for ...
-
-## Curriculum  
+## Curriculum
 
 The course covers...
-
 
 
 ```r
@@ -32,7 +28,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       Etc/UTC                     
-##  date     2023-05-24                  
+##  date     2023-11-17                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source                            

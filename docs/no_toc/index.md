@@ -1,6 +1,6 @@
 ---
-title: "Course Name"
-date: "May, 2023"
+title: "WDL Workflows Guide"
+date: "November, 2023"
 site: bookdown::bookdown_site
 documentclass: book
 bibliography: [book.bib]
