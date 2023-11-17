@@ -2,18 +2,13 @@
 ottrpal::set_knitr_image_path()
 ```
 
-# Introduction
 
-An excellent WDL resource that is not platform dependent is [OpenWDL Docs](https://docs.openwdl.org/en/stable/). OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. This guide is an applied companion to these fundamentals to show a user how to strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used.
+# Introduction to WDL
 
-## Target Audience
+Welcome!
 
-The course is intended for first time developers of the [WDL workflow language](https://github.com/openwdl/wdl), who wants to iteratively develop a WDL bioinformatics workflow.
+- Review of basic WDL syntax
 
-## Curriculum
+- Workflow structure of a linear chain
 
-The course covers...
-
-```{r}
-devtools::session_info()
-```
+- What should be in the input metadata
