@@ -1,6 +1,6 @@
 url	chapt_title	img_path
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/index.html	About this Course	resources/chapt_screen_images/index.png
-https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/introduction.html	1 Introduction	resources/chapt_screen_images/introduction.png
-https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/introduction-to-wdl.html	2 Introduction to WDL	resources/chapt_screen_images/introduction-to-wdl.png
+https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/introduction-to-wdl.html	1 Introduction to WDL	resources/chapt_screen_images/introduction-to-wdl.png
+https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/a-simple-linear-chain-workflow.html	2 A simple linear chain workflow	resources/chapt_screen_images/a-simple-linear-chain-workflow.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/about-the-authors.html	About the Authors	resources/chapt_screen_images/about-the-authors.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/references.html	3 References	resources/chapt_screen_images/references.png
