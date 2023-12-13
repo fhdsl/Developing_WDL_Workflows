@@ -1,7 +1,6 @@
 target-audience
 curriculum
 introduction-to-wdl
-a-simple-linear-chain-workflow
-workflow-development-principles
-example-somatic-variation-workflow
+defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow
+the-first-task
 references
