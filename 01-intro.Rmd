@@ -8,3 +8,53 @@ ottrpal::set_knitr_image_path()
 Welcome!
 
 - Review of basic WDL syntax
+- How to run simple workflows locally
+- How to use input JSONs
+
+
+## Review of basic WDL syntax
+A WDL workflow consists of at least one task.
+
+
+```{r include=FALSE}
+knitr::knit_child("resources/basic_01.wdl")
+```
+
+A workflow, and the tasks it calls, generally has inputs.
+
+
+```{r include=FALSE}
+knitr::knit_child("resources/basic_02.wdl")
+```
+
+To access a task-level input variable in a task's command section, it is usually referenced using ~{this} notation. To access a workflow-level variable in a workflow, it is referenced just by its name without any special notation. To access a workflow-level variable in a task, it must be passed into the task as an input.  
+
+```{r include=FALSE}
+knitr::knit_child("resources/basic_03.wdl")
+```
+
+Tasks and workflows also typically have outputs. The task-level outputs can be accessed by the workflow or any subsequent tasks. The workflow-level outputs represent the final output of the overall workflow.
+
+```{r include=FALSE}
+knitr::knit_child("resources/basic_04.wdl")
+```
+
+## How to run simple workflows locally
+Not every WDL workflow will run well on a laptop, but it can be helpful to have a basic setup for testing and catching simple syntax errors. Let's quickly set up a WDL executor to run our WDLs.
+
+The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs on a local machine, HPC, or cloud computing backend. We generally recommend miniwdl, but everything in this course will also be compatiable with Cromwell unless explictly stated otherwise. Additionally, almost all WDLs use Docker images, so you will also need to install Docker.
+
+**Installing Docker and miniwdl are not required to use this course.** We don't want anybody to get stuck here! If you already have a method for submitting workflows, such as Terra, feel free to use that for this course instead of running workflows directly on your local machine. If you don't have any way of running workflows at the moment, that's also okay -- we have provided plenty of examples for following along.
+
+### Installing Docker
+**Note: Although Docker's own docs recommend installing Docker Desktop for Linux, it has been reported that WDLs work better on Linux when installing only Docker Engine (aka Docker CE).**
+To install Docker on your machine, follow the instructions specific to your operating system [on Docker's website](https://docs.docker.com/get-docker/). To specifically install only Docker Engine, [use these instructions instead](https://docs.docker.com/engine/install/).
+
+If you are unable to install Docker on your machine, Dockstore (not affiliated with Docker) [provides some experimental alternatives](https://docs.dockstore.org/en/stable/advanced-topics/docker-alternatives.html). Dockstore also provides [a comprehensive introduction to Docker itself](https://docs.dockstore.org/en/stable/getting-started/getting-started-with-docker.html?highlight=engine#where-can-i-run-docker), including how to write a Dockerfile. Much of that information is outside the scope of this WDL-focused course, but it may be helpful for those looking to eventually create their own Docker images.
+
+### Installing miniwdl
+miniwdl is based on Python. If you do not already have Python 3.6 or higher installed, [you can install Python from here](https://www.python.org/downloads/).
+
+Once Python is installed on your system, you can run `pip3 install miniwdl` from the command line to install miniwdl. For those who prefer to use conda, use `conda install -c conda-forge miniwdl` instead. Once miniwdl is installed, you can verify it works properly by running `miniwdl run_self_test`. This will run a built-in hello world workflow.
+
+For more information, see [miniwdl's GitHub repository](https://github.com/chanzuckerberg/miniwdl).
