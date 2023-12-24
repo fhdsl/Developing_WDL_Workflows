@@ -8,6 +8,7 @@ ottrpal::set_knitr_image_path()
 Welcome!
 
 - Review of basic WDL syntax
+- (optional) Installing Docker and miniwdl
 - How to run simple workflows locally
 - How to use input JSONs
 
@@ -47,7 +48,7 @@ The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs o
 **Installing Docker and miniwdl are not required to use this course.** We don't want anybody to get stuck here! If you already have a method for submitting workflows, such as Terra, feel free to use that for this course instead of running workflows directly on your local machine. If you don't have any way of running workflows at the moment, that's also okay -- we have provided plenty of examples for following along.
 
 ### Installing Docker
-**Note: Although Docker's own docs recommend installing Docker Desktop for Linux, it has been reported that WDLs work better on Linux when installing only Docker Engine (aka Docker CE).**
+**Note: Although Docker's own docs recommend installing Docker Desktop for Linux, [it has been reported](https://github.com/dockstore/dockstore/issues/5135) that some WDL executors work better on Linux when installing only Docker Engine (aka Docker CE).**
 To install Docker on your machine, follow the instructions specific to your operating system [on Docker's website](https://docs.docker.com/get-docker/). To specifically install only Docker Engine, [use these instructions instead](https://docs.docker.com/engine/install/).
 
 If you are unable to install Docker on your machine, Dockstore (not affiliated with Docker) [provides some experimental alternatives](https://docs.dockstore.org/en/stable/advanced-topics/docker-alternatives.html). Dockstore also provides [a comprehensive introduction to Docker itself](https://docs.dockstore.org/en/stable/getting-started/getting-started-with-docker.html?highlight=engine#where-can-i-run-docker), including how to write a Dockerfile. Much of that information is outside the scope of this WDL-focused course, but it may be helpful for those looking to eventually create their own Docker images.
@@ -58,3 +59,20 @@ miniwdl is based on Python. If you do not already have Python 3.6 or higher inst
 Once Python is installed on your system, you can run `pip3 install miniwdl` from the command line to install miniwdl. For those who prefer to use conda, use `conda install -c conda-forge miniwdl` instead. Once miniwdl is installed, you can verify it works properly by running `miniwdl run_self_test`. This will run a built-in hello world workflow.
 
 For more information, see [miniwdl's GitHub repository](https://github.com/chanzuckerberg/miniwdl).
+
+## Using JSONs to control workflow inputs
+Running a WDL workflow generally requires two files: A .wdl file, which contains the actual workflow, and a .json file, which provides the inputs for the workflow. 
+
+In the example we showed earlier, the workflow takes in a file referred to by the variable `fq`. This needs to be provided by the user. Typically, this is done with a JSON file. Here's what a JSON file for this workflow might look like:
+
+```{r include=FALSE}
+knitr::knit_child("resources/basic_04.json")
+```
+
+JSON files consist of key-value pairs. The first part of the key is the name of the workflow as written in the WDL file, in this case `my_workflow`. The variable being represented is referred to its name, in this case, `fq`. The `fq` variable is file, so value of this key is a path to that file on the local filesystem.
+
+Files aren't the only type of variable you can refer to when using JSONs. Here's an example JSON for every common WDL variable type.
+
+```{r include=FALSE}
+knitr::knit_child("resources/variables.json")
+```

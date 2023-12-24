@@ -1,0 +1,4 @@
+{
+    "some_workflow.file": "./data/example.fq",
+    "some_workflow.string": "Hello world!"
+}
