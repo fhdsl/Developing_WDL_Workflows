@@ -1,4 +1,8 @@
 {
     "some_workflow.file": "./data/example.fq",
-    "some_workflow.string": "Hello world!"
+    "some_workflow.string": "Hello world!",
+    "some_workflow.integer": 1965,
+    "some_workflow.float": 3.1415,
+    "some_workflow.boolean": true,
+    "some_workflow.array_of_files": ["./data/example01.fq", "./data/example02.fq"]
 }
