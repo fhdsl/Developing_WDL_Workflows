@@ -2,4 +2,10 @@
 ottrpal::set_knitr_image_path()
 ```
 
-# Defining a workflow plan: Introduce somatic mutation calling workflow
+# Defining a workflow plan: Somatic mutation calling workflow
+
+Our WDL guide will center around building a workflow from scratch. As we build out the workflow step-by-step, you will see what strategies and resources are used to develop a workflow that is iterative, reproducible, and efficient in terms of time and resource used. The goal is to use this example workflow to illustrate common lessons in writing WDL workflows.
+
+## The workflow
+
+## The test data
