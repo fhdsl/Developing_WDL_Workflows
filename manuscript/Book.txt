@@ -1,5 +1,0 @@
-1-Introduction-to-WDL.md
-2-A-simple-linear-chain-workflow.md
-3-References.md
-About-this-Course.md
-About-the-Authors.md
