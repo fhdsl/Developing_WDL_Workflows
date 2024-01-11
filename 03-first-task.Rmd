@@ -13,10 +13,9 @@ The runtime attributes of a task tell the WDL executor important information abo
 
 
 
-
 | Attribute      | Fred Hutch HPC                                                                               | Local Cromwell                    | Local miniwdl                     | Terra                                                                                       |
 |----------------|----------------------------------------------------------------------------------------------|-----------------------------------|-----------------------------------|---------------------------------------------------------------------------------------------|
-| bootDiskSizeGB |                                                                                              |                                   |                                   |                                                                                             |
+| bootDiskSizeGB | n/a                                                                                          | n/a                               | n/a                               | Request a disk of this size to boot the Docker image (useful for very large Docker images)  |
 | cpu            | Reserve this many cores (acts as a maximum)                                                  | n/a                               |                                   | Request a minimum of this many cores (scales with memory)                                   |
 | disks          |                                                                                              |                                   |                                   |                                                                                             |
 | docker         | Run the task in this Docker image                                                            | Run the task in this Docker image | Run the task in this Docker image | Run the task in this Docker image                                                           |
@@ -27,13 +26,13 @@ The runtime attributes of a task tell the WDL executor important information abo
 
 
 
-
 ## Command section 
 The command section of a WDL task is a bash script that will be run by the WDL executor. If a `docker` runtime attribute is specified, it will execute this bash script in that Docker image, otherwise, it will generally execute the bash script in a generic Ubuntu image.
 
 ### Heredoc-style syntax versus braces syntax
 You may see WDLs that use this notation for the command section in a task:
 
+```
 task do_something {
   input {
     String some_string
@@ -44,8 +43,10 @@ task do_something {
     echo $some_other_string
   }
 }
+```
 
 We recommend using heredoc-style syntax instead:
+```
 task do_something {
   input {
     String some_string
@@ -56,12 +57,13 @@ task do_something {
     echo $some_other_string
   >>>
 }
+```
 
 Heredoc-style syntax for command sections can be clearer than the alternative, as it makes a clearer distinction between bash variables and WDL variables. This is especially helpful for complicated bash scripts. Heredoc-style syntax is also what the WDL 1.1 spec recommends using in most cases. However, the older non-heredoc style is still perfectly functional for a lot of use cases.
 
 
 
 ### `sep=` versus `sep()`
-The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). Unfortunately, as of writing, many users are locked into using WDL 1.0 due to one of the most popular WDL executors not yet supporting WDL 1.1. For the time being, we recommend sticking with `sep=` as it is compatiable with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
+The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). However, as of writing, many users are locked into using WDL 1.0 due to one of the most popular WDL executors not yet supporting WDL 1.1. For the time being, we recommend sticking with `sep=` as it is compatiable with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
 
 
