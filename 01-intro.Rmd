@@ -140,9 +140,9 @@ In the example we showed earlier, the workflow takes in a file referred to by th
 }
 ```
 
-JSON files consist of key-value pairs. The first part of the key is the name of the workflow as written in the WDL file, in this case `my_workflow`. The variable being represented is referred to its name, in this case, `fq`. The `fq` variable is file, so value of this key is a path to that file on the local filesystem.
+JSON files consist of key-value pairs. In this case, the key is `"my_workflow.fq"` and the value is the path `"./data/example.fq"`. The first part of the key is the name of the workflow as written in the WDL file, in this case `my_workflow`. The variable being represented is referred to its name, in this case, `fq`. So, the file located at the path `./data/example.fq` is being input as a variable called `fq` into the workflow named `my_workflow`.
 
-Files aren't the only type of variable you can refer to when using JSONs. Here's an example JSON for every common WDL variable type.
+In WDL, like most programming languages, variables have a specific type. Files aren't the only type of variable you can refer to when using JSONs. Here's an example JSON for every common WDL variable type. 
 
 <!-- resources/variables.json -->
 ```
@@ -156,7 +156,15 @@ Files aren't the only type of variable you can refer to when using JSONs. Here's
 }
 ```
 
-If you are having difficulty writing valid JSON files, considering using https://jsonlint.com/ to check your JSON for any errors.
+:::: {.notice data-latex="notice"}
+
+Resources:
+<ul>
+<li>For more information on types in WDL, we recommend [OpenWDL's documentation on variable types](https://docs.openwdl.org/en/stable/WDL/variable_types/).</li>
+<li>If you are having difficulty writing valid JSON files, considering using https://jsonlint.com/ to check your JSON for any errors.</li>
+</ul>
+::::
+
 
 ## How to run simple workflows locally
 Not every WDL workflow will run well on a laptop, but it can be helpful to have a basic setup for testing and catching simple syntax errors. Let's quickly set up a WDL executor to run our WDLs.
