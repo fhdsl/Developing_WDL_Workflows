@@ -1,0 +1,36 @@
+```{r, include = FALSE}
+ottrpal::set_knitr_image_path()
+```
+
+# Designing WDLs for different backends and executors
+Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software depenendencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.
+
+## General advice
+* Consider using more runtime attributes, not fewer. miniwdl and Cromwell will ignore runtime attributes as necessary, so including a runtime attribute that only applies to a particular backend will not harm portability on other backends.
+* The Dockstore CLI, as of v 1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.
+
+## Specific notes
+
+### Cromwell-on-GCP (including Terra)
+
+<!-- TODO: disk space -->
+
+Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheapier (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.
+
+<!-- TODO: is preemptible machine, preemptible, or preemptible instance the most correct term? -->
+<!-- TODO: double check non-Terra-Cromwell-on-GCP restarts as expected -->
+
+### Cromwell-on-HPC (including Fred Hutch HPC)
+
+### Cromwell-on-local
+Cromwell running on a local machine has a tendency to heavily use system resources. Sometimes, it will use too many resources at once. When this happens, your workflow's tasks will tend to fail with exit code 137. You may also observe Docker becoming unresponsive.
+
+::: {.notice data-latex="warning"}
+Cromwell running on a local machine will ignore many common runtime attributes, such as `disks`, `cpu`, and `memory`. As such, you cannot rely on these to act like a limit on how many resources Cromwell will use on your local machine.
+:::
+
+
+<!-- TODO: advice on how to curtail this with the cromwell config file -->
+
+### miniwdl-on-local
+By default, miniwdl does not duplicate input files. If your workflow only needs to read input files, this helps save disk space, but if your workflow directly modifies input files, this can result in permission errors. A simple fix is to run miniwdl with the `--copy-input-files` flag.
