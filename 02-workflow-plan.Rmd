@@ -8,7 +8,7 @@ Our WDL guide will center around building a workflow from scratch. As we build o
 
 ## Somatic mutation calling workflow
 
-The workflow that we will build is a somatic mutation calling workflow on paired cancer-normal samples. Our workflow is inspired from a somatic mutation calling [workflow](https://github.com/FredHutch/tg-wdl-LILAC-workflow/blob/master/GATK4.1.4.0/GATK4.1.4.0_manta.wdl) by the [Berger Lab](https://research.fredhutch.org/berger/en.html) at the Fred Hutch Cancer Center, and a somatic mutation calling [workflow](https://gatk.broadinstitute.org/hc/en-us/articles/360035894731-Somatic-short-variant-discovery-SNVs-Indels-) by the GATK team at the Broad Institute. The workflow takes in pairs of cancer and normal samples from sequencing in the FASTQ format and aligns the sequencing reads of each sample to the hg19 human reference genome, marks PCR duplicates, and recalibrates base quality. Which a pair of cancer and normal samples have reached this step, the workflow performs somatic mutation calling on them.
+The workflow that we will build is a somatic mutation calling workflow on paired cancer-normal samples. Our workflow is inspired from a somatic mutation calling [workflow](https://github.com/FredHutch/tg-wdl-LILAC-workflow/blob/master/GATK4.1.4.0/GATK4.1.4.0_manta.wdl) by the [Berger Lab](https://research.fredhutch.org/berger/en.html) at the Fred Hutch Cancer Center, and a somatic mutation calling [workflow](https://gatk.broadinstitute.org/hc/en-us/articles/360035894731-Somatic-short-variant-discovery-SNVs-Indels-) by the GATK team at the Broad Institute. The workflow takes in pairs of cancer and normal samples from sequencing in the FASTQ format and aligns the sequencing reads of each sample to the human reference genome, marks PCR duplicates, and recalibrates base quality. When a pair of cancer and normal samples have reached this step, the workflow performs somatic mutation calling on them.
 
 The workflow schematic:
 
@@ -28,7 +28,7 @@ Here are some guidelines for any form of testing:
 
 -   You have an expectation of what the resulting output is *before* you run your workflow on it. It can be as specific as a MD5 checksum, or vague such as a certain file format.
 
--   The process is quick to run, at the minutes level. This often means using a small subset of actual data.
+-   The process is quick to run, ideally in the range of just a few minutes. This often means using a small subset of actual data.
 
 -   The data you use for testing is ideally open access so others can verify your workflow also.
 
