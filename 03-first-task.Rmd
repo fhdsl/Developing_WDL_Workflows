@@ -61,9 +61,39 @@ task do_something {
 
 Heredoc-style syntax for command sections can be clearer than the alternative, as it makes a clearer distinction between bash variables and WDL variables. This is especially helpful for complicated bash scripts. Heredoc-style syntax is also what the WDL 1.1 spec recommends using in most cases. However, the older non-heredoc style is still perfectly functional for a lot of use cases.
 
+### Referencing variables
+Assuming heredoc syntax is being used, a WDL task's input variables are generally referred to in the command section using a tilde (~) and curly braces. To prevent issues with spaces in strings, it is often a good idea to put quotation marks around a string variable, like so:
+
+<!-- TODO: make sure unix cowsay acts like this too, not just the python wrapper I use -->
+
+```
+task cowsay {
+  input {
+    String some_string
+  }
+  command <<<
+    cowsay -t "~{some_string}"
+  >>>
+}
+```
+If we had written `cowsay -t ~{some_string}` and `some_string` was `foo bar`, then the script would be intepreted as `cowsay -t foo bar` and cause an error, because the cowsay program thinks `bar` is an argument. By including quotation marks, `cowsay -t "~{some_string}"` can be interpreted as `cowsay -t "foo bar"` and you will correctly get a cow saying "foo bar" instead of an error.
+
+If the input variable is an array, we must include an array seperator. In WDL 1.0, this is done using the `sep=` expression placeholder:
+
+<!-- TODO: array seperator -->
+
+::: {.notice data-latex="warning"}
+The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). For the time being, we recommend sticking with `sep=` as it is compatiable with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
+:::
 
 
-### `sep=` versus `sep()`
-The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). However, as of writing, many users are locked into using WDL 1.0 due to one of the most popular WDL executors not yet supporting WDL 1.1. For the time being, we recommend sticking with `sep=` as it is compatiable with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
+## Outputs
+
+Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
+
+::: {.notice data-latex="warning"}
+Cromwell does not fully support outputs being a function of the same task's other outputs. On the Terra backend, the above code example would cause an error.
+:::
+
 
 
