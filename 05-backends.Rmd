@@ -13,8 +13,45 @@ Generally speaking, WDL workflows are quite portable thanks to their usage of Do
 
 ### Cromwell-on-GCP (including Terra)
 
-<!-- TODO: disk space -->
+#### Disk space
 
+Running Cromwell on GCP is one of the few times that the `disks` runtime attribute is a soft requirement. Due to how Cromwell works, it must request a certain amount of disk space from GCP before running the task's command section. In other words, you must know roughly how much disk space your task will use before it runs. If not specified in the runtime attribute of a task, Cromwell will request 10 GB of SSD space.
+
+A helpful way to handle disk space in WDLs you anticipate will be run on GCP/Terra is to make disk size a function of the size of your task inputs. The task inputs and any private variable declarations made outside of the command section are all calculated before Cromwell requests a disk from GCP, so you can use this section to define a disk size function. For example:
+
+<!-- TODO: make seperate file in resources and miniwdl check it --->
+```
+version 1.0
+
+task do_something {
+    input {
+        Array[File] some_array_of_files
+        File one_file
+    }
+    
+    Int predicted_disk_space = ceil(size(some_array_of_files), "GB") + ceil(size(one_file), "GB") + 1
+    # size(x, "GB") returns a float representing the size of x in gigabytes
+    # ceil() is a WDL built-in function that rounds a float up into an integer
+    
+    command <<<
+    pass
+    >>>
+    
+    runtime {
+        docker: "ubuntu-latest"
+        disks: "local-disk " + predicted_disk_space " HDD"
+    }
+}
+```
+
+Common pitfalls:
+* Not wrapping `size()` in `ceil()` -- the `disks:` runtime attribute requires an integer, not a float
+* Not using `"GB"` when calling `size()` -- if you don't specify units for `size()` it will return bytes!
+* Forgetting the space between "local-disk" and the integer (or the integer and "HDD"/"SSD")
+
+
+
+#### Preemptibles
 Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheapier (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.
 
 <!-- TODO: is preemptible machine, preemptible, or preemptible instance the most correct term? -->
