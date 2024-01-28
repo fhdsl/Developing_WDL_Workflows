@@ -4,14 +4,60 @@ ottrpal::set_knitr_image_path()
 
 # The first task
 
+## Inputs
+The inputs of a task are the files and/or variables you will passing into your tasks's command section.
+```
+task bam_to_sam {
+  input {
+    File input_bam
+  }
+  command <<<
+    samtools view -1bS -@ 15 -o converted.sam ~{input_bam}
+  >>>
+}
+```
+
+At runtime, `~{input_bam}` will be replaced with a path to the file. 
+
+Typically, you will want to include at least one File input in a task, but that isn't a requirement. You can pass most WDL variable types into a task.
+
+### Private inputs
+Is there a variable you wish to use in your task section that is based on another input variable, or do not want users to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
+
+```
+task bam_to_sam {
+  input {
+    File input_bam
+  }
+  String base_file_name = basename(input_bam, ".bam")
+  command <<<
+    samtools view -1bS -@ 15 -o ~{base_file_name}.sam ~{input_bam}
+  >>>
+}
+```
 
 
 ## Runtime attributes
-The runtime attributes of a task tell the WDL executor important information about how to run the task. These attributes are often specific to particular backends, so we won't go over all of them here, but here are some of the most common ones:
+The runtime attributes of a task tell the WDL executor important information about how to run the task. They are typically placed in a block below the command section, like so:
 
+```
+task bam_to_sam {
+  input {
+    File input_bam
+  }
+  String base_file_name = basename(input_bam, ".bam")
+  command <<<
+    samtools view -1bS -@ 15 -o ~{base_file_name}.sam ~{input_bam}
+  >>>
+  runtime {
+    cpu: 16
+    docker: "fredhutch/bwa:0.7.17"
+    memory: "48 GB"
+  }
+}
+```
 
-
-
+These attributes are often specific to particular backends, so we won't go over all of them here, but here are some of the most common ones:
 
 | Attribute      | Fred Hutch HPC                                                                               | Local Cromwell                    | Local miniwdl                     | Terra                                                                                       |
 |----------------|----------------------------------------------------------------------------------------------|-----------------------------------|-----------------------------------|---------------------------------------------------------------------------------------------|
@@ -23,8 +69,6 @@ The runtime attributes of a task tell the WDL executor important information abo
 | memory         | Maximum amount of memory to use                                                              | n/a                               |                                   | Minimum amount of memory to use (scales with CPU)                                           |
 | preemptible    | n/a                                                                                          | n/a                               | n/a                               | Attempt running on a preemptible instance this many times, then switch to a non-preemptible |
 | walltime       | How much  [walltime](https://en.wikipedia.org/wiki/Elapsed_real_time)  to request for a task | n/a                               | n/a                               | n/a                                                                                         |
-
-
 
 ## Command section 
 The command section of a WDL task is a bash script that will be run by the WDL executor. If a `docker` runtime attribute is specified, it will execute this bash script in a Docker container made from the image specified, otherwise, it will generally execute the bash script in a container based on a generic Ubuntu-based Docker image.
@@ -38,7 +82,7 @@ WDL is built to make use of Docker as it makes handling software dependencies mu
 * You may not want to directly install software on your system to prevent it from breaking existing software
 * You may not have permission to install software if you are using an institute HPC or other shared resource
 
-Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virutal machines) in [Docker's official cirriculum](https://docker-curriculum.com/#introduction).
+Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
 
 ### Heredoc-style syntax versus braces syntax
 You may see WDLs that use this notation for the command section in a task:
@@ -100,16 +144,82 @@ The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep
 
 ## Outputs
 
+The outputs of a task are defined in the `output` section of your task. Typically, this will take the form of directly outputting a file that was created in the command section. When these file outputs are referenced in the `output` section, you can refer to their path in the Docker container directly. In this example, because "converted.sam" is in the working directory, we can directly grab that output by name.
+
+```
+task bam_to_sam {
+  input {
+    File input_bam
+  }
+  command <<<
+    samtools view -1bS -@ 15 -o converted.sam ~{input_bam}
+  >>>
+  runtime {
+    cpu: 16
+    docker: "fredhutch/bwa:0.7.17"
+    memory: "48 GB"
+  }
+  output {
+    File sam_file = "converted.sam"
+  }
+}
+```
+
+If the output was not in the working directory, we would need to change the output to point to the file's path relative to the workdir.
+
+```
+task bam_to_sam {
+  input {
+    File input_bam
+  }
+  command <<<
+    mkdir sams
+    samtools view -1bS -@ 15 -o converted.sam ~{input_bam}
+    mv converted.sam ./sams/converted.sam
+  >>>
+  runtime {
+    cpu: 16
+    docker: "fredhutch/bwa:0.7.17"
+    memory: "48 GB"
+  }
+  output {
+    File sam_file = "sams/converted.sam"
+  }
+}
+```
+
+You can make our outputs a function of input variables, both those in the `input` section and those declared privately as discussed earlier. This can be helpful if you intend on running this WDL on many different files -- each one will get a unique filename instead of "converted.sam" being the name for all of them.
+
+```
+task bam_to_sam {
+  input {
+    File input_bam
+  }
+  String base_file_name = basename(input_bam, ".bam")
+  command <<<
+    samtools view -1bS -@ 15 -o ~{base_file_name}.sam ~{input_bam}
+  >>>
+  runtime {
+    cpu: 16
+    docker: "fredhutch/bwa:0.7.17"
+    memory: "48 GB"
+  }
+  output {
+    File sam_file = base_file_name + ".sam"
+  }
+}
+```
+
 Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
 
 ```
-task do_something {
+task add_one {
   input {
-    String some_string
+    Int some_integer
   }
   command <<<
-    echo "1" > a.txt
-    echo "2" > b.txt
+    echo ~{some_integer} > a.txt
+    echo "1" > b.txt
   >>>
   output {
     Int a = read_int("a.txt")
@@ -123,5 +233,10 @@ task do_something {
 Cromwell does not fully support outputs being a function of the same task's other outputs. On the Terra backend, the above code example would cause an error.
 :::
 
+To grab multiple outputs at the same time, use glob() to create an array of files.
 
+<!-- TODO: glob into array -->
 
+glob() can also be used to grab just one file. This is usually only necessary if you know the extension of an output, but do not have a way of predicting the rest of its filename. Be aware that if anything else in the workdir has the extension you are searching for, you might accidentally grab that one instead of the one you are looking for!
+
+<!-- TODO: glob single file -->
