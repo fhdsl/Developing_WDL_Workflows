@@ -27,7 +27,18 @@ The runtime attributes of a task tell the WDL executor important information abo
 
 
 ## Command section 
-The command section of a WDL task is a bash script that will be run by the WDL executor. If a `docker` runtime attribute is specified, it will execute this bash script in that Docker image, otherwise, it will generally execute the bash script in a generic Ubuntu image.
+The command section of a WDL task is a bash script that will be run by the WDL executor. If a `docker` runtime attribute is specified, it will execute this bash script in a Docker container made from the image specified, otherwise, it will generally execute the bash script in a container based on a generic Ubuntu-based Docker image.
+
+### Docker images and containers
+A Docker image is a template from which Docker containers are made. When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. A Docker image is described in text by a Dockerfile, which typically has commands for installing software one step at a time, which when executed by `docker build`, will create a Docker image that packages that installed software in a special filesystem. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine, and the official Docker GUI is called Docker Desktop.
+
+WDL is built to make use of Docker as it makes handling software dependencies much simpler. Docker images can help address all of these situations: 
+* Some software is difficult to install or compile on certain systems
+* Some programs have conflicting dependencies
+* You may not want to directly install software on your system to prevent it from breaking existing software
+* You may not have permission to install software if you are using an institute HPC or other shared resource
+
+Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virutal machines) in [Docker's official cirriculum](https://docker-curriculum.com/#introduction).
 
 ### Heredoc-style syntax versus braces syntax
 You may see WDLs that use this notation for the command section in a task:
@@ -90,6 +101,23 @@ The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep
 ## Outputs
 
 Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
+
+```
+task do_something {
+  input {
+    String some_string
+  }
+  command <<<
+    echo "1" > a.txt
+    echo "2" > b.txt
+  >>>
+  output {
+    Int a = read_int("a.txt")
+    Int b = read_int("b.txt")
+    Int c = a + b
+  }
+}
+```
 
 ::: {.notice data-latex="warning"}
 Cromwell does not fully support outputs being a function of the same task's other outputs. On the Terra backend, the above code example would cause an error.
