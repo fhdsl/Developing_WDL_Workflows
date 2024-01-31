@@ -9,3 +9,7 @@
 docker/git_token.txt
 .Rproj.user
 docs/*
+
+# ignore miniwdl stuff
+*/202*
+_LAST
