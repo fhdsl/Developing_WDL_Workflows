@@ -8,7 +8,7 @@ Before we write any sort of WDL -- whether it is for somatic mutation calling li
 As mentioned in the first part of this course, every WDL workflow is made up of at least one task. A task typically has inputs, outputs, runtime attributes, and a command section. You can think of a task as a discrete step in a workflow. It can involve a single call to a single bioinformatics tool, a sequence of bash commands, an inline Python script... almost anything you can do non-interactively in a terminal, you can do in a WDL task. In this section, we will go over the parts of a WDL task in more detail to help us write a task for somatic mutation calling.
 
 ## Inputs
-The inputs of a task are the files and/or variables you will passing into your tasks's command section.
+The inputs of a task are the files and/or variables you will passing into your task's command section.
 ```
 task bam_to_sam {
   input {
@@ -63,7 +63,7 @@ task bam_to_sam {
 These attributes are often specific to particular backends, so we won't go over all of them here. More information can be found in chapter 5, where we talk about designing for specific backends.
 
 ## Command section 
-The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as descrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
+The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
 
 If a `docker` runtime attribute is specified, it will execute this bash script in a Docker container made from the image specified, otherwise, it will generally execute the bash script in a container based on a generic Ubuntu-based Docker image.
 
@@ -133,9 +133,9 @@ If `some_string` is "hello world" then the command section of this task is inter
 cowsay -t "hello world"
 ```
 
-What happens if we had not wrapped `~{some_string}` in quotation marks? If `some_string` was just "hello", it wouldn't matter. But because `some_string` is two words with a space in between, then the script would be intepreted as `cowsay -t hello world` and cause an error, because the cowsay program thinks `world` is another argument. By including quotation marks, `cowsay -t "~{some_string}"` can be interpreted as `cowsay -t "hello world"` and you will correctly get a cow's greeting instead of an error.
+What happens if we had not wrapped `~{some_string}` in quotation marks? If `some_string` was just "hello", it wouldn't matter. But because `some_string` is two words with a space in between, then the script would be interpreted as `cowsay -t hello world` and cause an error, because the cowsay program thinks `world` is another argument. By including quotation marks, `cowsay -t "~{some_string}"` can be interpreted as `cowsay -t "hello world"` and you will correctly get a cow's greeting instead of an error.
 
-If the input variable is an array, we must include an array seperator. In WDL 1.0, this is done using the `sep=` expression placeholder. Every value in the WDL Array[String] will be seperated by whatever value is declared via `sep`. In this example, that is a simple space, as that is one way how to construct a bash variable.
+If the input variable is an array, we must include an array separator. In WDL 1.0, this is done using the `sep=` expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via `sep`. In this example, that is a simple space, as that is one way how to construct a bash variable.
 
 ```
 task count_words {
@@ -154,7 +154,7 @@ task count_words {
 It's usually unnecessary to declare an Array[String], because a single String can have many words in it. That being said, an Array[String] can sometimes come in handy if it is made up of outputs from other tasks. We'll talk more about chaining tasks together in upcoming chapters.
 
 ::: {.notice data-latex="warning"}
-The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). For the time being, we recommend sticking with `sep=` as it is compatiable with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
+The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). For the time being, we recommend sticking with `sep=` as it is compatible with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
 :::
 
 If you're not used to working in bash, the syntax for interacting with bash arrays can be unintuitive, but you don't have to write a WDL's command section only using bash. In fact, working in another language besides bash within a WDL can be a great way to write code quickly, or perform tasks that are more advanced than what a typical bash script can handle. Just be sure to set `sep` properly to ensure that your array is interpreted correctly. In this example, we place quotation marks before and after the variable to ensure that the first and last value of the list are given beginning and ending quotation marks respectively.
@@ -244,7 +244,7 @@ task bam_to_sam_again {
 }
 ```
 
-Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are de clared first.
+Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
 
 ```
 task add_one {
