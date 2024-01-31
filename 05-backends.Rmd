@@ -5,9 +5,30 @@ ottrpal::set_knitr_image_path()
 # Designing WDLs for different backends and executors
 Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software depenendencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.
 
+## Commonly used runtime attributes
+Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.
+
+| Attribute      | Fred Hutch HPC                                                                               | Local Cromwell                    | Local miniwdl                     | Terra                                                                                       |
+|----------------|----------------------------------------------------------------------------------------------|-----------------------------------|-----------------------------------|---------------------------------------------------------------------------------------------|
+| bootDiskSizeGB | n/a                                                                                          | n/a                               | n/a                               | Request a disk of this size to boot the Docker image (useful for very large Docker images)  |
+| cpu            | Reserve this many cores (acts as a maximum)                                                  | n/a                               |                                   | Request a minimum of this many cores (scales with memory)                                   |
+| disks          | n/a                                                                                          | n/a                               |                                   | Request this much disk size - soft requirement, if not specified, will request 10 GB        |
+| docker         | Run the task in this Docker image                                                            | Run the task in this Docker image | Run the task in this Docker image | Run the task in this Docker image                                                           |
+| maxRetries     |                                                                                              |                                   |                                   | If task errors, retry this number of times (additive with preemptible)                      |
+| memory         | Maximum amount of memory to use                                                              | n/a                               |                                   | Minimum amount of memory to use (scales with CPU)                                           |
+| preemptible    | n/a                                                                                          | n/a                               | n/a                               | Attempt running on a preemptible instance this many times, then switch to a non-preemptible |
+| walltime       | How much  [walltime](https://en.wikipedia.org/wiki/Elapsed_real_time)  to request for a task | n/a                               | n/a                               | n/a                                                                                         |
+
+::: {.notice data-latex="warning"}
+Although Cromwell-on-local and miniwdl-on-local ignore some runtime attributes, Cromwell (on default settings) appears to be more likely to cause problems when running scattered tasks due to mishandling system resources. This can include locking up Docker Engine for the entire system! See the Cromwell-on-local section below for more details.
+:::
+
 ## General advice
 * Consider using more runtime attributes, not fewer. miniwdl and Cromwell will ignore runtime attributes as necessary, so including a runtime attribute that only applies to a particular backend will not harm portability on other backends.
-* The Dockstore CLI, as of v 1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.
+* The Dockstore CLI, as of v1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.
+* If running a workflow with a scattered task on a local compute, consider using miniwdl instead of Cromwell.
+* Whether you are using miniwdl or Cromwell locally, make sure Docker has enough resources to be able to download and run the Docker images specified in your WDL tasks.
+* Workflow systems with a UI like Terra may become unresponsive if you run a task scattered more than 1000x. Outputs may need to be interacted with using an API specific to that backend.
 
 ## Specific notes
 
@@ -60,11 +81,9 @@ Preemptible machines are an excellent way to save money when running workflows. 
 ### Cromwell-on-HPC (including Fred Hutch HPC)
 
 ### Cromwell-on-local
-Cromwell running on a local machine has a tendency to heavily use system resources. Sometimes, it will use too many resources at once. When this happens, your workflow's tasks will tend to fail with exit code 137. You may also observe Docker becoming unresponsive.
+Cromwell running on a local machine has a tendency to heavily use system resources. Sometimes, it will use too many resources at once. When this happens, your workflow's tasks will tend to fail with exit code 137. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker.
 
-::: {.notice data-latex="warning"}
-Cromwell running on a local machine will ignore many common runtime attributes, such as `disks`, `cpu`, and `memory`. As such, you cannot rely on these to act like a limit on how many resources Cromwell will use on your local machine.
-:::
+
 
 
 <!-- TODO: advice on how to curtail this with the cromwell config file -->
