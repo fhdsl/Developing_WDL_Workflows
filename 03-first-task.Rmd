@@ -60,18 +60,7 @@ task bam_to_sam {
 }
 ```
 
-These attributes are often specific to particular backends, so we won't go over all of them here, but here are some of the most common ones:
-
-| Attribute      | Fred Hutch HPC                                                                               | Local Cromwell                    | Local miniwdl                     | Terra                                                                                       |
-|----------------|----------------------------------------------------------------------------------------------|-----------------------------------|-----------------------------------|---------------------------------------------------------------------------------------------|
-| bootDiskSizeGB | n/a                                                                                          | n/a                               | n/a                               | Request a disk of this size to boot the Docker image (useful for very large Docker images)  |
-| cpu            | Reserve this many cores (acts as a maximum)                                                  | n/a                               |                                   | Request a minimum of this many cores (scales with memory)                                   |
-| disks          |                                                                                              |                                   |                                   |                                                                                             |
-| docker         | Run the task in this Docker image                                                            | Run the task in this Docker image | Run the task in this Docker image | Run the task in this Docker image                                                           |
-| maxRetries     |                                                                                              |                                   |                                   |                                                                                             |
-| memory         | Maximum amount of memory to use                                                              | n/a                               |                                   | Minimum amount of memory to use (scales with CPU)                                           |
-| preemptible    | n/a                                                                                          | n/a                               | n/a                               | Attempt running on a preemptible instance this many times, then switch to a non-preemptible |
-| walltime       | How much  [walltime](https://en.wikipedia.org/wiki/Elapsed_real_time)  to request for a task | n/a                               | n/a                               | n/a                                                                                         |
+These attributes are often specific to particular backends, so we won't go over all of them here. More information can be found in chapter 5, where we talk about designing for specific backends.
 
 ## Command section 
 The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as descrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
