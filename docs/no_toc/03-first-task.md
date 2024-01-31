@@ -1,3 +1,42 @@
 
 
 # The first task
+
+
+## Anatomy of a task
+```
+task BwaMem {
+  input {
+    File input_fastq
+    String base_file_name
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File? ref_alt
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String taskDocker
+  }
+  command <<<
+    set -eo pipefail
+
+    bwa mem \
+      -p -v 3 -t 16 -M \
+      ~{ref_fasta} ~{input_fastq} > ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+  >>>
+  output {
+    File analysisReadyBam = "~{base_file_name}.aligned.bam"
+    
+  }
+  runtime {
+    memory: "48 GB"
+    cpu: 16
+    docker: taskDocker
+    walltime: "2:00:00"
+  }
+}
+```
