@@ -1,0 +1,58 @@
+```{r, include = FALSE}
+ottrpal::set_knitr_image_path()
+```
+
+# Optional types
+
+WDL supports defining optional variables, which are denoted with a question mark next to the type declaration. These variables may or may not defined. 
+
+## Optional inputs
+The most common use case for optional variables are optional inputs for the user to provide some sort of file, for example, a reference genome or a metadata file. Sometimes, you will want optional inputs to fall back on a known file or value.
+
+{usher sampled diff example with reference genome}
+
+Other times, you will want optional inputs to not have a fallback value. 
+
+{usher metadata tsv example}
+
+
+## Optional outputs
+Optional outputs are usually created by explictly declaring a task or workflow's output variable to be optional. They can also be created by enclosing a task within an if-block, which will cause all outputs of that task to be considered optional.
+
+
+Optional types are powerful, but they can quickly cause problems in complicated workflows. This is especially the case when working with scattered tasks.
+
+
+## Checking if a variable is defined
+
+You should not use `defined()` with optional arrays, as it often acts in unexpected ways. It is very easy to accidentally create a `defined()` check that always returns true, as WDL executors often define "optional" arrays even if they have no values.
+
+
+Instead of using `defined()` on an array, consider simply checking its length. An empty array has a length of 0, so if the length of an array is greater than 1, you know that there is at least one item existing in that array.
+
+
+Be aware that WDL is not "aware" of any of these checks. Even if your workflow has established a variable is defined, WDL does not know that, so you cannot use these methods to use an optional variable like a non-optional variable.
+
+```
+if defined(some_integer) {
+    Int real_some_integer = some_integer
+}
+```
+
+Instead, you need to either use your variables as optional variables, or coerce them into their respective not-optional type.
+
+## Coercing optional variables
+
+
+If you're absolutely certain your variable, in this particular scope, is defined, you can make the second member of the `select_first()` array a random bogus fallback value. (You may want to add a comment to prevent you or other programmers accidentally breaking things should they edit the code later.)
+
+```
+if defined(some_integer) { # needed to define real_some_integer, beware of changing this!
+    Int real_some_integer = select_first([some_integer, 1975])
+}
+```
+
+
+You should not use 
+{what miniwdl suggests}
+as it tends not to work at runtime.
