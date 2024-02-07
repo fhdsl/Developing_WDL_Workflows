@@ -8,21 +8,136 @@ Before we write any sort of WDL -- whether it is for somatic mutation calling li
 As mentioned in the first part of this course, every WDL workflow is made up of at least one task. A task typically has inputs, outputs, runtime attributes, and a command section. You can think of a task as a discrete step in a workflow. It can involve a single call to a single bioinformatics tool, a sequence of bash commands, an inline Python script... almost anything you can do non-interactively in a terminal, you can do in a WDL task. In this section, we will go over the parts of a WDL task in more detail to help us write a task for somatic mutation calling.
 
 ## Inputs
-The inputs of a task are the files and/or variables you will passing into your task's command section.
+The inputs of a task are the files and/or variables you will passing into your task's command section. Typically, you will want to include at least one File input in a task, but that isn't a requirement. You can pass most WDL variable types into a task. In our example workflow, we are starting with a single fastq file per sample, and we know we will need to convert it into a sam file. A sam file is an alignment, so we will need a reference genome to align our fastqs to. We also want to be able to control the threading for this task. Our first task's inputs will therefore start out looking like this:
 ```
-task bam_to_sam {
+task some_aligner {
   input {
-    File input_bam
+    File input_fastq
+    File ref_fasta
+    Int threads
+  }
+[...]
+}
+```
+
+For some aligners, this would be a sufficient set of inputs, but we have decided to use bwa mem in particular to take us from fastq to sam. bwa mem requires a lot of index files, which we will also need to input. This can be done via an array, but for now we'll list everything seperately to make sure nothing is being left out. This is also a good opportunity to point out that `#` can be used as an inline comment in almost place in a WDL.
+
+```
+task BwaMem {
+  input {
+    # main input
+    File input_fastq
+
+    # options
+    Int threads
+
+    # reference files
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+  }
+  [...]
+}
+```
+
+Within the command section, we refer to those variables using `~{this}` syntax. For instance, if the user sets `threads` to 16, then the `-t ~{threads}` part of the command section below will be interpreted as `-t 16`.
+
+```
+task BwaMem {
+  input {
+    File input_fastq
+    File ref_fasta
+    Int threads
+
+    # these variables may look as though they are unused... but bwa mem needs them!
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
   }
   command <<<
-    samtools view -1bS -@ 15 -o converted.sam ~{input_bam}
+  # warning: this will not run on all backends! see surrounding text for an explanation!
+  bwa mem \
+      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
+      ~{ref_fasta} ~{input_fastq} > my_nifty_output.sam 
   >>>
 }
 ```
 
-At runtime, `~{input_bam}` will be replaced with a path to the file. 
+If we were to run this task in a workflow as-is, we might expect it to run on any backend that can handle the hardware requirements. Those hardware requirements are a bit steep -- the `-t 16` part specifically requests 16 threads, for example -- but besides that, it may look like a perfectly functional task. Unfortunately, even on backends that can provide the necessary computing power, it is quite likely this task will not run as expected. This is because of how inputs work in WDL -- or, more specifically, how input files get localized when working with WDL.
 
-Typically, you will want to include at least one File input in a task, but that isn't a requirement. You can pass most WDL variable types into a task.
+### File localization
+When running a WDL, a WDL executor will typically place duplicates of the input files in a brand-new subfolder of the task's working directory. Typically, you don't know the name of the directory before runtime -- they vary depending on the backend you are running and the WDL executor itself. Thankfully, at runtime, File-type variables such as `~{input_fastq}` and `~{ref_fasta}` will be replaced with paths to their respective files.
+
+For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_fasta}` would likely end up turning into `./_miniwdl_inputs/0/ref.fa` at runtime. On the other hand, if you were running the exact same workflow with Cromwell, `~{ref_fasta}` would turn into something like `/cromwell-executions/BwaMem/97c9341e-9322-9a2f-4f54-4114747b8fff/call-test_localization/inputs/-2022115965/ref.fa`. Keep in mind that these are the paths of *copies* of the input files.
+
+For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential.
+
+
+<!--- TODO: give an example --->
+
+
+However, this aspect of WDL can occasionally cause issues. bwa mem is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making two assumptions:
+* bwa mem assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc)
+* bwa mem places its outputs in the same folder as the input fastq
+
+These are two seperete problems, but they have the same simple solution: Move the input files directly into the working directory.
+
+task BwaMem {
+  input {
+    File input_fastq
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+  }
+  
+  String base_file_name = basename(input_fastq, ".fastq")
+  String ref_fasta_local = basename(ref_fasta)
+
+  # CL added some fake read groups for MarkDuplicates to run. 
+  command <<<
+    set -eo pipefail
+
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
+    mv ~{ref_amb} .
+    mv ~{ref_ann} .
+    mv ~{ref_bwt} .
+    mv ~{ref_pac} .
+    mv ~{ref_sa} .
+
+    bwa mem \
+      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
+      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+    samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+
+  >>>
+
+
+
+
+
+
+::: {.notice data-latex="warning"}
+Some backends/executors do not support `mv` acting on input files. If you are running into problems with this and are working with miniwdl, the `--copy-input-files` flag will usually allow `mv` to work. You could also simply use `cp` to copy the files instead of move them, although this may not be an efficient use of disk space, so consider using `mv` if your target backends and executors can handle it.
+:::
+
+
 
 ### Private inputs
 Is there a variable you wish to use in your task section that is based on another input variable, or do not want users to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
@@ -62,11 +177,6 @@ task bam_to_sam {
 
 These attributes are often specific to particular backends, so we won't go over all of them here. More information can be found in chapter 5, where we talk about designing for specific backends.
 
-## Command section 
-The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
-
-If a `docker` runtime attribute is specified, it will execute this bash script in a Docker container made from the image specified, otherwise, it will generally execute the bash script in a container based on a generic Ubuntu-based Docker image.
-
 ### Docker images and containers
 WDL is built to make use of Docker as it makes handling software dependencies much simpler. Docker images can help address all of these situations: 
 * Some software is difficult to install or compile on certain systems
@@ -77,6 +187,11 @@ WDL is built to make use of Docker as it makes handling software dependencies mu
 When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. This container sandbox is derived from a template called a Docker image, which packages installed software in a special filesystem. This is one of the main features of a Docker image -- because a Docker image packages the software you need, you can skip much of the installation and dependency issues associated with using new software, and because you take actions within a Docker container sandbox, it's unlikely for you to "mess up" your main system's files. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine, and the official Docker GUI is called Docker Desktop.
 
 Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles -- plaintext files which compile Docker images when run via `docker build` -- to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
+
+## Command section 
+The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
+
+If a `docker` runtime attribute is specified, it will execute this bash script in a Docker container made from the image specified, otherwise, it will generally execute the bash script in a container based on a generic Ubuntu-based Docker image.
 
 ### Heredoc-style syntax versus braces syntax
 You may see WDLs that use this notation for the command section in a task:
