@@ -20,7 +20,9 @@ task some_aligner {
 }
 ```
 
-For some aligners, this would be a sufficient set of inputs, but we have decided to use bwa mem in particular to take us from fastq to sam. bwa mem requires a lot of index files, which we will also need to input. This can be done via an array, but for now we'll list everything seperately to make sure nothing is being left out. This is also a good opportunity to point out that `#` can be used as an inline comment in almost place in a WDL.
+For some aligners, this would be a sufficient set of inputs, but we have decided to use bwa mem in particular to take us from fastq to sam. bwa mem requires a lot of index files, which we will also need to input. This can be done via an array, but for now we'll list everything separately to make sure nothing is being left out.
+
+We also want to define a default value for `threads` so that someone who does not know much about threading can still use the workflow. We want to use this workflow on human data, so we'll go a little high for the default number of threads and set it to sixteen. In WDL, we do this by declaring `Int threads = 16`. Make sure to put this in the task (or workflow) inputs section -- if you put it elsewhere, that variable cannot be changed from its default value, so it will always be 16.
 
 ```
 task BwaMem {
@@ -29,7 +31,7 @@ task BwaMem {
     File input_fastq
 
     # options
-    Int threads
+    Int threads = 16
 
     # reference files
     File ref_fasta
@@ -46,7 +48,7 @@ task BwaMem {
 ```
 
 ### Referencing inputs in the command section
-Within the command section, we refer to those variables using `~{this}` syntax. For instance, if the user sets `threads` to 16, then the `-t ~{threads}` part of the command section below will be interpreted as `-t 16`.
+Within the command section, we refer to those variables using `~{this}` syntax. For instance, if the user sets `threads` to 8, then the `-t ~{threads}` part of the command section below will be interpreted as `-t 8`.
 
 Assuming heredoc syntax is being used, a WDL task's input variables are generally referred to in the command section using a tilde (~) and curly braces. To prevent issues with spaces in strings, it is often a good idea to put quotation marks around a variable with the type String, like so:
 
@@ -72,7 +74,7 @@ cowsay -t "hello world"
 
 What happens if we had not wrapped `~{some_string}` in quotation marks? If `some_string` was just "hello", it wouldn't matter. But because `some_string` is two words with a space in between, then the script would be interpreted as `cowsay -t hello world` and cause an error, because the cowsay program thinks `world` is another argument. By including quotation marks, `cowsay -t "~{some_string}"` can be interpreted as `cowsay -t "hello world"` and you will correctly get a cow's greeting instead of an error.
 
-Returning to our aligner task, we can attempt the following to access the files being passed in as inputs. The following is a draft that will not run on all backends, but it's a good demonstration of where to start.
+Returning to our aligner task, we can attempt the following to access the files being passed in as inputs. File names, like strings, can have spaces in them, so we will want to put `~{ref_fasta}` and `~{input_fastq}` in quotation marks. The following is a draft that will not run on all backends, but it's a good demonstration of where to start.
 
 ```
 task BwaMem {
@@ -94,7 +96,7 @@ task BwaMem {
   # warning: this will not run on all backends! see surrounding text for an explanation!
   bwa mem \
       -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
-      ~{ref_fasta} ~{input_fastq} > my_nifty_output.sam 
+      "~{ref_fasta}" "~{input_fastq}" > my_nifty_output.sam 
   >>>
 }
 ```
@@ -102,7 +104,7 @@ task BwaMem {
 If we were to run this task in a workflow as-is, we might expect it to run on any backend that can handle the hardware requirements. Those hardware requirements are a bit steep -- the `-t 16` part specifically requests 16 threads, for example -- but besides that, it may look like a perfectly functional task. Unfortunately, even on backends that can provide the necessary computing power, it is quite likely this task will not run as expected. This is because of how inputs work in WDL -- or, more specifically, how input files get localized when working with WDL.
 
 ### File localization
-When running a WDL, a WDL executor will typically place duplicates of the input files in a brand-new subfolder of the task's working directory. Typically, you don't know the name of the directory before runtime -- they vary depending on the backend you are running and the WDL executor itself. Thankfully, at runtime, File-type variables such as `~{input_fastq}` and `~{ref_fasta}` will be replaced with paths to their respective files.
+When running a WDL, a WDL executor will typically place duplicates of the input files in a brand-new subfolder of the task's [working directory[(https://www.ibm.com/docs/en/zos/3.1.0?topic=directories-working-directory)]. Typically, you don't know the name of the directory before runtime -- they vary depending on the backend you are running and the WDL executor itself. Thankfully, at runtime, File-type variables such as `~{input_fastq}` and `~{ref_fasta}` will be replaced with paths to their respective files.
 
 For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_fasta}` would likely end up turning into `./_miniwdl_inputs/0/ref.fa` at runtime. On the other hand, if you were running the exact same workflow with Cromwell, `~{ref_fasta}` would turn into something like `/cromwell-executions/BwaMem/97c9341e-9322-9a2f-4f54-4114747b8fff/call-test_localization/inputs/-2022115965/ref.fa`. Keep in mind that these are the paths of *copies* of the input files, and that sometimes input files can be in different subfolders. For example, it's possible `~{input_fastq}` would be `./_miniwdl_inputs/0/sample.fastq` while `~{ref_fasta}` may be `./_miniwdl_inputs/1/ref.fa`.
 
@@ -110,7 +112,7 @@ For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/
 * bwa mem assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc)
 * bwa mem places its outputs in the same folder as the input fastq
 
-These are two seperete problems, but they have the same simple solution: Move the input files directly into the working directory.
+These are two separate problems, but they have the same simple solution: Move the input files directly into the working directory.
 
 ```
 task BwaMem {
@@ -124,21 +126,22 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
+    Int threads = 16
   }
 
   command <<<
     set -eo pipefail
 
-    # this can also be done by creating an array and then looping that array,
+    # This can also be done by creating an array and then looping that array,
     # but we'll do it one line at a time or clarity's sake.
-    mv ~{ref_fasta} .
-    mv ~{ref_fasta_index} .
-    mv ~{ref_dict} .
-    mv ~{ref_amb} .
-    mv ~{ref_ann} .
-    mv ~{ref_bwt} .
-    mv ~{ref_pac} .
-    mv ~{ref_sa} .
+    mv "~{ref_fasta}" .
+    mv "~{ref_fasta_index}" .
+    mv "~{ref_dict}" .
+    mv "~{ref_amb}" .
+    mv "~{ref_ann}" .
+    mv "~{ref_bwt}" .
+    mv "~{ref_pac}" .
+    mv "~{ref_sa}" .
 
     bwa mem \
     [...]
@@ -158,7 +161,7 @@ fastq="$(basename -- ~{input_fastq})"
 
 # actually run bwa mem
 bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
+      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
       ref.fa $fastq > my_nifty_output.sam 
 ```
 
@@ -166,7 +169,7 @@ However, we may want to avoid assuming that the reference genome is always calle
 
 
 ### Private inputs
-Is there a variable you wish to use in your task section that is based on another input variable, or do not want users to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
+Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
 
 ```
 task BwaMem {
@@ -180,6 +183,7 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
+    Int threads = 16
   }
   
   # basename() is a built-in WDL function that acts like bash's basename
@@ -189,22 +193,21 @@ task BwaMem {
   command <<<
     set -eo pipefail
 
-    # this can also be done by creating an array and then looping that array,
-    # but we'll do it one line at a time or clarity's sake.
-    mv ~{ref_fasta} .
-    mv ~{ref_fasta_index} .
-    mv ~{ref_dict} .
-    mv ~{ref_amb} .
-    mv ~{ref_ann} .
-    mv ~{ref_bwt} .
-    mv ~{ref_pac} .
-    mv ~{ref_sa} .
+    mv "~{ref_fasta}" .
+    mv "~{ref_fasta_index}" .
+    mv "~{ref_dict}" .
+    mv "~{ref_amb}" .
+    mv "~{ref_ann}" .
+    mv "~{ref_bwt}" .
+    mv "~{ref_pac}" .
+    mv "~{ref_sa}" .
+
 
     bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
-      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
+      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
+    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
+    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
 
   >>>
 }
@@ -286,7 +289,7 @@ The outputs of a task are defined in the `output` section of your task. Typicall
   }
 ```
 
-Another way of writing this is with string concatenation. This is equivalent to what we wrote above -- choose whichever vesion you prefer.
+Another way of writing this is with string concatenation. This is equivalent to what we wrote above -- choose whichever version you prefer.
 
 ```
   output {
@@ -295,7 +298,7 @@ Another way of writing this is with string concatenation. This is equivalent to 
   }
 ```
 
-If the output was not in the working directory, we would need to change the output to point to the file's path relative to the workdir, such as `File analysisReadyBam = "some_folder/~{base_file_name}.aligned.bam"`.
+If the output was not in the working directory, we would need to change the output to point to the file's path relative to the working directory, such as `File analysisReadyBam = "some_folder/~{base_file_name}.aligned.bam"`.
 
 Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
 
@@ -341,7 +344,7 @@ task one_word_per_file {
   }
 }
 
-`glob()` can also be used to grab just one file via `glob("*.txt")[0]` to grab the first thing that matches the glob. This is usually only necessary if you know the extension of an output, but do not have a way of predicting the rest of its filename. Be aware that if anything else in the workdir has the extension you are searching for, you might accidentally grab that one instead of the one you are looking for!
+`glob()` can also be used to grab just one file via `glob("*.txt")[0]` to grab the first thing that matches the glob. This is usually only necessary if you know the extension of an output, but do not have a way of predicting the rest of its filename. Be aware that if anything else in the working directory has the extension you are searching for, you might accidentally grab that one instead of the one you are looking for!
 
 ## Putting it all together
 We've now designed a bwa mem task that can run on essentially any backend that supports WDL and can handle the hardware requirements. Issues involving bwa mem expecting reference files to be in the same folder and/or putting output files into input folders have been sidestepped thanks to careful design and consideration. The runtime section clearly defines the expected hardware requirements, and the outputs section defines what we expect the task to give us when all is said and done. We're now ready to continue with the rest of our workflow.
@@ -358,6 +361,7 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
+    Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -366,20 +370,20 @@ task BwaMem {
   command <<<
     set -eo pipefail
 
-    mv ~{ref_fasta} .
-    mv ~{ref_fasta_index} .
-    mv ~{ref_dict} .
-    mv ~{ref_amb} .
-    mv ~{ref_ann} .
-    mv ~{ref_bwt} .
-    mv ~{ref_pac} .
-    mv ~{ref_sa} .
+    mv "~{ref_fasta}" .
+    mv "~{ref_fasta_index}" .
+    mv "~{ref_dict}" .
+    mv "~{ref_amb}" .
+    mv "~{ref_ann}" .
+    mv "~{ref_bwt}" .
+    mv "~{ref_pac}" .
+    mv "~{ref_sa}" .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
-      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
+      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
+    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
+    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
 
   >>>
   output {
