@@ -45,7 +45,34 @@ task BwaMem {
 }
 ```
 
+### Referencing inputs in the command section
 Within the command section, we refer to those variables using `~{this}` syntax. For instance, if the user sets `threads` to 16, then the `-t ~{threads}` part of the command section below will be interpreted as `-t 16`.
+
+Assuming heredoc syntax is being used, a WDL task's input variables are generally referred to in the command section using a tilde (~) and curly braces. To prevent issues with spaces in strings, it is often a good idea to put quotation marks around a variable with the type String, like so:
+
+```
+task cowsay {
+  input {
+    String some_string
+  }
+  command <<<
+    cowsay -t "~{some_string}"
+  >>>
+  runtime {
+    docker: "rancher/cowsay:latest"
+  }
+}
+```
+
+If `some_string` is "hello world" then the command section of this task is interpreted as the following:
+
+```
+cowsay -t "hello world"
+```
+
+What happens if we had not wrapped `~{some_string}` in quotation marks? If `some_string` was just "hello", it wouldn't matter. But because `some_string` is two words with a space in between, then the script would be interpreted as `cowsay -t hello world` and cause an error, because the cowsay program thinks `world` is another argument. By including quotation marks, `cowsay -t "~{some_string}"` can be interpreted as `cowsay -t "hello world"` and you will correctly get a cow's greeting instead of an error.
+
+Returning to our aligner task, we can attempt the following to access the files being passed in as inputs. The following is a draft that will not run on all backends, but it's a good demonstration of where to start.
 
 ```
 task BwaMem {
@@ -77,20 +104,71 @@ If we were to run this task in a workflow as-is, we might expect it to run on an
 ### File localization
 When running a WDL, a WDL executor will typically place duplicates of the input files in a brand-new subfolder of the task's working directory. Typically, you don't know the name of the directory before runtime -- they vary depending on the backend you are running and the WDL executor itself. Thankfully, at runtime, File-type variables such as `~{input_fastq}` and `~{ref_fasta}` will be replaced with paths to their respective files.
 
-For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_fasta}` would likely end up turning into `./_miniwdl_inputs/0/ref.fa` at runtime. On the other hand, if you were running the exact same workflow with Cromwell, `~{ref_fasta}` would turn into something like `/cromwell-executions/BwaMem/97c9341e-9322-9a2f-4f54-4114747b8fff/call-test_localization/inputs/-2022115965/ref.fa`. Keep in mind that these are the paths of *copies* of the input files.
+For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_fasta}` would likely end up turning into `./_miniwdl_inputs/0/ref.fa` at runtime. On the other hand, if you were running the exact same workflow with Cromwell, `~{ref_fasta}` would turn into something like `/cromwell-executions/BwaMem/97c9341e-9322-9a2f-4f54-4114747b8fff/call-test_localization/inputs/-2022115965/ref.fa`. Keep in mind that these are the paths of *copies* of the input files, and that sometimes input files can be in different subfolders. For example, it's possible `~{input_fastq}` would be `./_miniwdl_inputs/0/sample.fastq` while `~{ref_fasta}` may be `./_miniwdl_inputs/1/ref.fa`.
 
-For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential.
-
-
-<!--- TODO: give an example --->
-
-
-However, this aspect of WDL can occasionally cause issues. bwa mem is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making two assumptions:
+For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential. However, this aspect of WDL can occasionally cause issues. bwa mem is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making two assumptions:
 * bwa mem assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc)
 * bwa mem places its outputs in the same folder as the input fastq
 
 These are two seperete problems, but they have the same simple solution: Move the input files directly into the working directory.
 
+```
+task BwaMem {
+  input {
+    File input_fastq
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # this can also be done by creating an array and then looping that array,
+    # but we'll do it one line at a time or clarity's sake.
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
+    mv ~{ref_amb} .
+    mv ~{ref_ann} .
+    mv ~{ref_bwt} .
+    mv ~{ref_pac} .
+    mv ~{ref_sa} .
+
+    bwa mem \
+    [...]
+  >>>
+}
+```
+::: {.notice data-latex="warning"}
+Some backends/executors do not support `mv` acting on input files. If you are running into problems with this and are working with miniwdl, the `--copy-input-files` flag will usually allow `mv` to work. You could also simply use `cp` to copy the files instead of move them, although this may not be an efficient use of disk space, so consider using `mv` if your target backends and executors can handle it.
+:::
+
+With our files now all in the working directory, we can turn our attention to the bwa task itself. We can no longer directly pass in `~{ref_fasta}` or `~{input_fastq}`, because those variables will point to a non-existent file in a now-empty input directory. For the reference fasta, if we know for sure that the user will always pass in a file named `ref.fa`, we could hardcode that. For the input fastq, we can use the built-in bash function basename. That would leave us with something like this:
+
+```
+# create a bash variable named fastq which is the basename of the input fastq
+# be aware that this variable only exists in the scope of this task's command section
+fastq="$(basename -- ~{input_fastq})"
+
+# actually run bwa mem
+bwa mem \
+      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
+      ref.fa $fastq > my_nifty_output.sam 
+```
+
+However, we may want to avoid assuming that the reference genome is always called ref.fa. We may also want to avoid using a mixture of bash variables and variables-passed-in-from WDL, as keep track of the variables may become difficult. Thankfully, we can use private input variables to address this scenario.
+
+
+### Private inputs
+Is there a variable you wish to use in your task section that is based on another input variable, or do not want users to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
+
+```
 task BwaMem {
   input {
     File input_fastq
@@ -104,13 +182,15 @@ task BwaMem {
     File ref_sa
   }
   
+  # basename() is a built-in WDL function that acts like bash's basename
   String base_file_name = basename(input_fastq, ".fastq")
   String ref_fasta_local = basename(ref_fasta)
 
-  # CL added some fake read groups for MarkDuplicates to run. 
   command <<<
     set -eo pipefail
 
+    # this can also be done by creating an array and then looping that array,
+    # but we'll do it one line at a time or clarity's sake.
     mv ~{ref_fasta} .
     mv ~{ref_fasta_index} .
     mv ~{ref_dict} .
@@ -127,52 +207,19 @@ task BwaMem {
     samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
 
   >>>
-
-
-
-
-
-
-::: {.notice data-latex="warning"}
-Some backends/executors do not support `mv` acting on input files. If you are running into problems with this and are working with miniwdl, the `--copy-input-files` flag will usually allow `mv` to work. You could also simply use `cp` to copy the files instead of move them, although this may not be an efficient use of disk space, so consider using `mv` if your target backends and executors can handle it.
-:::
-
-
-
-### Private inputs
-Is there a variable you wish to use in your task section that is based on another input variable, or do not want users to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
-
-```
-task bam_to_sam {
-  input {
-    File input_bam
-  }
-  String base_file_name = basename(input_bam, ".bam")
-  command <<<
-    samtools view -1bS -@ 15 -o ~{base_file_name}.sam ~{input_bam}
-  >>>
 }
 ```
-
 
 ## Runtime attributes
-The runtime attributes of a task tell the WDL executor important information about how to run the task. They are typically placed in a block below the command section, like so:
+The runtime attributes of a task tell the WDL executor important information about how to run the task. For a bwa mem task, we want to make sure we have plenty of hardware resources available. We also need to include a reference to the docker image we want the task to actually run in.
 
 ```
-task bam_to_sam {
-  input {
-    File input_bam
-  }
-  String base_file_name = basename(input_bam, ".bam")
-  command <<<
-    samtools view -1bS -@ 15 -o ~{base_file_name}.sam ~{input_bam}
-  >>>
   runtime {
+    memory: "48 GB"
     cpu: 16
     docker: "fredhutch/bwa:0.7.17"
-    memory: "48 GB"
+    disks: "local-disk 100 SSD"
   }
-}
 ```
 
 These attributes are often specific to particular backends, so we won't go over all of them here. More information can be found in chapter 5, where we talk about designing for specific backends.
@@ -180,8 +227,11 @@ These attributes are often specific to particular backends, so we won't go over 
 ### Docker images and containers
 WDL is built to make use of Docker as it makes handling software dependencies much simpler. Docker images can help address all of these situations: 
 * Some software is difficult to install or compile on certain systems
+
 * Some programs have conflicting dependencies
+
 * You may not want to directly install software on your system to prevent it from breaking existing software
+
 * You may not have permission to install software if you are using an institute HPC or other shared resource
 
 When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. This container sandbox is derived from a template called a Docker image, which packages installed software in a special filesystem. This is one of the main features of a Docker image -- because a Docker image packages the software you need, you can skip much of the installation and dependency issues associated with using new software, and because you take actions within a Docker container sandbox, it's unlikely for you to "mess up" your main system's files. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine, and the official Docker GUI is called Docker Desktop.
@@ -189,7 +239,7 @@ When you run a WDL task that has a `docker` runtime attribute, your task will be
 Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles -- plaintext files which compile Docker images when run via `docker build` -- to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
 
 ## Command section 
-The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
+We already spoke on the command section in order to explain how input variables get used, but it's worth taking a closer look at the section itself. The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
 
 If a `docker` runtime attribute is specified, it will execute this bash script in a Docker container made from the image specified, otherwise, it will generally execute the bash script in a container based on a generic Ubuntu-based Docker image.
 
@@ -225,139 +275,27 @@ task do_something_carrots {
 
 Heredoc-style syntax for command sections can be clearer than the alternative, as it makes a clearer distinction between bash variables and WDL variables. This is especially helpful for complicated bash scripts. Heredoc-style syntax is also what the WDL 1.1 spec recommends using in most cases. However, the older non-heredoc style is still perfectly functional for a lot of use cases.
 
-### Referencing variables
-Assuming heredoc syntax is being used, a WDL task's input variables are generally referred to in the command section using a tilde (~) and curly braces. To prevent issues with spaces in strings, it is often a good idea to put quotation marks around a string variable, like so:
-
-```
-task cowsay {
-  input {
-    String some_string
-  }
-  command <<<
-    cowsay -t "~{some_string}"
-  >>>
-  runtime {
-    docker: "rancher/cowsay:latest"
-  }
-}
-```
-
-If `some_string` is "hello world" then the command section of this task is interpreted as the following:
-
-```
-cowsay -t "hello world"
-```
-
-What happens if we had not wrapped `~{some_string}` in quotation marks? If `some_string` was just "hello", it wouldn't matter. But because `some_string` is two words with a space in between, then the script would be interpreted as `cowsay -t hello world` and cause an error, because the cowsay program thinks `world` is another argument. By including quotation marks, `cowsay -t "~{some_string}"` can be interpreted as `cowsay -t "hello world"` and you will correctly get a cow's greeting instead of an error.
-
-If the input variable is an array, we must include an array separator. In WDL 1.0, this is done using the `sep=` expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via `sep`. In this example, that is a simple space, as that is one way how to construct a bash variable.
-
-```
-task count_words {
-  input {
-    Array[String] a_big_sentence
-  }
-  command <<<
-    ARRAY_OF_WORDS=(~{sep=" " a_big_sentence})
-    echo ${#ARRAY_OF_FILES[@]} >> length.txt
-    # Note how the bash array uses ${} syntax, which could quickly get
-    # confusing if we used that syntax for our WDL variables. This is
-    # why we recommend using tilde + {} for your WDL variables.
-  >>>
-}
-```
-It's usually unnecessary to declare an Array[String], because a single String can have many words in it. That being said, an Array[String] can sometimes come in handy if it is made up of outputs from other tasks. We'll talk more about chaining tasks together in upcoming chapters.
-
-::: {.notice data-latex="warning"}
-The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). For the time being, we recommend sticking with `sep=` as it is compatible with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
-:::
-
-If you're not used to working in bash, the syntax for interacting with bash arrays can be unintuitive, but you don't have to write a WDL's command section only using bash. In fact, working in another language besides bash within a WDL can be a great way to write code quickly, or perform tasks that are more advanced than what a typical bash script can handle. Just be sure to set `sep` properly to ensure that your array is interpreted correctly. In this example, we place quotation marks before and after the variable to ensure that the first and last value of the list are given beginning and ending quotation marks respectively.
-
-```
-task count_words_python {
-  input {
-    Array[String] a_big_sentence
-  }
-  command <<<
-    python << CODE
-    sentence = [ "~{sep='", "' a_big_sentence}" ]
-    print(len(sentence))
-    CODE
-  >>>
-  runtime {
-    docker: "python:latest"
-  }
-}
-```
-
 ## Outputs
 
-The outputs of a task are defined in the `output` section of your task. Typically, this will take the form of directly outputting a file that was created in the command section. When these file outputs are referenced in the `output` section, you can refer to their path in the Docker container directly. In this example, because "converted.sam" is in the working directory, we can directly grab that output by name.
+The outputs of a task are defined in the `output` section of your task. Typically, this will take the form of directly outputting a file that was created in the command section. When these file outputs are referenced in the `output` section, you can refer to their path in the Docker container directly. You can also make outputs a function of input variables, including private input variables. This can be helpful if you intend on running this WDL on many different files -- each one will get a unique filename based on the input fastq, instead of every sample ending up being named something generic like "converted.sam". For our bwa mem task, one way to write the output section would be as follows:
 
 ```
-task bam_to_sam {
-  input {
-    File input_bam
-  }
-  command <<<
-    samtools view -1bS -@ 15 -o converted.sam ~{input_bam}
-  >>>
-  runtime {
-    cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
-    memory: "48 GB"
-  }
   output {
-    File sam_file = "converted.sam"
+    File analysisReadyBam = "~{base_file_name}.aligned.bam"
+    File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
-}
 ```
 
-If the output was not in the working directory, we would need to change the output to point to the file's path relative to the workdir.
+Another way of writing this is with string concatenation. This is equivalent to what we wrote above -- choose whichever vesion you prefer.
 
 ```
-task bam_to_sam_in_folder {
-  input {
-    File input_bam
-  }
-  command <<<
-    mkdir sams
-    samtools view -1bS -@ 15 -o converted.sam ~{input_bam}
-    mv converted.sam ./sams/converted.sam
-  >>>
-  runtime {
-    cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
-    memory: "48 GB"
-  }
   output {
-    File sam_file = "sams/converted.sam"
+    File analysisReadyBam = base_file_name + ".aligned.bam"
+    File analysisReadySorted = base_file_name + ".sorted_query_aligned.bam"
   }
-}
 ```
 
-You can make our outputs a function of input variables, both those in the `input` section and those declared privately as discussed earlier. This can be helpful if you intend on running this WDL on many different files -- each one will get a unique filename instead of "converted.sam" being the name for all of them.
-
-```
-task bam_to_sam_again {
-  input {
-    File input_bam
-  }
-  String base_file_name = basename(input_bam, ".bam")
-  command <<<
-    samtools view -1bS -@ 15 -o ~{base_file_name}.sam ~{input_bam}
-  >>>
-  runtime {
-    cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
-    memory: "48 GB"
-  }
-  output {
-    File sam_file = base_file_name + ".sam"
-  }
-}
-```
+If the output was not in the working directory, we would need to change the output to point to the file's path relative to the workdir, such as `File analysisReadyBam = "some_folder/~{base_file_name}.aligned.bam"`.
 
 Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
 
@@ -382,7 +320,7 @@ task add_one {
 Cromwell does not fully support outputs being a function of the same task's other outputs. On the Terra backend, the above code example would cause an error.
 :::
 
-To grab multiple outputs at the same time, use glob() to create an array of files. We'll also take this opportunity to demonstrate iterating through a bash array created from an Array[String] input.
+To grab multiple outputs at the same time, use glob() to create an array of files. We'll also take this opportunity to demonstrate iterating through a bash array created from an Array[String] input -- for more information on this data type, see chapter six of this course.
 
 ```
 task one_word_per_file {
@@ -406,5 +344,53 @@ task one_word_per_file {
 `glob()` can also be used to grab just one file via `glob("*.txt")[0]` to grab the first thing that matches the glob. This is usually only necessary if you know the extension of an output, but do not have a way of predicting the rest of its filename. Be aware that if anything else in the workdir has the extension you are searching for, you might accidentally grab that one instead of the one you are looking for!
 
 ## Putting it all together
+We've now designed a bwa mem task that can run on essentially any backend that supports WDL and can handle the hardware requirements. Issues involving bwa mem expecting reference files to be in the same folder and/or putting output files into input folders have been sidestepped thanks to careful design and consideration. The runtime section clearly defines the expected hardware requirements, and the outputs section defines what we expect the task to give us when all is said and done. We're now ready to continue with the rest of our workflow.
 
-<!-- bring it back to the first task of the multi task workflow -->
+```
+task BwaMem {
+  input {
+    File input_fastq
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+  }
+  
+  String base_file_name = basename(input_fastq, ".fastq")
+  String ref_fasta_local = basename(ref_fasta)
+
+  command <<<
+    set -eo pipefail
+
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
+    mv ~{ref_amb} .
+    mv ~{ref_ann} .
+    mv ~{ref_bwt} .
+    mv ~{ref_pac} .
+    mv ~{ref_sa} .
+
+    bwa mem \
+      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
+      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+    samtools sort -n -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+
+  >>>
+  output {
+    File analysisReadyBam = "~{base_file_name}.aligned.bam"
+    File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
+  }
+  runtime {
+    memory: "48 GB"
+    cpu: 16
+    docker: "fredhutch/bwa:0.7.17"
+    disks: "local-disk 100 SSD"
+  }
+}
+  ```
