@@ -78,7 +78,13 @@ Preemptible machines are an excellent way to save money when running workflows. 
 <!-- TODO: is preemptible machine, preemptible, or preemptible instance the most correct term? -->
 <!-- TODO: double check non-Terra-Cromwell-on-GCP restarts as expected -->
 
-### Cromwell-on-HPC (including Fred Hutch HPC)
+### HPCs
+It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:
+* Some HPCs do not support the use of Docker due to security concerns; these HPCs may not be able to run WDLs at all
+
+#### Fred Hutch HPC
+* The Fred Hutch HPC supports the use of Docker, so the `docker` runtime attribute works as expected
+* The `memory` and `gpu` runtime attributes are ignored, but `cpu` works as expected
 
 ### Cromwell-on-local
 Cromwell running on a local machine has a tendency to heavily use system resources. Sometimes, it will use too many resources at once. When this happens, your workflow's tasks will tend to fail with exit code 137. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker.
