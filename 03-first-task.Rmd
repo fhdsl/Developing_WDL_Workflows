@@ -225,7 +225,23 @@ The runtime attributes of a task tell the WDL executor important information abo
   }
 ```
 
-These attributes are often specific to particular backends, so we won't go over all of them here. More information can be found in chapter 5, where we talk about designing for specific backends.
+In WDL 1.0, the interpretation of runtime attributes by different executors and backends is extremely varied. The [WDL 1.0 spec](https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#runtime-section) allows for arbitrary values here:
+
+> Individual backends will define which keys they will inspect so a key/value pair may or may not actually be honored depending on how the task is run. Values can be any expression and it is up to the engine to reject keys and/or values that do not make sense in that context.
+
+This can lead to some pitfalls: 
+
+* Some of the attributes in your task's `runtime` section may be silently ignored, such as the `memory` attribute when running Cromwell on the Fred Hutch HPC (as of Feb 2024)
+
+* Some runtime attributes that are unique to particular backends, such as the Fred Hutch HPC's `walltime` attribute
+
+* The same runtime attribute working differently on different backends, such as `disks` acting differently on Cromwell depending on whether it is running on AWS or GCP (and being ignored on local)
+
+When writing WDL 1.0 workflows with specific hardware requirements, keep in mind what your backend and executor is able to interpret. It is also helpful to consider that other people running your workflow may be doing so on different backends and executors. More information can be found in the appendix, where we talk about designing WDLs for specific backends. For now, we will stick with `memory`, `cpu`, `docker`, and `disks` as this group of four runtime attributes will help us run this workflow on the majority of backends and executors. Even though the Fred Hutch HPC will ignore the `memory` and `disks` attributes, for instance, their inclusion will not cause the workflow to fail, but they will allow the workflow to run on Terra.
+
+It is worth noting that in the [WDL 1.1 spec](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#runtime-section), a very different approach to runtime attributes is taken:
+
+> There are a set of reserved attributes (described below) that must be supported by the execution engine, and which have well-defined meanings and default values. Default values for all optional standard attributes are directly defined by the WDL specification in order to encourage portability of workflows and tasks; execution engines should NOT provide additional mechanisms to set default values for when no runtime attributes are defined.
 
 ### Docker images and containers
 WDL is built to make use of Docker as it makes handling software dependencies much simpler. Docker images can help address all of these situations: 
