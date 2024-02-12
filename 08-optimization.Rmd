@@ -1,0 +1,42 @@
+```{r, include = FALSE}
+ottrpal::set_knitr_image_path()
+```
+
+# Optimizing Workflows
+
+- Diagnosising and treating the most common issues stemming from inefficient workflow setup
+- An introduction to controlling costs on cloud compute backends
+- How to automatically scale disk size runtime attributes based on the size of a task's inputs
+- How to stop Cromwell from trying to launch dozens of instances of a scattered task at once
+
+## Scattered tasks: A reintroduction
+
+## Troubleshooting
+
+### Running out of memory
+A task that has run out of memory will typically have a [return code](https://en.wikipedia.org/wiki/Error_code) of 137. In some WDL executors, you will find a file called `rc` for each completed task which contains a single integer representing that task's return code. This code might also be printed on the command line or the workflow's overall logs. Depending on what tool you are running in the task, you may also see something like "out of memory" in stderr or stdout.
+
+(Strictly speaking, a return code of 137 is SIGKILL, meaning the operating system forcibly shut down a task. For the purposes of WDL, this almost always means running out memory, but in other contexts it may have other causes.)
+
+#### Special case: samtools
+If your task involves samtools and you see something like `samtools sort: couldn't allocate memory for bam_mem`, this may be caused by setting up the samtools call incorrectly. Pay attention to how many threads you are requesting (`-t`/`--threads`) and how memory you are requesting per each of those threads (`-m`).
+
+### Running out of disk space
+
+### Docker lockup
+As of February 2024, the authors of this course have only seen this behavior happen on Cromwell. However, it is theoretically possible it could happen on miniwdl.
+
+
+
+Possible solutions include:
+
+* Modifying the Cromwell configuration file to only run one task at a time
+
+* Switching to miniwdl
+
+* Switching a backend that can reliably scale on scattered tasks
+
+
+
+### Very large scatters ( >100x)
+* Even Terra has its limitations. As of February 2024, Terra's Task Manager UI starts to break down when scattering more than 200x. Around 1000x, the chances of a task failing to initialize increases, which may cause the overall workflow to report a failure (rerunning the workflow with call cacheing enabled will generally bypass the issue).
