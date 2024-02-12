@@ -104,12 +104,14 @@ task BwaMem {
 If we were to run this task in a workflow as-is, we might expect it to run on any backend that can handle the hardware requirements. Those hardware requirements are a bit steep -- the `-t 16` part specifically requests 16 threads, for example -- but besides that, it may look like a perfectly functional task. Unfortunately, even on backends that can provide the necessary computing power, it is quite likely this task will not run as expected. This is because of how inputs work in WDL -- or, more specifically, how input files get localized when working with WDL.
 
 ### File localization
-When running a WDL, a WDL executor will typically place duplicates of the input files in a brand-new subfolder of the task's [working directory[(https://www.ibm.com/docs/en/zos/3.1.0?topic=directories-working-directory)]. Typically, you don't know the name of the directory before runtime -- they vary depending on the backend you are running and the WDL executor itself. Thankfully, at runtime, File-type variables such as `~{input_fastq}` and `~{ref_fasta}` will be replaced with paths to their respective files.
+When running a WDL, a WDL executor will typically place duplicates of the input files in a brand-new subfolder of the task's [working directory](https://www.ibm.com/docs/en/zos/3.1.0?topic=directories-working-directory). Typically, you don't know the name of the directory before runtime -- they vary depending on the backend you are running and the WDL executor itself. Thankfully, at runtime, File-type variables such as `~{input_fastq}` and `~{ref_fasta}` will be replaced with paths to their respective files.
 
 For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_fasta}` would likely end up turning into `./_miniwdl_inputs/0/ref.fa` at runtime. On the other hand, if you were running the exact same workflow with Cromwell, `~{ref_fasta}` would turn into something like `/cromwell-executions/BwaMem/97c9341e-9322-9a2f-4f54-4114747b8fff/call-test_localization/inputs/-2022115965/ref.fa`. Keep in mind that these are the paths of *copies* of the input files, and that sometimes input files can be in different subfolders. For example, it's possible `~{input_fastq}` would be `./_miniwdl_inputs/0/sample.fastq` while `~{ref_fasta}` may be `./_miniwdl_inputs/1/ref.fa`.
 
 For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential. However, this aspect of WDL can occasionally cause issues. bwa mem is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making two assumptions:
+
 * bwa mem assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc)
+
 * bwa mem places its outputs in the same folder as the input fastq
 
 These are two separate problems, but they have the same simple solution: Move the input files directly into the working directory.
@@ -168,7 +170,7 @@ bwa mem \
 However, we may want to avoid assuming that the reference genome is always called ref.fa. We may also want to avoid using a mixture of bash variables and variables-passed-in-from WDL, as keep track of the variables may become difficult. Thankfully, we can use private input variables to address this scenario.
 
 
-### Private inputs
+### Private variables
 Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
 
 ```
@@ -235,16 +237,19 @@ This can lead to some pitfalls:
 
 * Some runtime attributes that are unique to particular backends, such as the Fred Hutch HPC's `walltime` attribute
 
-* The same runtime attribute working differently on different backends, such as `disks` acting differently on Cromwell depending on whether it is running on AWS or GCP (and being ignored on local)
+* The same runtime attribute working differently on different backends, such as `disks` acting differently on Cromwell depending on whether it is running on AWS or GCP
 
 When writing WDL 1.0 workflows with specific hardware requirements, keep in mind what your backend and executor is able to interpret. It is also helpful to consider that other people running your workflow may be doing so on different backends and executors. More information can be found in the appendix, where we talk about designing WDLs for specific backends. For now, we will stick with `memory`, `cpu`, `docker`, and `disks` as this group of four runtime attributes will help us run this workflow on the majority of backends and executors. Even though the Fred Hutch HPC will ignore the `memory` and `disks` attributes, for instance, their inclusion will not cause the workflow to fail, but they will allow the workflow to run on Terra.
 
-It is worth noting that in the [WDL 1.1 spec](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#runtime-section), a very different approach to runtime attributes is taken:
+Although the focus of this course is on WDL 1.0, it is worth noting that in the [WDL 1.1 spec](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#runtime-section), a very different approach to runtime attributes is taken:
 
 > There are a set of reserved attributes (described below) that must be supported by the execution engine, and which have well-defined meanings and default values. Default values for all optional standard attributes are directly defined by the WDL specification in order to encourage portability of workflows and tasks; execution engines should NOT provide additional mechanisms to set default values for when no runtime attributes are defined.
 
+If you are writing WDLs under the WDL 1.1 standard, you may have more flexibility with runtime attributes. Be aware that as of February 2024, Cromwell does not support WDL 1.1.
+
 ### Docker images and containers
 WDL is built to make use of Docker as it makes handling software dependencies much simpler. Docker images can help address all of these situations: 
+
 * Some software is difficult to install or compile on certain systems
 
 * Some programs have conflicting dependencies
@@ -359,6 +364,7 @@ task one_word_per_file {
     Array[File] several_words = glob("*.txt")
   }
 }
+```
 
 `glob()` can also be used to grab just one file via `glob("*.txt")[0]` to grab the first thing that matches the glob. This is usually only necessary if you know the extension of an output, but do not have a way of predicting the rest of its filename. Be aware that if anything else in the working directory has the extension you are searching for, you might accidentally grab that one instead of the one you are looking for!
 
