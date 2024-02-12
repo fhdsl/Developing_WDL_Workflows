@@ -74,3 +74,23 @@ Generally speaking, a WDL executor will try to run as many instances of a scatte
 ## Making our workflow run on multiple samples at once
 
 
+
+
+## Nested arrays
+Our workflow assumes that every sample has a single fastq file, such as `SRR8618962.fastq`. However, fastq files are sometimes split by read direction, resulting in `SRR8618962_1.fastq` and `SRR8618962_2.fastq`. How would we modify our workflow to accept this sort of input, and still be able to run on multiple samples at once?
+
+The first thing to keep in mind is that we no longer represent a single sample as a single `File sampleFastq`, but instead as `Array[File] sampleFastqs`. In real life, fastq files may be split even further than `_1` and `_2`, such as by which lane of an Illumina cell they were sequenced in. The same concept we will go over here can be applied to multilane samples too, but for now we will focus on the `_1` and `_2` case for simplicity. This means that each sample is an array with precisely two values.
+
+Our first step in the workflow is bwa mem, which changes a single sample's fastq file(s) into a single bam file. No matter how many fastqs we input for a single sample, we will always end up with just one bam file to represent that sample. That means that, for this workflow in particular, we only need to change the first task.
+
+
+TODO: edits of bwa call
+
+
+Modifying our workflow to run on multiple samples requires the use of nested arrays. Our workflow-level input `Array[File] sampleFastqs` needs to become `Array[Array[File]] allSampleFastqs`. Each internal array represents a pair of fastqs, which we could enter via JSON like so:
+
+```
+"minidata_mutation_calling_v1.allSampleFastqs": [
+    ["/fh/scratch/delete90/_DaSL/WDL_mini_data/NCIH2172_LUNG/SRR8618962_1.fastq", "/fh/scratch/delete90/_DaSL/WDL_mini_data/NCIH2172_LUNG/SRR8618962_2.fastq"],
+    ["/fh/scratch/delete90/_DaSL/WDL_mini_data/NA12878_Broad/H06JUADXX130110.1.ATCACGAT.20k_interleaved_1.fastq", "/fh/scratch/delete90/_DaSL/WDL_mini_data/NA12878_Broad/H06JUADXX130110.1.ATCACGAT.20k_interleaved_2.fastq"]]
+```
