@@ -40,7 +40,7 @@ workflow minidata_mutation_calling_v1 {
 
 The `referenceGenome` struct contains all the variables related to the reference genome, but values cannot be defined. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.
 
-In our workflow inputs, we declare a `referenceGenome` struct variable called `refGenome` via `referenceGenome refGenome` and removed our original reference genome definitions. We can access the variables within a struct by the following syntax: `structVar.varName`, such as `refGenome.ref_name`.
+In our workflow inputs, we declare a `referenceGenome` struct variable called `refGenome` via `referenceGenome refGenome` and removed our original reference genome definitions. We can access the variables within a struct by the following syntax: `structVar.varName`, such as `refGenome.ref_name`. The [WDL syntax specs](https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#struct-definition) has more information on how to define and use structs.
 
 To give values to `refGenome`, we need to modify our JSON metadata file. We define `refGenome` variable in a nested structure that corresponds to the `referenceGenome` struct. Let's take a look:
 
