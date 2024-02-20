@@ -12,7 +12,7 @@ The workflow used as the example  here is tailored to detect somatic mutations i
 
 The workflow schematic:
 
-workflow-schematic-goes-here
+![Workflow Diagram](assets/WDL_101_Course.png)
 
 The tasks involved:
 
