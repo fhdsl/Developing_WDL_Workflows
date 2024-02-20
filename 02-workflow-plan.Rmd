@@ -8,7 +8,7 @@ Our WDL guide will center around building a workflow from scratch. As we build o
 
 ## Somatic mutation calling workflow
 
-The workflow that we will build is a somatic mutation calling workflow on paired cancer-normal samples. Our workflow is inspired from a somatic mutation calling [workflow](https://github.com/FredHutch/tg-wdl-LILAC-workflow/blob/master/GATK4.1.4.0/GATK4.1.4.0_manta.wdl) by the [Berger Lab](https://research.fredhutch.org/berger/en.html) at the Fred Hutch Cancer Center, and a somatic mutation calling [workflow](https://gatk.broadinstitute.org/hc/en-us/articles/360035894731-Somatic-short-variant-discovery-SNVs-Indels-) by the GATK team at the Broad Institute. The workflow takes in FASTQ-formatted sequencing data from pairs of tumor and normal samples. The workflow then aligns the FASTQs of each sample to the human reference genome, marks PCR duplicates, and recalibrates base quality. As a final step, the workflow performs somatic mutation calling on the tumor and normal samples, comparing the two of them to see how the tumor and normal samples differ from each other.
+The workflow used as the example  here is tailored to detect somatic mutations in two tumor samples. Initially, the workflow takes as input FASTQ-formatted sequencing data from two tumor specimens and one normal sample (a single normal sample is used here, but typically each tumor might have its own associated normal). Subsequently, it aligns the FASTQ files of each sample with the human reference genome (hg19), proceeds to identify and mark PCR duplicates, and conducts base quality recalibration. Following these steps, the workflow engages in somatic mutation calling, operating in a paired mode, to pinpoint mutations unique to the tumor samples in comparison to the normal one. Concluding the process, the workflow undertakes the annotation of the identified mutations, enriching the dataset with additional insights into the nature of the mutations detected.
 
 The workflow schematic:
 
@@ -16,10 +16,10 @@ workflow-schematic-goes-here
 
 The tasks involved:
 
-1.  `BwaMem` aligns the samples to the reference genome.
+1.  `BwaMem` aligns the samples to the reference genome (hg19).
 2.  `MarkDuplicates` marks PCR duplicates.
-3.  `ApplyBaseRecalibrator` applies base recalibration.
-4.  `Mutect2` performs somatic mutation calling.
+3.  `ApplyBaseRecalibrator` perform base quality recalibration.
+4.  `Mutect2` performs paired somatic mutation calling.
 5.  `annovar` annotates the called somatic mutations.
 
 ## Workflow testing strategy
