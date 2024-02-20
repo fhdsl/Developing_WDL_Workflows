@@ -15,21 +15,10 @@ Welcome!
 
 A WDL workflow consists of at least one task.
 
-<!-- resources/basic_01.wdl -->
 
-```         
-version 1.0
+<iframe src="resources/basic_01.wdl"></iframe>
 
-task do_something {
-    command <<<
-        exit 0
-    >>>
-}
 
-workflow my_workflow {
-    call do_something
-}
-```
 
 A workflow, and the tasks it calls, generally has inputs.
 
