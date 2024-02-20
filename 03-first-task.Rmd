@@ -366,10 +366,11 @@ task one_word_per_file {
 
 `glob()` can also be used to grab just one file via `glob("*.txt")[0]` to grab the first thing that matches the glob. This is usually only necessary if you know the extension of an output, but do not have a way of predicting the rest of its filename. Be aware that if anything else in the working directory has the extension you are searching for, you might accidentally grab that one instead of the one you are looking for!
 
-## Putting it all together
+## The whole task
+
 We've now designed a bwa mem task that can run on essentially any backend that supports WDL and can handle the hardware requirements. Issues involving bwa mem expecting reference files to be in the same folder and/or putting output files into input folders have been sidestepped thanks to careful design and consideration. The runtime section clearly defines the expected hardware requirements, and the outputs section defines what we expect the task to give us when all is said and done. We're now ready to continue with the rest of our workflow.
 
-```
+```         
 task BwaMem {
   input {
     File input_fastq
@@ -417,4 +418,60 @@ task BwaMem {
     disks: "local-disk 100 SSD"
   }
 }
-  ```
+```
+
+## Putting the workflow together
+
+A workflow is needed to run the `BwaMem` task we just built. The workflow's input variables are defined by the workflow JSON metadata, and are then passed on as inputs in our `BwaMem` call. When the `BwaMem` call is complete, the workflow's output File variable is defined based on the task's output. Lastly, we have a parameter_meta component in our workflow that describes each workflow input variable as documentation.
+
+```         
+version 1.0
+
+workflow minidata_test_alignment {
+  input {
+    # Sample info
+    File sampleFastq
+    # Reference Genome information
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+  }
+
+  #  Map reads to reference
+  call BwaMem {
+    input:
+      input_fastq = sampleFastq,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      ref_dict = ref_dict,
+      ref_amb = ref_amb,
+      ref_ann = ref_ann,
+      ref_bwt = ref_bwt,
+      ref_pac = ref_pac,
+      ref_sa = ref_sa
+  }
+   
+  # Outputs that will be retained when execution is complete
+  output {
+    File alignedBamSorted = BwaMem.analysisReadySorted
+  }
+
+  parameter_meta {
+    sampleFastq: "Filepath to sample .fastq"
+    ref_fasta: "Filepath to reference genome"
+    ref_fasta_index: "Filepath to reference genome index"
+    ref_dict: "Filepath to reference genome dictionary"
+    ref_amb: "Filepath to reference genome info"
+    ref_ann: "Filepath to reference genome info"
+    ref_bwt: "Filepath to reference genome info"
+    ref_pac: "Filepath to reference genome info"
+    ref_sa: "Filepath to reference genome info"
+  }
+# End workflow
+}
+```
