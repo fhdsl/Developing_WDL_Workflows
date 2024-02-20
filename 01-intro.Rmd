@@ -16,7 +16,7 @@ Welcome!
 A WDL workflow consists of at least one task.
 
 
-<iframe src="resources/basic_01.wdl"></iframe>
+<iframe src="https://raw.githubusercontent.com/fhdsl/WDL_Workflows_Guide/main/resources/basic_01.wdl"></iframe>
 
 
 
