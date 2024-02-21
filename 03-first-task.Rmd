@@ -152,7 +152,7 @@ task BwaMem {
 Some backends/executors do not support `mv` acting on input files. If you are running into problems with this and are working with miniwdl, the `--copy-input-files` flag will usually allow `mv` to work. You could also simply use `cp` to copy the files instead of move them, although this may not be an efficient use of disk space, so consider using `mv` if your target backends and executors can handle it.
 :::
 
-With our files now all in the working directory, we can turn our attention to the bwa task itself. We can no longer directly pass in ~{ref_fasta} or any of the other files we mved into the working directory, because those variables will point to a non-existent file in a now-empty input directory. There are several ways to solve this problem:
+With our files now all in the working directory, we can turn our attention to the bwa task itself. We can no longer directly pass in `~{ref_fasta}` or any of the other files we mved into the working directory, because those variables will point to a non-existent file in a now-empty input directory. There are several ways to solve this problem:
 
 * Assuming the filename of an input is constant, which might be a safe assumption for reference files
 
