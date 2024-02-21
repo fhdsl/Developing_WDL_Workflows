@@ -154,7 +154,12 @@ For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_
 
 For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential. However, this aspect of WDL can occasionally cause issues. bwa mem is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making an assumption about some of your input files. Specifically, bwa mem assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc), and it does not allow you to specify otherwise.
 
+<details>
+<summary><b>Another example of file localization issue.</b></summary>
+
 bwa is not the only program that makes assumptions about where files are located, and assumptions being made do not only affect reference genome files. Bioinformatics programs that take in some sort of index file requently assume that index file is located in the same directory as the non-index input. For example, if you were to pass in `SAMN1234.bam` into [covstats](https://github.com/brentp/goleft/tree/master/covstats), it would expect an index file named `SAMN1234.bam.bai` or `SAMN1234.bai` in the same directory as the bam file, [as seen in the source code here](https://github.com/brentp/goleft/blob/fa6b00d20d1f73a068ffbab49a5769d173cae56d/covstats/covstats.go#L239). As there is no way to specify that the index file manually, you need to take that into consideration when writing WDLs involving covstats, bwa, and other similar tools.
+
+</details>
 
 Thankfully, the solution here is simple: Move all of the input files directly into the working directory.
 
@@ -204,10 +209,10 @@ With our files now all in the working directory, we can turn our attention to th
 
 * Using the WDL built-in basename() function along with private variables
 
-We recommend using the last option, as it works for essentially any input and may be more intuitive than the bash basename function. The next section will provide an example.
+We recommend using the last option, as it works for essentially any input and may be more intuitive than the bash basename function. [OpenWDL explains](https://docs.openwdl.org/en/stable/WDL/basename/) how `basename()` works. The next section will provide an example.
 
 ### Private variables
-Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
+Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables. In our case, we create `String ref_fasta_local` as `ref_fasta`'s file base name to refer to the files we have moved to the working directory. We also create `String base_file_name` as `input_fastq`'s file base name and use it to name our output files, such as `"~{base_file_name}.sorted_query_aligned.bam"`. 
 
 ```
 task BwaMem {
