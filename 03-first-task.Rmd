@@ -282,11 +282,16 @@ This can lead to some pitfalls:
 
 When writing WDL 1.0 workflows with specific hardware requirements, keep in mind what your backend and executor is able to interpret. It is also helpful to consider that other people running your workflow may be doing so on different backends and executors. More information can be found in the appendix, where we talk about designing WDLs for specific backends. For now, we will stick with `memory`, `cpu`, `docker`, and `disks` as this group of four runtime attributes will help us run this workflow on the majority of backends and executors. Even though the Fred Hutch HPC will ignore the `memory` and `disks` attributes, for instance, their inclusion will not cause the workflow to fail, but they will allow the workflow to run on Terra.
 
+<details>
+<summary><b>Some differences between WDL 1.0 and 1.1 on Runtime attributes.</b></summary>
+
 Although the focus of this course is on WDL 1.0, it is worth noting that in the [WDL 1.1 spec](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#runtime-section), a very different approach to runtime attributes is taken:
 
 > There are a set of reserved attributes (described below) that must be supported by the execution engine, and which have well-defined meanings and default values. Default values for all optional standard attributes are directly defined by the WDL specification in order to encourage portability of workflows and tasks; execution engines should NOT provide additional mechanisms to set default values for when no runtime attributes are defined.
 
 If you are writing WDLs under the WDL 1.1 standard, you may have more flexibility with runtime attributes. Be aware that as of February 2024, Cromwell does not support WDL 1.1.
+
+</details>
 
 ### Docker images and containers
 WDL is built to make use of Docker as it makes handling software dependencies much simpler. Docker images can help address all of these situations: 
@@ -301,7 +306,12 @@ WDL is built to make use of Docker as it makes handling software dependencies mu
 
 When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. This container sandbox is derived from a template called a Docker image, which packages installed software in a special filesystem. This is one of the main features of a Docker image -- because a Docker image packages the software you need, you can skip much of the installation and dependency issues associated with using new software, and because you take actions within a Docker container sandbox, it's unlikely for you to "mess up" your main system's files. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine, and the official Docker GUI is called Docker Desktop.
 
+<details>
+<summary><b>More information on finding and developing Docker images. </b></summary>
+
 Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles -- plaintext files which compile Docker images when run via `docker build` -- to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
+
+</details>
 
 
 
@@ -328,6 +338,11 @@ Another way of writing this is with string concatenation. This is equivalent to 
 
 If the output was not in the working directory, we would need to change the output to point to the file's path relative to the working directory, such as `File analysisReadyBam = "some_folder/~{base_file_name}.aligned.bam"`.
 
+Below are some some additional ways you can handle task outputs.
+
+<details>
+<summary><b>Ouputs as functions of other outputs in the same task.</b></summary>
+
 Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
 
 ```
@@ -350,6 +365,12 @@ task add_one {
 ::: {.notice data-latex="warning"}
 Cromwell does not fully support outputs being a function of the same task's other outputs. On the Terra backend, the above code example would cause an error.
 :::
+
+</details>
+
+
+<details>
+<summary><b>Grabbing multiple outputs at the same time</b></summary>
 
 To grab multiple outputs at the same time, use glob() to create an array of files. We'll also take this opportunity to demonstrate iterating through a bash array created from an Array[String] input -- for more information on this data type, see chapter six of this course.
 
@@ -374,6 +395,9 @@ task one_word_per_file {
 ```
 
 `glob()` can also be used to grab just one file via `glob("*.txt")[0]` to grab the first thing that matches the glob. This is usually only necessary if you know the extension of an output, but do not have a way of predicting the rest of its filename. Be aware that if anything else in the working directory has the extension you are searching for, you might accidentally grab that one instead of the one you are looking for!
+
+</details>
+
 
 ## The whole task
 
