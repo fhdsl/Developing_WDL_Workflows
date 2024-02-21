@@ -152,21 +152,15 @@ task BwaMem {
 Some backends/executors do not support `mv` acting on input files. If you are running into problems with this and are working with miniwdl, the `--copy-input-files` flag will usually allow `mv` to work. You could also simply use `cp` to copy the files instead of move them, although this may not be an efficient use of disk space, so consider using `mv` if your target backends and executors can handle it.
 :::
 
-With our files now all in the working directory, we can turn our attention to the bwa task itself. We can no longer directly pass in `~{ref_fasta}` or `~{input_fastq}`, because those variables will point to a non-existent file in a now-empty input directory. For the reference fasta, if we know for sure that the user will always pass in a file named `ref.fa`, we could hardcode that. For the input fastq, we can use the built-in bash function basename. That would leave us with something like this:
+With our files now all in the working directory, we can turn our attention to the bwa task itself. We can no longer directly pass in ~{ref_fasta} or any of the other files we mved into the working directory, because those variables will point to a non-existent file in a now-empty input directory. There are several ways to solve this problem:
 
-```
-# create a bash variable named fastq which is the basename of the input fastq
-# be aware that this variable only exists in the scope of this task's command section
-fastq="$(basename -- ~{input_fastq})"
+* Assuming the filename of an input is constant, which might be a safe assumption for reference files
 
-# actually run bwa mem
-bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
-      ref.fa $fastq > my_nifty_output.sam 
-```
+* Using the bash built-in basename function
 
-However, we may want to avoid assuming that the reference genome is always called ref.fa. We may also want to avoid using a mixture of bash variables and variables-passed-in-from WDL, as keep track of the variables may become difficult. Thankfully, we can use private input variables to address this scenario.
+* Using the WDL built-in basename() function along with private variables
 
+We recommend using the last option, as it works for essentially any input and may be more intuitive than the bash basename function. The next section will provide an example.
 
 ### Private variables
 Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables.
