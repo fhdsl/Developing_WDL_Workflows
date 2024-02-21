@@ -55,7 +55,7 @@ Within the command section, we refer to those variables using `~{this}` syntax. 
 
 A WDL task's input variables are generally referred to in the command section using a tilde (~) and curly braces, using heredoc syntax. 
 
-<detail>
+<details>
 <summary> <b>Why we use heredox syntax.</b></summary>
 
 ### Heredoc-style syntax versus braces syntax
