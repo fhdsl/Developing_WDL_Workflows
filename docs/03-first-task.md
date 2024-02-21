@@ -2,6 +2,8 @@
 
 # The first task
 
+after making a public gist...
+<script src="https://gist.github.com/carriewright11/4fb8f0ba412b1d8e35953aa97ff17199.js"></script>
 
 ## Anatomy of a task
 ```
