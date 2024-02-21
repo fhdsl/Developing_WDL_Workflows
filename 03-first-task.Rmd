@@ -58,7 +58,6 @@ A WDL task's input variables are generally referred to in the command section us
 <details>
 <summary> <b>Why we use heredox syntax.</b></summary>
 
-### Heredoc-style syntax versus braces syntax
 You may see WDLs that use this notation for the command section in a task:
 
 ```
