@@ -11,9 +11,14 @@ troubleshooting
 dockerexception
 missing-required-inputs
 check-json-input
-defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow
-the-workflow
-the-test-data
+defining-a-workflow-plan
+somatic-mutation-calling-workflow
+workflow-testing-strategy
+test-samples
+tumor-1-hcc4006
+tumor-2-calu1
+normal-molm13
+test-data-details
 the-first-task
 inputs
 referencing-inputs-in-the-command-section
