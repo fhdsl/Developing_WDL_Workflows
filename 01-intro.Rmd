@@ -172,6 +172,8 @@ Resources:
 
 <ul>
 
+<li>For more basic examples of WDL workflow with a single task, we recommend [OpenWDL's documentation on WDL's base structure](https://docs.openwdl.org/en/stable/WDL/Base_structure/).</li>
+
 <li>For more information on types in WDL, we recommend [OpenWDL's documentation on variable types](https://docs.openwdl.org/en/stable/WDL/variable_types/).</li>
 
 <li>If you are having difficulty writing valid JSON files, considering using <https://jsonlint.com/> to check your JSON for any errors.</li>
@@ -179,14 +181,24 @@ Resources:
 </ul>
 :::
 
+
+## Running WDL via a computing engine
+
+In order to run a WDL workflow, we need a computing engine to execute it. The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs on a local machine, High Performance Computing (HPC), or cloud computing backend. If you are trying to run WDL at Fred Hutch Cancer Center's HPC system, you should use the PROOF executor. 
+
+If you are computing on a HPC or the Cloud, you should find the best practice of running a WDL computing engine based on your institution's information technology system. 
+
+If you are computing locally on your computer, below is a short guide on how to set that up. 
+
+
 <details>
 
-<summary>How to run simple workflows locally</summary>
+<summary><b>How to run simple workflows locally</b></summary>
 
 
 Not every WDL workflow will run well on a laptop, but it can be helpful to have a basic setup for testing and catching simple syntax errors. Let's quickly set up a WDL executor to run our WDLs.
 
-The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs on a local machine, HPC, or cloud computing backend. In this course, we will be using miniwdl, but everything in this course will also be compatible with Cromwell unless explicitly stated otherwise. Additionally, almost all WDLs use Docker images, so you will also need to install Docker or a Docker-like alternative.
+ In this course, we will be using miniwdl, but everything in this course will also be compatible with Cromwell unless explicitly stated otherwise. Additionally, almost all WDLs use Docker images, so you will also need to install Docker or a Docker-like alternative.
 
 **Installing Docker and miniwdl is not required to use this course.** We don't want anybody to get stuck here! If you already have a method for submitting workflows, such as Terra, feel free to use that for this course instead of running workflows directly on your local machine. If you don't have any way of running workflows at the moment, that's also okay -- we have provided plenty of examples for following along.
 
