@@ -424,6 +424,7 @@ task BwaMem {
 
 A workflow is needed to run the `BwaMem` task we just built. The workflow's input variables are defined by the workflow JSON metadata, and are then passed on as inputs in our `BwaMem` call. When the `BwaMem` call is complete, the workflow's output File variable is defined based on the task's output. Lastly, we have a parameter_meta component in our workflow that describes each workflow input variable as documentation.
 
+For the workflow to actually "see" the task, the task will either need to be imported at the top of the workflow (just under the `version 1.0` string), or included in the same file as the workflow. For simplicity, we will put the workflow and the task in the same file.
 ```         
 version 1.0
 
@@ -473,6 +474,54 @@ workflow minidata_test_alignment {
     ref_sa: "Filepath to reference genome info"
   }
 # End workflow
+}
+
+task BwaMem {
+  input {
+    File input_fastq
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    Int threads = 16
+  }
+  
+  String base_file_name = basename(input_fastq, ".fastq")
+  String ref_fasta_local = basename(ref_fasta)
+
+  command <<<
+    set -eo pipefail
+
+    mv "~{ref_fasta}" .
+    mv "~{ref_fasta_index}" .
+    mv "~{ref_dict}" .
+    mv "~{ref_amb}" .
+    mv "~{ref_ann}" .
+    mv "~{ref_bwt}" .
+    mv "~{ref_pac}" .
+    mv "~{ref_sa}" .
+
+    bwa mem \
+      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
+      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
+    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
+    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
+
+  >>>
+  output {
+    File analysisReadyBam = "~{base_file_name}.aligned.bam"
+    File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
+  }
+  runtime {
+    memory: "48 GB"
+    cpu: 16
+    docker: "fredhutch/bwa:0.7.17"
+    disks: "local-disk 100 SSD"
+  }
 }
 ```
 
