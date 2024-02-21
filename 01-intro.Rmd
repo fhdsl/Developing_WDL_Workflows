@@ -20,6 +20,8 @@ We will do some review of the WDL syntax. A WDL workflow consists of at least on
 
 </iframe>
 
+<iframe title="Silly iframe attempt copy pasted from elsewhere" aria-label="this might not work" id="datawrapper-chart-bdqZJ" src="https://raw.githubusercontent.com/fhdsl/WDL_Workflows_Guide/main/resources/basic_01.wdl" scrolling="yes" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="359"></iframe><script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(e){if(void 0!==e.data["datawrapper-height"]){var t=document.querySelectorAll("iframe");for(var a in e.data["datawrapper-height"])for(var r=0;r<t.length;r++){if(t[r].contentWindow===e.source)t[r].style.height=e.data["datawrapper-height"][a]+"px"}}}))}();</script>
+
 ```         
 version 1.0
 
