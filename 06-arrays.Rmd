@@ -15,10 +15,7 @@ We have a workflow that runs on a single sample. What if we want to process mult
 - How arrays differ from Structs
 
 ## The array type
-
-
-
-
+Arrays are essentially lists of another [primative type](https://en.wikipedia.org/wiki/Primitive_data_type). It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primative type. For example, an Array[String] could contain the strings "cat" and "dog" but not the integer 1965 (however, it could have "1965" as a string).
 
 ## Referencing an array in a task
 
@@ -68,6 +65,9 @@ task count_words_python {
 
 
 ## Scattered tasks
+Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample's chromosomes in parallel, or similiar situations where breaking up data into discrete "chunks" makes sense.
+
+It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the `cpu` WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially "unaware" of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.
 
 ### Troubleshooting
 Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintutive. If you are running into issues running scattered tasks on optional types, please see the section on optional types. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.
