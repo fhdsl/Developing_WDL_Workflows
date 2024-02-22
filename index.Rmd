@@ -25,12 +25,12 @@ The course is intended for first time developers of the [WDL workflow language](
 
 By the end of this course, you will be able to:
 
-- **Comprehend** WDL syntax including 
+- **Comprehend** WDL syntax and **read** a WDL file
 - **Build** a basic workflow using tasks and software environments
-- **Execute** a WDL workflow on a computing engine such as 
-    - Cromwell
-    - miniWDL
-    - or a cloud computing environment such as Terra, AnVIL, or Dockstore. 
+- **Execute** a WDL workflow on 
+    - Your local computer
+    - An HPC cluster
+    - Cloud Computing Platforms (Terra, AnVIL, Dockstore, DNAnexus)
 
 ## Why WDL?
 
