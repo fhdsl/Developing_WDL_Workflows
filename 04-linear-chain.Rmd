@@ -18,50 +18,7 @@ We do this via a **linear chain**, in which we feed the output of one task to th
 
 We can easily connect tasks together because of the following: *The output variables of a task can be accessed at the workflow level as inputs for the subsequent task.*
 
-For instance, in this dummy `LinearChain` workflow below, after the task `stepA` is called, its task output `out` can be accessed at the workflow level as inputs for the task `stepB` in the form of `stepA.out`. This example is adapted from [OpenWDL Docs](https://docs.openwdl.org/en/latest/WDL/Linear_chaining/)' introduction to linear chain, which has more [introductory examples and variations of writing linear chains](https://docs.openwdl.org/en/latest/WDL/add_plumbing/).
-
-```         
-version 1.0
-workflow LinearChain {
-  input {
-    File firstInput
-  }
-  call stepA { 
-    input: 
-      in = firstInput
-  }
-  call stepB {
-   input:
-     in = stepA.out
-  }
-}
-
-task stepA {
-  input {
-    File in
-  }
-  command <<<
-    programA I=~{in} O=outputA.ext
-  >>>
-  output { 
-    File out = "outputA.ext"
-  }
-}
-
-task stepB {
-  input {
-    File in
-  }
-  command <<<
-    programB I=~{in} O=outputB.ext
-  >>>
-  output { 
-    File out = "outputB.ext"
-  }
-}
-```
-
-Now let's see how this applies to our workflow: we will take the output of `BwaMem` task into the input of the `MarkDuplicates` task. Recall that in the `BwaMem` task, the **output** section of the task is the following:
+For instance, let's see the output of our `BwaMem` task.
 
 ```         
 output {
@@ -70,7 +27,8 @@ output {
   }
 ```
 
-The File variables `analysisReadyBam` and `analysisReadySorted` can now be accessed anywhere in the workflow block after the `BwaMem` task as `BwaMem.``analysisReadyBam` and `BwaMem.analysisReadySorted`, respectively. Therefore, we call our next task `MarkDuplicates` with input `BwaMem.analysisReadySorted`:
+The File variables `analysisReadyBam` and `analysisReadySorted` can now be accessed anywhere in the workflow block after the `BwaMem` task as `BwaMem.``analysisReadyBam` and `BwaMem.analysisReadySorted`, respectively. Then, we will take the output of `BwaMem` task into the input of the `MarkDuplicates` task: we call our next task `MarkDuplicates` with input `BwaMem.analysisReadySorted` from the `BwaMem` task:
+
 
 ```         
 workflow minidata_mutation_calling_v1 {
@@ -86,16 +44,6 @@ workflow minidata_mutation_calling_v1 {
     File ref_bwt
     File ref_pac
     File ref_sa
-    File dbSNP_vcf
-    File dbSNP_vcf_index
-    File known_indels_sites_VCFs
-    File known_indels_sites_indices
-    File af_only_gnomad
-    File af_only_gnomad_index
-    File annovarTAR
-    String annovar_protocols
-    String annovar_operation
-    String ref_name
   }
     
   # Map reads to reference
@@ -119,6 +67,21 @@ workflow minidata_mutation_calling_v1 {
 }
 ```
 
+::: {.notice data-latex="notice"}
+Resources:
+
+<ul>
+
+<li>For a basic introduction to linear chain, see [OpenWDL Docs](https://docs.openwdl.org/en/latest/WDL/Linear_chaining/)' introduction./li>
+
+<li>To see other examples of linear chain and variations, see [OpenWDL Docs](https://docs.openwdl.org/en/latest/WDL/add_plumbing/)'s section on workflow plumbing. </li>
+
+</ul>
+:::
+
+
+
+
 ## Writing `MarkDuplicates` task
 
 Of course, the task `MarkDuplicates` hasn't been written yet! Let's go through it together:
@@ -137,7 +100,7 @@ task MarkDuplicates {
 
 ### Private variables in the task
 
-Similar to the `BwaMem` task, we will need to specify output files as Strings, relative to the working directory. We will name our output files based on the base name of the original input file in the workflow. Therefore, it makes sense to create a private String variable `base_file_name` that contains this base name based on `input_bam`. We will use `base_file_name` downstream in the Command section to specify the output bam and metrics files.
+Similar to the `BwaMem` task, we will name our output files based on the base name of the original input file in the workflow. Therefore, it makes sense to create a private String variable `base_file_name` that contains this base name of `input_bam`. We will use `base_file_name` in the Command section to specify the output bam and metrics files.
 
 ```         
 task MarkDuplicates {
@@ -150,7 +113,7 @@ task MarkDuplicates {
 
 ### Command
 
-As we have been doing all along, we refer to those any defined variables from the input or private variables using \~{this} syntax.
+As we have been doing all along, we refer to any defined variables from the input or private variables using \~{this} syntax.
 
 ```         
 task MarkDuplicates {
@@ -162,9 +125,9 @@ task MarkDuplicates {
 
   command <<<
     gatk MarkDuplicates \
-      --INPUT ~{input_bam} \
-      --OUTPUT ~{base_file_name}.duplicates_marked.bam \
-      --METRICS_FILE ~{base_file_name}.duplicate_metrics \
+      --INPUT "~{input_bam}" \
+      --OUTPUT "~{base_file_name}.duplicates_marked.bam" \
+      --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
@@ -188,9 +151,9 @@ Below is the task all together. It has a form very similar to our first task `Bw
 
   command <<<
     gatk MarkDuplicates \
-      --INPUT ~{input_bam} \
-      --OUTPUT ~{base_file_name}.duplicates_marked.bam \
-      --METRICS_FILE ~{base_file_name}.duplicate_metrics \
+      --INPUT "~{input_bam}" \
+      --OUTPUT "~{base_file_name}.duplicates_marked.bam" \
+      --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
@@ -220,16 +183,6 @@ We build out the rest of the tasks in a very similar fashion. Tasks `ApplyBaseRe
 
 ```         
 version 1.0
-## Notes: Testing if alignement for 1 sample will work
-## Samples:NCIH2172_LUNG : Cell-line with EGFR L858R mutation
-##
-## Input requirements:
-## - fastq files for reference and alternative
-##
-## Output Files:
-## - An aligned bam for 1 sample
-## 
-## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 01/10/24 for use by DaSL @ Fred Hutch.
 
 workflow minidata_mutation_calling_v1 {
   input {
@@ -321,9 +274,6 @@ workflow minidata_mutation_calling_v1 {
     File Mutect_AnnotatedTable = annovar.output_annotated_table
   }
 }
-
-
-
 
 
 
