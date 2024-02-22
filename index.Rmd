@@ -38,7 +38,7 @@ Of course, nothing is free. WDL does require you to understand the basic concept
  - Understanding the WDL framework
  - WDLizing your bash scripts into tasks
 
-If you can write your workflow up as a bash script, you can WDLize it. It just takes some patience to get all of the pieces in place.
+If you're just starting, don't worry! This guide is for you. If you can write your workflow up as a bash script, you can WDLize it. It just takes some patience to get all of the pieces in place.
 
 ## Curriculum
 
