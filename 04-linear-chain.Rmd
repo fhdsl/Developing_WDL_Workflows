@@ -72,7 +72,7 @@ Resources:
 
 <ul>
 
-<li>For a basic introduction to linear chain, see [OpenWDL Docs](https://docs.openwdl.org/en/latest/WDL/Linear_chaining/)' introduction./li>
+<li>For a basic introduction to linear chain, see [OpenWDL Docs](https://docs.openwdl.org/en/latest/WDL/Linear_chaining/)' introduction. </li>
 
 <li>To see other examples of linear chain and variations, see [OpenWDL Docs](https://docs.openwdl.org/en/latest/WDL/add_plumbing/)'s section on workflow plumbing. </li>
 
