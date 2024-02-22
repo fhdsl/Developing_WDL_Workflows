@@ -23,11 +23,22 @@ The course is intended for first time developers of the [WDL workflow language](
 
 ## Why WDL?
 
+### WDL Pros
+
 You may have encountered other workflow tools, such as make and snakemake, and those are highly capable. WDL has some really helpful advantages compared to other frameworks:
 
 - **Portability** - WDL can run on nearly any system, whether it be your local computer, or on an HPC cluster, or on the Cloud, with platforms such as DNAnexus. In fact, a lot of developers will prototype a WDL workflow on their own local computer before moving it to the cloud.
 - **Reproducibility**. Ever have the headache of having to reproduce the exact package versions to get your workflow to work again? If you use Docker containers to specify your software environment, you do not have to worry about this headache. A workflow will run identically locally, on HPC, or the cloud.
 - **Sharing**. A WDL workflow is much easier to share with colleagues and is a good way to get credit for work you do everyday. If you spent time building it, why not share it? WDL is also an open standard and supported by a number of software tools. 
+
+### WDL Cons
+
+Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:
+ - Basics of Docker and Dockerfiles
+ - Understanding the WDL framework
+ - WDLizing your bash scripts into tasks
+
+If you can write your workflow up as a bash script, you can WDLize it. It just takes some patience to get all of the pieces in place.
 
 ## Curriculum
 
