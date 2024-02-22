@@ -6,7 +6,7 @@ ottrpal::set_knitr_image_path()
 
 In our workflow so far, we see that certain variables are always used together, even for different tasks. For example, variables related to the reference genome are always used for the same purpose and passed on to tasks in almost the same way. This leads to quite a bit of coding redundancy, as when we write down the large set of variables related to the reference genome as task inputs, we are just thinking about one entity. We don't make distinctions of the reference genome files until the task body itself.
 
-To improve code organization and readability, we can package all variables related to the reference genome into a compound data structure called a **struct**. With a struct variable, we can refer all the packaged variables as one single variable, and also refer to specific variables within the struct without losing any information.
+To improve code organization and readability, we can package all variables related to the reference genome into a compound data structure called a **struct**. With a struct variable, we can refer all the packaged variables as one single variable, and also refer to specific variables within the struct without losing any information. [OpenWDL Docs](https://docs.openwdl.org/en/stable/WDL/using_structs/) also has an excellent introduction and examples on structs.
 
 To define a struct, we must declare it outside of a `workflow` and `task`:
 
@@ -38,7 +38,7 @@ workflow minidata_mutation_calling_v1 {
 }
 ```
 
-The `referenceGenome` struct contains all the variables related to the reference genome, but values cannot be defined. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.
+The `referenceGenome` struct contains all the variables related to the reference genome, but values cannot be defined here. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.
 
 In our workflow inputs, we declare a `referenceGenome` struct variable called `refGenome` via `referenceGenome refGenome` and removed our original reference genome definitions. We can access the variables within a struct by the following syntax: `structVar.varName`, such as `refGenome.ref_name`. The [WDL syntax specs](https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#struct-definition) has more information on how to define and use structs.
 
