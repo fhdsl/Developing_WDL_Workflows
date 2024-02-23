@@ -314,3 +314,75 @@ check JSON input; unknown input/output: greetings.username
 Double-check your input JSON. The first part of your JSON's keys refer to the name of the workflow in the WDL file, not the filename of the WDL itself. Even though our WDL is saved as `greetings.wdl`, within that file, the workflow is named `my_workflow`. This means that the input JSON must say `"my_workflow.username"`, not `"greetings.username"`.
 
 Other common issues with JSON files are mistyping input variables (such as `"my_workflow.ussername"`) or forgetting to enclose strings in quotation marks. When in doubt, try using <https://jsonlint.com/> to check your input JSON, and double-check the name of your input variables.
+
+
+
+
+
+
+
+
+
+
+
+
+# FIND ME A HOME
+
+This content should be somewhere here ? This is from the WDL 101 docs and doesnt fit right over there !
+## Runtime Variables
+
+Cromwell can help run WDL workflows on a variety of computing resources such as SLURM clusters (like the Fred Hutch cluster), as well as AWS, Google and Azure cloud computing systems.  Using WDL workflows allows users to focus on their workflow contents rather than the intricacies of particular computing platform.  However, there are optimizations of how those workflows run that may be specific to each computing tool or task in your workflow.  Writing your workflow as a WDL allows you to more easily request only the resources each individual task will use each time a job is submitted to the Gizmo cluster.  This allows you to maximize the utilization of the computing resources you request and lets you run workflows much faster than using a single request for a SLURM job and working within that allocation (such as via a `grabnode` process or single bash script).  
+
+We'll discuss some of the available customizations to help you run WDLs on our cluster that still allow those workflows to be portable to other computing platforms.  
+
+
+### Standard Runtime Variables
+
+These runtime variables can be used on any computing platform, and the values given here are the defaults for our Fred Hutch configuration if there is a default set.  
+
+- `cpu: 1`
+  - An integer number of cpus you want for the task. 
+- `memory: 2000`
+  - An integer number of MB of memory you want to use for the task.  Other formats that are accepted include: `"memory: 2GB"`, `"memory: taskMemory + "GB""` (in this case the memory to use is a variable called `taskMemory` and is specified in a task itself. 
+- `docker: `
+  - A specific Docker container to use for the task. An example of the value for this variable is: `"ubuntu:latest"`.  No default container is specified in our configuration and this runtime variable should only be used if/when a task should be run inside a docker container, in which case you'll want to specify both the container name and specific version.  If left unset or left out of the runtime block of a task completely, the Fred Hutch configuration will run the task as a regular job and not use docker containers at all.  For the custom Hutch configuration, docker containers can be specified and the necessary conversions (to Singularity) will be performed by Cromwell (not the user).  
+  > Note: when docker is used, soft links cannot be used in our filesystem, so workflows using very large datasets may run slightly slower due to the need for Cromwell to copy files rather than link to them.  
+
+
+### Fred Hutch Custom Runtime Variables
+For the `gizmo` cluster, the following custom runtime variables are available (below we show each variable with its current default value). You can change these variables in the `runtime` block for individual tasks in a WDL file. These variables are not variables that will be understood by Cromwell or other WDL engines when the workflow is not being run on the Fred Hutch cluster!  
+
+>Note: when values are specified in the runtime blocks of individual tasks in a workflow, those values will override these defaults for that task only!!
+
+
+- `walltime: "18:00:00"`
+  - A string ("HH:MM:SS") that specifies how much time you want to request for the task. Can also specify >1 day, e.g. "1-12:00:00" is 1 day+12 hours.
+- `partition:  "campus-new"`
+  - Which cluster partition to use. The default is `campus-new`: other options currently include `restart` or `short` but check [SciWiki](https://sciwiki.fredhutch.org/scicomputing/) for updated information. 
+- `modules: ""`
+  - A space-separated list of the environment modules you'd like to load (in that order) prior to running the task.  See below for more about software modules.
+- `dockerSL: `
+  - This is a custom configuration for the Hutch that allows users to use docker and softlinks only to specific locations in Scratch.  It is helpful when working with very large files. An example of the value for this variable is: `"ubuntu:latest"`. Just like the `docker:` runtime variable, only specify this if you want the task to run in a container (otherwise the default will be a non-containerized job). 
+- `account: `
+  - This allows users who run jobs for multiple PI accounts to specify which account to use for each task, to manage cluster allocations.  An example of the value for this variable is `"paguirigan_a"`, following the  pilastname_f pattern. 
+
+## Managing Software Environments
+
+
+### Modules
+At Fred Hutch we have huge array of pre-curated software modules installed on our SLURM cluster which you can [read about in SciWiki](https://sciwiki.fredhutch.org/scicomputing/compute_scientificSoftware/).   The custom configuration of our Cromwell server allows users to specify one or more modules to use for individual tasks in a workflow.  The desired module(s) can be requested for a task in the `runtime` block of your calls like this:
+
+```
+runtime {
+  modules: "GATK/4.2.6.1-GCCcore-11.2.0 SAMtools/1.16.1-GCC-11.2.0"
+}
+```
+
+In this example, we specify two modules, separated by a space (with quotes surrounding them). The GATK module will be loaded first, followed by the SAMtools module.   In this example you'll note the "toolchain" used to build each modules is the same ("GCC-11.2.0").  When you load >1 module for a single task it is important to ensure that they are compatible with each other.  Choose versions built with the same toolchain if you can.  
+
+### Docker
+If you want to move your WDL workflow to the cloud in the future, you'll want to leverage Cromwell's ability to run your tasks in Docker containers.  Users can specify docker containers in runtime blocks. Cromwell will maintain a local cache of previously used containers, facilitating the pull of Docker containers and conversion for use.  This behavior allows us to evade rate-limiting by DockerHub and improves speed of your workflows.  We will dig into Docker containers more in the next class.  
+
+
+Now you're ready to start learning about how to submit our test workflows to your Cromwell server!
+
