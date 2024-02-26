@@ -565,3 +565,21 @@ task BwaMem {
 ## Testing your first task
 
 To test your first task and your workflow, you should have expectation of output is. For this first `BwaMem` task, we just care that the BAM file is created with aligned reads. You can use `samtools view output.sorted_query_aligned.bam` to examine the reads and pipe it to wordcount `wc` to get the number of total reads. This number should be almost identical as the number of reads from your input FASTQ file if you run `wc input.fastq`. In other tasks, we might have a more precise expectation of what the output file should be, such as containing the specific somatic mutation call that we have curated.
+
+Here is an example JSON with the test data needed to run this single-task workflow:
+```
+{
+  "minidata_mutation_calling_v1.sampleFastq": "data/CALU1_combined_final.fastq",
+  "minidata_test_alignment.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
+  "minidata_test_alignment.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
+  "minidata_test_alignment.ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
+  "minidata_test_alignment.ref_dict": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict",
+  "minidata_test_alignment.ref_amb": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb",
+  "minidata_test_alignment.ref_ann": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann",
+  "minidata_test_alignment.ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt",
+  "minidata_test_alignment.ref_pac": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac",
+  "minidata_test_alignment.ref_sa": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa"
+}
+```
+
+If you are not running on the Fred Hutch HPC, you'll need to modify your JSON file to point to wherever you have the data files stored. You can download the same fastq we're using from [our sandbox repo](https://github.com/fhdsl/WDL-sandbox/tree/main/data), and the reference files can be generated via `samtools index` or [downloaded from the Broad Institute's mirror](https://data.broadinstitute.org/snowman/hg19/).
