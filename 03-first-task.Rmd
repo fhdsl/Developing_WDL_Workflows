@@ -569,7 +569,7 @@ To test your first task and your workflow, you should have expectation of output
 Here is an example JSON with the test data needed to run this single-task workflow:
 ```
 {
-  "minidata_mutation_calling_v1.sampleFastq": "data/CALU1_combined_final.fastq",
+  "minidata_mutation_calling_v1.sampleFastq": "/fh/scratch/delete90/_DaSL/WDL_101/WDL_mini_data/CALU1/CALU1_combined_final.fastq",
   "minidata_test_alignment.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
   "minidata_test_alignment.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
   "minidata_test_alignment.ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
