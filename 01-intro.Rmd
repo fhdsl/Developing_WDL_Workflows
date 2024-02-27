@@ -16,7 +16,7 @@ We will do some review of the WDL syntax. A WDL workflow consists of at least on
 
 <!-- resources/basic_01.wdl -->
 
-<iframe src="../resources/basic_01.wdl"></iframe>
+
 
 ```         
 version 1.0
