@@ -40,9 +40,9 @@ workflow minidata_mutation_calling_v1 {
 
 The `referenceGenome` struct contains all the variables related to the reference genome, but values cannot be defined here. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.
 
-In our workflow inputs, we declare a `referenceGenome` struct variable called `refGenome` via `referenceGenome refGenome` and removed our original reference genome definitions. We can access the variables within a struct by the following syntax: `structVar.varName`, such as `refGenome.ref_name`. The [WDL syntax specs](https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#struct-definition) has more information on how to define and use structs.
+In our workflow inputs, we remove all of the `File` variables associated with reference genome definitions, but keep anything that isn't related to the reference genome, such as `sampleFastq`. We instead declare a `referenceGenome` struct variable called `refGenome` via `referenceGenome refGenome`. We can access the variables within a struct by the following syntax: `structVar.varName`, such as `refGenome.ref_name`. The [WDL spec](https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#struct-definition) has more information on how to define and use structs.
 
-To give values to `refGenome`, we need to modify our JSON metadata file. We define `refGenome` variable in a nested structure that corresponds to the `referenceGenome` struct. Let's take a look:
+To give values to `refGenome`, we need to modify our JSON metadata file. We define the `refGenome` variable in a nested structure that corresponds to the `referenceGenome` struct. Let's take a look:
 
 ```         
 {
@@ -64,9 +64,9 @@ To give values to `refGenome`, we need to modify our JSON metadata file. We defi
 
 Now `refGenome` has all the values it needs for our tasks.
 
-In addition, we have replaced all the reference genome inputs in `call BwaMem` with `refGenome`: we can pass information to a task via structs.
+In addition, we have replaced all the reference genome inputs in call `BwaMem` with `refGenome` in order to pass information to a task via structs.
 
-Within the `BwaMem` task, we have to to refer to variables inside the struct, such as `refGenome.ref_name` (which has a value of "hg19" using this JSON metadata):
+Within the `BwaMem` task, we must refer to variables inside the struct, such as `refGenome.ref_name` (which has a value of "hg19" using this JSON metadata):
 
 ```         
 task BwaMem {
@@ -116,7 +116,7 @@ task BwaMem {
 }
 ```
 
-Other tasks in the workflow, such as `ApplyBaseRecalibrator` and `Mutect2TumorOnly` also make use of the reference genome, we so pass `refGenome` to it. For the final task `annovar`, it only requires the reference genome name, and none of the files in the `referenceGenome` struct. We make a stylistic choice to pass only `refGenome.ref_name` to the input of `annovar` task calling, as the task doesn't need the full information of the struct. This stylistic choice is based on the principle of passing on the minimally needed information for a modular piece of code to run, which makes the task `annovar` depend on the minimal amount of inputs.
+Other tasks in the workflow, such as `ApplyBaseRecalibrator` and `Mutect2TumorOnly` also make use of the reference genome, so we pass `refGenome` to it. The final task `annovar` only requires the reference genome name, and none of the files in the `referenceGenome` struct. We make a stylistic choice to pass only `refGenome.ref_name` to the input of `annovar` task call, as the task doesn't need the full information of the struct. This stylistic choice is based on the principle of passing on the minimally needed information for a modular piece of code to run, which makes the task `annovar` depend on the minimal amount of inputs. This will also save us time and disk space by not having to localize several gigabytes of reference files into the Docker container that `annovar` will be running in.
 
 ```         
  call annovar {
