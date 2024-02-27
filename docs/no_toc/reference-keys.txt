@@ -1,9 +1,10 @@
 target-audience
 curriculum
 introduction-to-wdl
+introduction
 review-of-basic-wdl-syntax
 using-jsons-to-control-workflow-inputs
-how-to-run-simple-workflows-locally
+running-wdl-via-a-computing-engine
 installing-docker
 installing-miniwdl
 launching-a-workflow-locally-with-miniwdl
