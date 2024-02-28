@@ -17,6 +17,50 @@ We have a workflow that runs on a single sample. What if we want to process mult
 ## The array type
 Arrays are essentially lists of another [primative type](https://en.wikipedia.org/wiki/Primitive_data_type). It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primative type. For example, an Array[String] could contain the strings "cat" and "dog" but not the integer 1965 (however, it could have "1965" as a string).
 
+In chapter 4, we went over the Struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.
+
+In WDL, arrays are 0 indexed, so the "first" value in an array is referenced by `[0]`. As per the WDL spec, arrays retain their order and are [immutable](https://en.wikipedia.org/wiki/Immutable_object) -- if you explictly define an Array[String] with the members ["foo", "bar", "bizz"], you can be confident that "foo" will always be at index 0.
+
+```
+Array[String] foobarbizz = ["foo", "bar", "bizz"]
+String foo = foobarbizz[0] # will always be "foo"
+```
+
+Because arrays are [immutable](https://en.wikipedia.org/wiki/Immutable_object), if you wish to add values to an array, you will need to define a new array.
+
+
+
+
+## Scattered tasks
+Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample's chromosomes in parallel, or similiar situations where breaking up data into discrete "chunks" makes sense.
+
+It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the `cpu` WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially "unaware" of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.
+
+### Troubleshooting
+Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintutive. If you are running into issues running scattered tasks on optional types, please see the section on optional types. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.
+
+Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend's hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scaleable cloud-based backends such as Terra, but isn't uncommon when running scattered tasks on a local machine. For advice on diagnosising this issue and how to prevent it, please see the optimization chapter of this course.
+
+## Making our workflow run on multiple samples at once using scattered tasks and arrays
+When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we'll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.
+
+For starters, we'll want to change our workflow-level sample variables from File to Array[File]. However, we don't need to change any of the reference genome files, because every instance of our tasks will be taking in the same reference genome files.
+
+
+```
+
+```
+
+Next, we will want to look at our chain of tasks. Each of these tasks are designed to take in a single sample. In theory, we could rewrite each task to iterate through an array of multiple samples. However, it's much simpler to keep those tasks as single-sample tasks, and simply run them on one sample at a time. To do this, we encapsulate the task calls in the workflow document with `scatter`.
+
+
+```
+```
+
+A scatter is essentially the WDL version of a [for loop](https://en.wikipedia.org/wiki/For_loop). Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only "see" one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays.
+
+
+
 ## Referencing an array in a task
 
 If the input variable is an array, we must include an array separator. In WDL 1.0, this is done using the `sep=` expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via `sep`. In this example, that is a simple space, as that is one way how to construct a bash variable.
@@ -61,23 +105,6 @@ task count_words_python {
 ```
 
 
-## Scattered tasks
-Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample's chromosomes in parallel, or similiar situations where breaking up data into discrete "chunks" makes sense.
-
-It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the `cpu` WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially "unaware" of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.
-
-### Troubleshooting
-Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintutive. If you are running into issues running scattered tasks on optional types, please see the section on optional types. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.
-
-Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend's hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scaleable cloud-based backends such as Terra, but isn't uncommon when running scattered tasks on a local machine. For advice on diagnosising this issue and how to prevent it, please see the optimization chapter of this course.
-
-## Making our workflow run on multiple samples at once using scattered tasks and arrays
-When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we'll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.
-
-For starters, we'll want to change our tumor and normal samples from File to Array[File].
-
-
-
 
 ## Nested arrays: Splitting by forward and reverse read
 Our workflow assumes that every sample has a single fastq file, such as `SRR8618962.fastq`. However, fastq files are sometimes split by read direction, resulting in `SRR8618962_1.fastq` and `SRR8618962_2.fastq`. How would we modify our workflow to accept this sort of input, and still be able to run on multiple samples at once?
@@ -87,7 +114,8 @@ The first thing to keep in mind is that we no longer represent a single sample a
 Our first step in the workflow is bwa mem, which changes a single sample's fastq file(s) into a single bam file. No matter how many fastqs we input for a single sample, we will always end up with just one bam file to represent that sample. That means that, for this workflow in particular, we only need to change the first task.
 
 
-TODO: edits of bwa call
+```
+```
 
 
 Modifying our workflow to run on multiple samples requires the use of nested arrays. Our workflow-level input `Array[File] sampleFastqs` needs to become `Array[Array[File]] allSampleFastqs`. Each internal array represents a pair of fastqs, which we could enter via JSON like so:

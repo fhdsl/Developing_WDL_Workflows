@@ -26,6 +26,15 @@ When splitting by chromosome, instead of running (for example) a variant caller 
 We don't need to decide between making our workflow multi-sample or multi-chromosome. We can do both using nested arrays, but beware: Depending on how you WDL executor and backend is set up, this could result in dozens of Docker images running at the same time. For highly scalable backends or executors with a good handle of available compute resources, this is desirable. For a more limited machine, this could be disastrous.
 
 
+
+
+## File localization
+When written as a fasta file, the human genome is a little over 3 GB in size. As such, it's very common that you will be putting much more reference data into a task than actual sample data. 
+
+
+
+(pros and cons of including the ref in the docker image, which backends to do this on)
+
 ## Troubleshooting
 
 ### Running out of memory
