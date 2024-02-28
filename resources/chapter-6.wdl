@@ -37,7 +37,6 @@ workflow minidata_mutation_calling_chapter6 {
     String annovar_protocols
     String annovar_operation
 
-    Int bwa_mem_threads
   }
  
   # Scatter for "tumor" samples   
@@ -104,6 +103,7 @@ task BwaMem {
   input {
     File input_fastq
     referenceGenome refGenome
+    Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -118,7 +118,6 @@ task BwaMem {
   command <<<
     set -eo pipefail
 
-    #can we iterate through a struct??
     mv ~{refGenome.ref_fasta} .
     mv ~{refGenome.ref_fasta_index} .
     mv ~{refGenome.ref_dict} .
@@ -129,7 +128,7 @@ task BwaMem {
     mv ~{refGenome.ref_sa} .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
