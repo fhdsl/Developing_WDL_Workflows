@@ -79,10 +79,6 @@ For starters, we'll want to change our tumor and normal samples from File to Arr
 
 
 
-
-## Nested arrays: Splitting by chromosome
-
-
 ## Nested arrays: Splitting by forward and reverse read
 Our workflow assumes that every sample has a single fastq file, such as `SRR8618962.fastq`. However, fastq files are sometimes split by read direction, resulting in `SRR8618962_1.fastq` and `SRR8618962_2.fastq`. How would we modify our workflow to accept this sort of input, and still be able to run on multiple samples at once?
 

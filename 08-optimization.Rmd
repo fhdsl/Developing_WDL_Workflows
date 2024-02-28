@@ -4,12 +4,27 @@ ottrpal::set_knitr_image_path()
 
 # Optimizing Workflows
 
+- How to use scattered tasks to make analysis more efficient
 - Diagnosising and treating the most common issues stemming from inefficient workflow setup
 - An introduction to controlling costs on cloud compute backends
 - How to automatically scale disk size runtime attributes based on the size of a task's inputs
-- How to stop Cromwell from trying to launch dozens of instances of a scattered task at once
+- How to stop Cromwell from trying to launch dozens of instances of a scattered task at once (and why you may want it to that!)
+
+
+
 
 ## Scattered tasks: A reintroduction
+In chapter 6, we introduced arrays and scattered tasks. Scattered tasks were brought up in the context of running multiple samples at the same time. However, they can also be used to run parts of a single sample at the same time. This is especially useful in the world of human genomics, as chromosomes provide the perfect opportunity to split your data into discrete portions.
+
+When splitting by chromosome, instead of running (for example) a variant caller in a single Docker image, we are launching 23 instances of the variant caller in 23 Docker images. As a result, this sort of optimization is not ideal for all backends -- if you are limited by the number of Docker containers you can run at any given (typically the case on a local compute), then splitting by chromosome is unlikely to make the overall workflow more efficient.
+
+
+## Splitting by chromosome
+
+
+
+We don't need to decide between making our workflow multi-sample or multi-chromosome. We can do both using nested arrays, but beware: Depending on how you WDL executor and backend is set up, this could result in dozens of Docker images running at the same time. For highly scalable backends or executors with a good handle of available compute resources, this is desirable. For a more limited machine, this could be disastrous.
+
 
 ## Troubleshooting
 
