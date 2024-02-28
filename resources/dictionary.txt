@@ -1,4 +1,7 @@
 AnVIL
+backend
+backends
+backend's
 bioinformatic
 bioinformatics
 BIPOC
@@ -34,6 +37,7 @@ mentorship
 NCI
 NHGRI
 ottrpal
+parallelization
 Pandoc
 plaintext
 reproducibility
@@ -61,7 +65,7 @@ ann
 bwa mem
 cowsay
 fasta
-fasta
+fastas
 fastq
 fastqs
 GCP
