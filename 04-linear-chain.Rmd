@@ -27,7 +27,7 @@ output {
   }
 ```
 
-The File variables `analysisReadyBam` and `analysisReadySorted` can now be accessed anywhere in the workflow block after the `BwaMem` task as `BwaMem.``analysisReadyBam` and `BwaMem.analysisReadySorted`, respectively. Then, we will take the output of `BwaMem` task into the input of the `MarkDuplicates` task: we call our next task `MarkDuplicates` with input `BwaMem.analysisReadySorted` from the `BwaMem` task:
+The File variables `analysisReadyBam` and `analysisReadySorted` can now be accessed anywhere in the workflow block after the `BwaMem` task as `BwaMem.analysisReadyBam` and `BwaMem.analysisReadySorted`, respectively. Therefore, when we call the `MarkDuplicates` task, we can pass it the input `BwaMem.analysisReadySorted` from the `BwaMem` task:
 
 
 ```         
@@ -179,7 +179,7 @@ As before, when you add a new task to the workflow, you should always test that 
 
 ## The rest of the linear chain workflow
 
-We build out the rest of the tasks in a very similar fashion. Tasks `ApplyBaseRecalibrator` and `Mutect2TumorOnly` both have files that need to be localized, but otherwise all the tasks have a very similar form as `BwaMem` and `MarkDuplicates`. For somatic mutation calling in the `Mutect2TumorOnly` task, we currently only use the tumor sample. Our complete workflow will require a pair of tumor and normal samples for each individual.
+We build out the rest of the tasks in a very similar fashion. Tasks `ApplyBaseRecalibrator` and `Mutect2TumorOnly` both have files that need to be localized, but otherwise all the tasks have a very similar form as `BwaMem` and `MarkDuplicates`. For this current iteration, we use only the tumor sample for mutation calling. In the following chapters, we will use additional WDL features to make use of tumor and normal samples for mutation calling. 
 
 ```         
 version 1.0
@@ -331,7 +331,7 @@ task BwaMem {
   }
 }
 
-# Mark duplicates (not SPARK, for some reason that does something weird)
+# Mark duplicates
 task MarkDuplicates {
   input {
     File input_bam
