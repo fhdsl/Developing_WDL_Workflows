@@ -31,4 +31,5 @@ outputs
 the-whole-task
 putting-the-workflow-together
 testing-your-first-task
+organizing-variables-via-structs
 references
