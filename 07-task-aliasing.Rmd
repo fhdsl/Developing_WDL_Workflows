@@ -3,5 +3,78 @@ ottrpal::set_knitr_image_path()
 ```
 
 # Calling the same task more than once 
+It is not uncommon that the same task (for example the BwaMem task in our example) in a workflow is required to be used multiple times. For example you may want to do this if you need to run it using a different set of inputs, if you want to split your task to scale your workflow and optimize compute resources. 
 
+WDL has a sophisticated feature that allows one to reuse the same task repeatedly through your workflow: **task aliasing**
+Simply put **task aliasing**  allows for the re-use of task definitions within the same workflow under different names, or "aliases". 
+
+This feature not only prevents redundancy but also significantly simplifies the workflow's maintenance. 
+
+By leveraging task aliasing, users can update a single task definition, and those changes will automatically apply wherever the task's alias is used, ensuring consistency across the workflow.
+
+The major advantages of using task aliasing are:
+
+ **1. Reduces Redundancy**: You don't need to copy and paste the same task definition multiple times and your workflows will be more concise and organized. 
+**2. Simplifies Maintenance** : If you decide to change/update/fix a task, using task aliasing will make life easy as you need to update only once in your workflow. 
+ **3. Enhances Readability and Clarity**: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow ( for example are you doing this task for Sample set A or Sample set B)
+**4. Facilitates Modular Workflow Design**: Task aliasing help to make your workflow modular. This is easier to adopt by **5. Improves Workflow Scalability**: Using task aliasing it is much easier to scale the workflow across different inputs. For example you want to run a task on different sample groups (Sample set A and B) will allow the same task to be run parallely and if you choose with different modifications. 
+**6. Ensures Consistency**: Task aliasing assures that there is consistency in replicated tasks and helps the reader easily identify where changes are expected in a task. 
+
+To start aliasing your task the prerequisite is that the task must be defined first (which we have already done as a part of the previous sections). For this example we are going to alias the BwaMem task (and others as you will see in the example workflow) to run on the normal sample. 
+
+> Note: In this example workflow, purely for demonstration and learning purposes we have split the processing of the "tumor" samples and the "normal" sample. In the real world most paired samples would be processed together. For example you would want to pair the data from a single patient together. However you can leverage this task aliasing example for workflows where you may have multiple "test"/"tumor" samples and a single "normal" sample. 
+
+Here we are aliasing the task BwaMem to run this task for our "normal" samples. 
+
+First you will want to make sure that in your workflow input you are calling the sample you want to run this alias-ed task 
+
+```
+workflow mutation_calling {
+  input {
+    ...
+    File normal
+...
+  }
+
+Next all that you need to do is `call` the `task` you want to alias and use `as` to the `alias_of_your_choice`. 
+
+But don't forget to make sure that all the inputs reflect actually different things we want to run this task on.
+
+In this case we will be using a different sample and therefore the input_fastq is directed to the appropriate file source. 
+
+```
+  call BwaMem as normalBwaMem {
+    input:
+      input_fastq = normal,
+      refGenome = refGenome
+  }
+  ```
+
+ And finally you will also want to make sure that in your outputs section you are saving the appropriate outputs to reflect the task alias. 
+
+```
+output {
+File normalalignedBamSorted = normalBwaMem.analysisReadySorted
+}
+
+We can do this for the other two tasks in our workflow as well
+
+```
+call MarkDuplicates as normalMarkDuplicates {
+    input:
+      input_bam = normalBwaMem.analysisReadySorted
+  }
+
+  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+    input:
+      input_bam = normalMarkDuplicates.markDuplicates_bam,
+      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
+      dbSNP_vcf = dbSNP_vcf,
+      dbSNP_vcf_index = dbSNP_vcf_index,
+      known_indels_sites_VCFs = known_indels_sites_VCFs,
+      known_indels_sites_indices = known_indels_sites_indices,
+      refGenome = refGenome
+  }
+  ```
+Now adding these steps to the workflow we will have our tumor and normal sample aligned and recalibrated and suitable for ingestion into the mutation calling step for a paired mutation calling using MuTect2. 
 
