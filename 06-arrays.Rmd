@@ -61,9 +61,6 @@ task count_words_python {
 ```
 
 
-
-
-
 ## Scattered tasks
 Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample's chromosomes in parallel, or similiar situations where breaking up data into discrete "chunks" makes sense.
 
@@ -74,12 +71,19 @@ Scattered tasks are relatively simple in theory, but the way they interact with 
 
 Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend's hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scaleable cloud-based backends such as Terra, but isn't uncommon when running scattered tasks on a local machine. For advice on diagnosising this issue and how to prevent it, please see the optimization chapter of this course.
 
-## Making our workflow run on multiple samples at once
+## Making our workflow run on multiple samples at once using scattered tasks and arrays
+When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we'll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.
+
+For starters, we'll want to change our tumor and normal samples from File to Array[File].
 
 
 
 
-## Nested arrays
+
+## Nested arrays: Splitting by chromosome
+
+
+## Nested arrays: Splitting by forward and reverse read
 Our workflow assumes that every sample has a single fastq file, such as `SRR8618962.fastq`. However, fastq files are sometimes split by read direction, resulting in `SRR8618962_1.fastq` and `SRR8618962_2.fastq`. How would we modify our workflow to accept this sort of input, and still be able to run on multiple samples at once?
 
 The first thing to keep in mind is that we no longer represent a single sample as a single `File sampleFastq`, but instead as `Array[File] sampleFastqs`. In real life, fastq files may be split even further than `_1` and `_2`, such as by which lane of an Illumina cell they were sequenced in. The same concept we will go over here can be applied to multilane samples too, but for now we will focus on the `_1` and `_2` case for simplicity. This means that each sample is an array with precisely two values.
