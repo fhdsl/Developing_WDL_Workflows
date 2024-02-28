@@ -1,7 +1,7 @@
 url	chapt_title	img_path
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/index.html	About this Course	resources/chapt_screen_images/index.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/introduction-to-wdl.html	1 Introduction to WDL	resources/chapt_screen_images/introduction-to-wdl.png
-https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.html	2 Defining a workflow plan: Introduce somatic mutation calling workflow	resources/chapt_screen_images/defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.png
+https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/defining-a-workflow-plan.html	2 Defining a workflow plan	resources/chapt_screen_images/defining-a-workflow-plan.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/the-first-task.html	3 The first task	resources/chapt_screen_images/the-first-task.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/about-the-authors.html	About the Authors	resources/chapt_screen_images/about-the-authors.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/references.html	4 References	resources/chapt_screen_images/references.png
