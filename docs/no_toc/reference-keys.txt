@@ -31,5 +31,14 @@ outputs
 the-whole-task
 putting-the-workflow-together
 testing-your-first-task
+connecting-multiple-tasks-together-in-a-linear-chain
+how-to-connect-tasks-together-in-a-workflow
+writing-markduplicates-task
+input
+private-variables-in-the-task
+command
+runtime-and-output
+testing-the-workflow
+the-rest-of-the-linear-chain-workflow
 organizing-variables-via-structs
 references
