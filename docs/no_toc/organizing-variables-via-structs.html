@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 4 Organizing variables via Structs | WDL Workflows Guide</title>
+  <title>Chapter 5 Organizing variables via Structs | WDL Workflows Guide</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 4 Organizing variables via Structs | WDL Workflows Guide" />
+  <meta property="og:title" content="Chapter 5 Organizing variables via Structs | WDL Workflows Guide" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 4 Organizing variables via Structs | WDL Workflows Guide" />
+  <meta name="twitter:title" content="Chapter 5 Organizing variables via Structs | WDL Workflows Guide" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,7 +29,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="the-first-task.html"/>
+<link rel="prev" href="connecting-multiple-tasks-together-in-a-linear-chain.html"/>
 <link rel="next" href="about-the-authors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -118,9 +118,22 @@
 <li class="chapter" data-level="3.5" data-path="the-first-task.html"><a href="the-first-task.html#putting-the-workflow-together"><i class="fa fa-check"></i><b>3.5</b> Putting the workflow together</a></li>
 <li class="chapter" data-level="3.6" data-path="the-first-task.html"><a href="the-first-task.html#testing-your-first-task"><i class="fa fa-check"></i><b>3.6</b> Testing your first task</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>4</b> Organizing variables via Structs</a></li>
+<li class="chapter" data-level="4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html"><i class="fa fa-check"></i><b>4</b> Connecting multiple tasks together in a linear chain</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#how-to-connect-tasks-together-in-a-workflow"><i class="fa fa-check"></i><b>4.1</b> How to connect tasks together in a workflow</a></li>
+<li class="chapter" data-level="4.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#writing-markduplicates-task"><i class="fa fa-check"></i><b>4.2</b> Writing <code>MarkDuplicates</code> task</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#input"><i class="fa fa-check"></i><b>4.2.1</b> Input</a></li>
+<li class="chapter" data-level="4.2.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#private-variables-in-the-task"><i class="fa fa-check"></i><b>4.2.2</b> Private variables in the task</a></li>
+<li class="chapter" data-level="4.2.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#command"><i class="fa fa-check"></i><b>4.2.3</b> Command</a></li>
+<li class="chapter" data-level="4.2.4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#runtime-and-output"><i class="fa fa-check"></i><b>4.2.4</b> Runtime and Output</a></li>
+<li class="chapter" data-level="4.2.5" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#testing-the-workflow"><i class="fa fa-check"></i><b>4.2.5</b> Testing the workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
 <li class="chapter" data-level="" data-path="about-the-authors.html"><a href="about-the-authors.html"><i class="fa fa-check"></i>About the Authors</a></li>
-<li class="chapter" data-level="5" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>5</b> References</a></li>
+<li class="chapter" data-level="6" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>6</b> References</a></li>
 <li class="divider"></li>
 <p style="text-align:center;"> <a href="https://github.com/jhudsl/OTTR_Template" target="blank" > This content was published with</a> <a href="https://bookdown.org/" target="blank"> bookdown by: </a> </p>
 <p style="text-align:center;"> <a href="https://hutchdatascience.org/"> The Fred Hutch Data Science Lab </a></p>
@@ -155,8 +168,8 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="organizing-variables-via-structs" class="section level1" number="4">
-<h1><span class="header-section-number">Chapter 4</span> Organizing variables via Structs</h1>
+<div id="organizing-variables-via-structs" class="section level1" number="5">
+<h1><span class="header-section-number">Chapter 5</span> Organizing variables via Structs</h1>
 <p>In our workflow so far, we see that certain variables are always used together, even for different tasks. For example, variables related to the reference genome are always used for the same purpose and passed on to tasks in almost the same way. This leads to quite a bit of coding redundancy, as when we write down the large set of variables related to the reference genome as task inputs, we are just thinking about one entity. We don’t make distinctions of the reference genome files until the task body itself.</p>
 <p>To improve code organization and readability, we can package all variables related to the reference genome into a compound data structure called a <strong>struct</strong>. With a struct variable, we can refer all the packaged variables as one single variable, and also refer to specific variables within the struct without losing any information. <a href="https://docs.openwdl.org/en/stable/WDL/using_structs/">OpenWDL Docs</a> also has an excellent introduction and examples on structs.</p>
 <p>To define a struct, we must declare it outside of a <code>workflow</code> and <code>task</code>:</p>
@@ -609,7 +622,7 @@ task annovar {
           </div>
         </div>
       </div>
-<a href="the-first-task.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="connecting-multiple-tasks-together-in-a-linear-chain.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="about-the-authors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>

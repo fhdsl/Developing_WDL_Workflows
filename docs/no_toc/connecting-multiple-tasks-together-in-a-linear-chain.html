@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 5 Organizing variables via Structs | WDL Workflows Guide</title>
+  <title>Chapter 4 Connecting multiple tasks together in a linear chain | WDL Workflows Guide</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 5 Organizing variables via Structs | WDL Workflows Guide" />
+  <meta property="og:title" content="Chapter 4 Connecting multiple tasks together in a linear chain | WDL Workflows Guide" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 5 Organizing variables via Structs | WDL Workflows Guide" />
+  <meta name="twitter:title" content="Chapter 4 Connecting multiple tasks together in a linear chain | WDL Workflows Guide" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="connecting-multiple-tasks-together-in-a-linear-chain.html"/>
-<link rel="next" href="about-the-authors.html"/>
+<link rel="prev" href="the-first-task.html"/>
+<link rel="next" href="organizing-variables-via-structs.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -168,12 +168,31 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="organizing-variables-via-structs" class="section level1" number="5">
-<h1><span class="header-section-number">Chapter 5</span> Organizing variables via Structs</h1>
-<p>In our workflow so far, we see that certain variables are always used together, even for different tasks. For example, variables related to the reference genome are always used for the same purpose and passed on to tasks in almost the same way. This leads to quite a bit of coding redundancy, as when we write down the large set of variables related to the reference genome as task inputs, we are just thinking about one entity. We don’t make distinctions of the reference genome files until the task body itself.</p>
-<p>To improve code organization and readability, we can package all variables related to the reference genome into a compound data structure called a <strong>struct</strong>. With a struct variable, we can refer all the packaged variables as one single variable, and also refer to specific variables within the struct without losing any information. <a href="https://docs.openwdl.org/en/stable/WDL/using_structs/">OpenWDL Docs</a> also has an excellent introduction and examples on structs.</p>
-<p>To define a struct, we must declare it outside of a <code>workflow</code> and <code>task</code>:</p>
-<pre><code>struct referenceGenome {
+<div id="connecting-multiple-tasks-together-in-a-linear-chain" class="section level1" number="4">
+<h1><span class="header-section-number">Chapter 4</span> Connecting multiple tasks together in a linear chain</h1>
+<p>Now that you have a first task in a workflow up and running, the next step is to continue building out the workflow as described in our Workflow Plan:</p>
+<ol style="list-style-type: decimal">
+<li><code>BwaMem</code> aligns the samples to the reference genome.</li>
+<li><code>MarkDuplicates</code> marks PCR duplicates.</li>
+<li><code>ApplyBaseRecalibrator</code> applies base recalibration.</li>
+<li><code>Mutect2</code> performs somatic mutation calling. For this current iteration, we start with <code>Mutect2TumorOnly</code> which only uses the tumor sample.</li>
+<li><code>annovar</code> annotates the called somatic mutations.</li>
+</ol>
+<p>We do this via a <strong>linear chain</strong>, in which we feed the output of one task to the input of the next task. Let’s see how to build a linear chain in a workflow.</p>
+<div id="how-to-connect-tasks-together-in-a-workflow" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> How to connect tasks together in a workflow</h2>
+<p>We can easily connect tasks together because of the following: <em>The output variables of a task can be accessed at the workflow level as inputs for the subsequent task.</em></p>
+<p>For instance, let’s see the output of our <code>BwaMem</code> task.</p>
+<pre><code>output {
+    File analysisReadyBam = &quot;~{base_file_name}.aligned.bam&quot;
+    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
+  }</code></pre>
+<p>The File variables <code>analysisReadyBam</code> and <code>analysisReadySorted</code> can now be accessed anywhere in the workflow block after the <code>BwaMem</code> task as <code>BwaMem.analysisReadyBam</code> and <code>BwaMem.analysisReadySorted</code>, respectively. Therefore, when we call the <code>MarkDuplicates</code> task, we can pass it the input <code>BwaMem.analysisReadySorted</code> from the <code>BwaMem</code> task:</p>
+<pre><code>workflow minidata_mutation_calling_v1 {
+  input {
+    # Sample info
+    File sampleFastq
+    # Reference Genome information
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -182,99 +201,131 @@
     File ref_bwt
     File ref_pac
     File ref_sa
-    String ref_name
-}
-
-workflow minidata_mutation_calling_v1 {
-  input {
-    File sampleFastq
-    referenceGenome refGenome
-    ...
   }
+    
   # Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
-      refGenome = refGenome
-  }
-}</code></pre>
-<p>The <code>referenceGenome</code> struct contains all the variables related to the reference genome, but values cannot be defined here. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.</p>
-<p>In our workflow inputs, we remove all of the <code>File</code> variables associated with reference genome definitions, but keep anything that isn’t related to the reference genome, such as <code>sampleFastq</code>. We instead declare a <code>referenceGenome</code> struct variable called <code>refGenome</code> via <code>referenceGenome refGenome</code>. We can access the variables within a struct by the following syntax: <code>structVar.varName</code>, such as <code>refGenome.ref_name</code>. The <a href="https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#struct-definition">WDL spec</a> has more information on how to define and use structs.</p>
-<p>To give values to <code>refGenome</code>, we need to modify our JSON metadata file. We define the <code>refGenome</code> variable in a nested structure that corresponds to the <code>referenceGenome</code> struct. Let’s take a look:</p>
-<pre><code>{
-  &quot;minidata_mutation_calling_v1.refGenome&quot;: {
-    &quot;ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
-    &quot;ref_fasta_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai&quot;,
-    &quot;ref_dict&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict&quot;,
-    &quot;ref_pac&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac&quot;,
-    &quot;ref_sa&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa&quot;,
-    &quot;ref_amb&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb&quot;,
-    &quot;ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
-    &quot;ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;,
-    &quot;ref_name&quot;: &quot;hg19&quot;
-  },
-  &quot;minidata_mutation_calling_v1.dbSNP_vcf_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi&quot;,
-  ...
-}</code></pre>
-<p>Now <code>refGenome</code> has all the values it needs for our tasks.</p>
-<p>In addition, we have replaced all the reference genome inputs in call <code>BwaMem</code> with <code>refGenome</code> in order to pass information to a task via structs.</p>
-<p>Within the <code>BwaMem</code> task, we must refer to variables inside the struct, such as <code>refGenome.ref_name</code> (which has a value of “hg19” using this JSON metadata):</p>
-<pre><code>task BwaMem {
-  input {
-    File input_fastq
-    referenceGenome refGenome
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      ref_dict = ref_dict,
+      ref_amb = ref_amb,
+      ref_ann = ref_ann,
+      ref_bwt = ref_bwt,
+      ref_pac = ref_pac,
+      ref_sa = ref_sa
   }
   
-  String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(refGenome.ref_fasta)
+  call MarkDuplicates {
+    input:
+      input_bam = BwaMem.analysisReadySorted
+  }
+}</code></pre>
+<div class="notice">
+<p>Resources:</p>
+<ul>
+<li>
+For a basic introduction to linear chain, see <a href="https://docs.openwdl.org/en/latest/WDL/Linear_chaining/">OpenWDL Docs</a>’ introduction.
+</li>
+<li>
+To see other examples of linear chain and variations, see <a href="https://docs.openwdl.org/en/latest/WDL/add_plumbing/">OpenWDL Docs</a>’s section on workflow plumbing.
+</li>
+</ul>
+</div>
+</div>
+<div id="writing-markduplicates-task" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Writing <code>MarkDuplicates</code> task</h2>
+<p>Of course, the task <code>MarkDuplicates</code> hasn’t been written yet! Let’s go through it together:</p>
+<div id="input" class="section level3" number="4.2.1">
+<h3><span class="header-section-number">4.2.1</span> Input</h3>
+<p>The task takes an input bam file that has been aligned to the reference genome. It needs to be a File <code>input_bam</code> based on how we introduced it in the workflow above. That is easy to write up:</p>
+<pre><code>task MarkDuplicates {
+  input {
+    File input_bam
+  }
+}</code></pre>
+</div>
+<div id="private-variables-in-the-task" class="section level3" number="4.2.2">
+<h3><span class="header-section-number">4.2.2</span> Private variables in the task</h3>
+<p>Similar to the <code>BwaMem</code> task, we will name our output files based on the base name of the original input file in the workflow. Therefore, it makes sense to create a private String variable <code>base_file_name</code> that contains this base name of <code>input_bam</code>. We will use <code>base_file_name</code> in the Command section to specify the output bam and metrics files.</p>
+<pre><code>task MarkDuplicates {
+  input {
+    File input_bam
+  }
+  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
+}</code></pre>
+</div>
+<div id="command" class="section level3" number="4.2.3">
+<h3><span class="header-section-number">4.2.3</span> Command</h3>
+<p>As we have been doing all along, we refer to any defined variables from the input or private variables using ~{this} syntax.</p>
+<pre><code>task MarkDuplicates {
+  input {
+    File input_bam
+  }
 
-  String read_group_id = &quot;ID:&quot; + base_file_name
-  String sample_name = &quot;SM:&quot; + base_file_name
-  String platform = &quot;illumina&quot;
-  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
-
+  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
 
   command &lt;&lt;&lt;
-    set -eo pipefail
-
-    #can we iterate through a struct??
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-    mv ~{refGenome.ref_amb} .
-    mv ~{refGenome.ref_ann} .
-    mv ~{refGenome.ref_bwt} .
-    mv ~{refGenome.ref_pac} .
-    mv ~{refGenome.ref_sa} .
-
-    bwa mem \
-      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
-      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+    gatk MarkDuplicates \
+      --INPUT &quot;~{input_bam}&quot; \
+      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
+      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
+      --CREATE_INDEX true \
+      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
+      --VALIDATION_STRINGENCY SILENT
   &gt;&gt;&gt;
-
-  output {
-    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
+}</code></pre>
+</div>
+<div id="runtime-and-output" class="section level3" number="4.2.4">
+<h3><span class="header-section-number">4.2.4</span> Runtime and Output</h3>
+<p>We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a bam index file that is automatically created by the command section.</p>
+<p>Below is the task all together. It has a form very similar to our first task <code>BwaMem</code>.</p>
+<pre><code> task MarkDuplicates {
+  input {
+    File input_bam
   }
+
+  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
+
+  command &lt;&lt;&lt;
+    gatk MarkDuplicates \
+      --INPUT &quot;~{input_bam}&quot; \
+      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
+      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
+      --CREATE_INDEX true \
+      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
+      --VALIDATION_STRINGENCY SILENT
+  &gt;&gt;&gt;
   
   runtime {
+    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
     memory: &quot;48 GB&quot;
-    cpu: 16
-    docker: &quot;fredhutch/bwa:0.7.17&quot;
+    cpu: 4
+  }
+  
+  output {
+    File markDuplicates_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
+    File markDuplicates_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
+    File duplicate_metrics = &quot;~{base_file_name}.duplicate_metrics&quot;
   }
 }</code></pre>
-<p>Other tasks in the workflow, such as <code>ApplyBaseRecalibrator</code> and <code>Mutect2TumorOnly</code> also make use of the reference genome, so we pass <code>refGenome</code> to it. The final task <code>annovar</code> only requires the reference genome name, and none of the files in the <code>referenceGenome</code> struct. We make a stylistic choice to pass only <code>refGenome.ref_name</code> to the input of <code>annovar</code> task call, as the task doesn’t need the full information of the struct. This stylistic choice is based on the principle of passing on the minimally needed information for a modular piece of code to run, which makes the task <code>annovar</code> depend on the minimal amount of inputs. This will also save us time and disk space by not having to localize several gigabytes of reference files into the Docker container that <code>annovar</code> will be running in.</p>
-<pre><code> call annovar {
-    input:
-      input_vcf = Mutect2TumorOnly.output_vcf,
-      ref_name = refGenome.ref_name,
-      annovarTAR = annovarTAR,
-      annovar_operation = annovar_operation,
-      annovar_protocols = annovar_protocols
-  }</code></pre>
-<p>Putting everything together in the workflow:</p>
-<pre><code>struct referenceGenome {
+</div>
+<div id="testing-the-workflow" class="section level3" number="4.2.5">
+<h3><span class="header-section-number">4.2.5</span> Testing the workflow</h3>
+<p>As before, when you add a new task to the workflow, you should always test that it works on your test sample. To check that <code>MarkDuplicates</code> is indeed marking PCR duplicates, you could check for the presence of the <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360051306171-MarkDuplicates-Picard">PCR duplicate flag in reads</a>, which has a decimal value of 1024 in the SAM Flags Field.</p>
+</div>
+</div>
+<div id="the-rest-of-the-linear-chain-workflow" class="section level2" number="4.3">
+<h2><span class="header-section-number">4.3</span> The rest of the linear chain workflow</h2>
+<p>We build out the rest of the tasks in a very similar fashion. Tasks <code>ApplyBaseRecalibrator</code> and <code>Mutect2TumorOnly</code> both have files that need to be localized, but otherwise all the tasks have a very similar form as <code>BwaMem</code> and <code>MarkDuplicates</code>. For this current iteration, we use only the tumor sample for mutation calling. In the following chapters, we will use additional WDL features to make use of tumor and normal samples for mutation calling.</p>
+<pre><code>version 1.0
+
+workflow minidata_mutation_calling_v1 {
+  input {
+    # Sample info
+    File sampleFastq
+    # Reference Genome information
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -283,33 +334,30 @@ workflow minidata_mutation_calling_v1 {
     File ref_bwt
     File ref_pac
     File ref_sa
-    String ref_name
-}
-
-workflow minidata_mutation_calling_v1 {
-  input {
-    File sampleFastq
-
-    referenceGenome refGenome
-    
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    
     File af_only_gnomad
     File af_only_gnomad_index
-    
     File annovarTAR
     String annovar_protocols
     String annovar_operation
+    String ref_name
   }
     
   # Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
-      refGenome = refGenome
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      ref_dict = ref_dict,
+      ref_amb = ref_amb,
+      ref_ann = ref_ann,
+      ref_bwt = ref_bwt,
+      ref_pac = ref_pac,
+      ref_sa = ref_sa
   }
   
   call MarkDuplicates {
@@ -325,14 +373,18 @@ workflow minidata_mutation_calling_v1 {
       dbSNP_vcf_index = dbSNP_vcf_index,
       known_indels_sites_VCFs = known_indels_sites_VCFs,
       known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index
     }
 
   call Mutect2TumorOnly {
       input:
         input_bam = ApplyBaseRecalibrator.recalibrated_bam,
         input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
-        refGenome = refGenome,
+        ref_dict = ref_dict,
+        ref_fasta = ref_fasta,
+        ref_fasta_index = ref_fasta_index,
         genomeReference = af_only_gnomad,
         genomeReferenceIndex = af_only_gnomad_index
     }
@@ -340,7 +392,7 @@ workflow minidata_mutation_calling_v1 {
   call annovar {
       input:
         input_vcf = Mutect2TumorOnly.output_vcf,
-        ref_name = refGenome.ref_name,
+        ref_name = ref_name,
         annovarTAR = annovarTAR,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols
@@ -362,21 +414,24 @@ workflow minidata_mutation_calling_v1 {
 
 
 
-
-
-
 # TASK DEFINITIONS
 
 # Align fastq file to the reference genome
 task BwaMem {
   input {
     File input_fastq
-    referenceGenome refGenome
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
   }
   
   String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(refGenome.ref_fasta)
-
+  String ref_fasta_local = basename(ref_fasta)
   String read_group_id = &quot;ID:&quot; + base_file_name
   String sample_name = &quot;SM:&quot; + base_file_name
   String platform = &quot;illumina&quot;
@@ -386,15 +441,14 @@ task BwaMem {
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    #can we iterate through a struct??
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-    mv ~{refGenome.ref_amb} .
-    mv ~{refGenome.ref_ann} .
-    mv ~{refGenome.ref_bwt} .
-    mv ~{refGenome.ref_pac} .
-    mv ~{refGenome.ref_sa} .
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
+    mv ~{ref_amb} .
+    mv ~{ref_ann} .
+    mv ~{ref_bwt} .
+    mv ~{ref_pac} .
+    mv ~{ref_sa} .
 
     bwa mem \
       -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
@@ -414,22 +468,19 @@ task BwaMem {
   }
 }
 
-# Mark duplicates (not SPARK, for some reason that does something weird)
+# Mark duplicates
 task MarkDuplicates {
   input {
     File input_bam
   }
 
   String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-  String output_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
-  String output_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
-  String metrics_file = &quot;~{base_file_name}.duplicate_metrics&quot;
 
   command &lt;&lt;&lt;
     gatk MarkDuplicates \
       --INPUT ~{input_bam} \
-      --OUTPUT ~{output_bam} \
-      --METRICS_FILE ~{metrics_file} \
+      --OUTPUT ~{base_file_name}.duplicates_marked.bam \
+      --METRICS_FILE ~{base_file_name}.duplicate_metrics \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
@@ -442,9 +493,9 @@ task MarkDuplicates {
   }
 
   output {
-    File markDuplicates_bam = &quot;~{output_bam}&quot;
-    File markDuplicates_bai = &quot;~{output_bai}&quot;
-    File duplicate_metrics = &quot;~{metrics_file}&quot;
+    File markDuplicates_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
+    File markDuplicates_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
+    File duplicate_metrics = &quot;~{base_file_name}.duplicates_marked.bai&quot;
   }
 }
 
@@ -457,12 +508,14 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    referenceGenome refGenome
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
   }
   
   String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
   
-  String ref_fasta_local = basename(refGenome.ref_fasta)
+  String ref_fasta_local = basename(ref_fasta)
   String dbSNP_vcf_local = basename(dbSNP_vcf)
   String known_indels_sites_VCFs_local = basename(known_indels_sites_VCFs)
 
@@ -470,9 +523,9 @@ task ApplyBaseRecalibrator {
   command &lt;&lt;&lt;
   set -eo pipefail
 
-  mv ~{refGenome.ref_fasta} .
-  mv ~{refGenome.ref_fasta_index} .
-  mv ~{refGenome.ref_dict} .
+  mv ~{ref_fasta} .
+  mv ~{ref_fasta_index} .
+  mv ~{ref_dict} .
 
   mv ~{dbSNP_vcf} .
   mv ~{dbSNP_vcf_index} .
@@ -480,7 +533,7 @@ task ApplyBaseRecalibrator {
   mv ~{known_indels_sites_VCFs} .
   mv ~{known_indels_sites_indices} .
 
-  samtools index ~{input_bam} #redundant? markduplicates already does this?
+  samtools index ~{input_bam}
 
   gatk --java-options &quot;-Xms8g&quot; \
       BaseRecalibrator \
@@ -523,22 +576,23 @@ task Mutect2TumorOnly {
   input {
     File input_bam
     File input_bam_index
-    referenceGenome refGenome
+    File ref_dict
+    File ref_fasta
+    File ref_fasta_index
     File genomeReference
     File genomeReferenceIndex
   }
 
     String base_file_name = basename(input_bam, &quot;.recal.bam&quot;)
-    String ref_fasta_local = basename(refGenome.ref_fasta)
+    String ref_fasta_local = basename(ref_fasta)
     String genomeReference_local = basename(genomeReference)
 
 command &lt;&lt;&lt;
     set -eo pipefail
 
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-
+    mv ~{ref_fasta} .
+    mv ~{ref_fasta_index} .
+    mv ~{ref_dict} .
     mv ~{genomeReference} .
     mv ~{genomeReferenceIndex} .
 
@@ -608,6 +662,7 @@ task annovar {
 }</code></pre>
 
 </div>
+</div>
 <hr>
 <center> 
   <div class="footer">
@@ -622,8 +677,8 @@ task annovar {
           </div>
         </div>
       </div>
-<a href="connecting-multiple-tasks-together-in-a-linear-chain.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="about-the-authors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="the-first-task.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="organizing-variables-via-structs.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
