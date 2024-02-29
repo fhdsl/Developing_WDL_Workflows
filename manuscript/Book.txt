@@ -1,7 +1,0 @@
-1-Introduction-to-WDL.md
-2-Defining-a-workflow-plan.md
-3-The-first-task.md
-4-Organizing-variables-via-Structs.md
-5-References.md
-About-this-Course.md
-About-the-Authors.md
