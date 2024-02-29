@@ -23,16 +23,16 @@ struct referenceGenome {
     String ref_name
 }
 
-workflow minidata_mutation_calling_v1 {
+workflow mutation_calling {
   input {
-    File sampleFastq
+    File tumorSamples
     referenceGenome refGenome
     ...
   }
   # Map reads to reference
   call BwaMem {
     input:
-      input_fastq = sampleFastq,
+      input_fastq = input_fastq,
       refGenome = refGenome
   }
 }
@@ -46,7 +46,7 @@ To give values to `refGenome`, we need to modify our JSON metadata file. We defi
 
 ```         
 {
-  "minidata_mutation_calling_v1.refGenome": {
+  "mutation_calling.refGenome": {
     "ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
     "ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
     "ref_dict": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict",
@@ -57,7 +57,7 @@ To give values to `refGenome`, we need to modify our JSON metadata file. We defi
     "ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt",
     "ref_name": "hg19"
   },
-  "minidata_mutation_calling_v1.dbSNP_vcf_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi",
+  "mutation_calling.dbSNP_vcf_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi",
   ...
 }
 ```
@@ -73,6 +73,7 @@ task BwaMem {
   input {
     File input_fastq
     referenceGenome refGenome
+    Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -98,7 +99,7 @@ task BwaMem {
     mv ~{refGenome.ref_sa} .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
@@ -111,7 +112,7 @@ task BwaMem {
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }
 ```
@@ -144,9 +145,9 @@ struct referenceGenome {
     String ref_name
 }
 
-workflow minidata_mutation_calling_v1 {
+workflow mutation_calling {
   input {
-    File sampleFastq
+    File tumorSamples
 
     referenceGenome refGenome
     
@@ -166,7 +167,7 @@ workflow minidata_mutation_calling_v1 {
   # Map reads to reference
   call BwaMem {
     input:
-      input_fastq = sampleFastq,
+      input_fastq = tumorFastq,
       refGenome = refGenome
   }
   
@@ -255,7 +256,7 @@ task BwaMem {
     mv ~{refGenome.ref_sa} .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
@@ -268,7 +269,7 @@ task BwaMem {
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }
 
@@ -294,7 +295,7 @@ task MarkDuplicates {
   >>>
 
   runtime {
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
     memory: "48 GB"
     cpu: 4
   }
@@ -369,7 +370,7 @@ task ApplyBaseRecalibrator {
   runtime {
     memory: "36 GB"
     cpu: 2
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
   }
 }
 
@@ -415,7 +416,7 @@ command <<<
 >>>
 
 runtime {
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
     memory: "24 GB"
     cpu: 1
   }
@@ -455,7 +456,7 @@ task annovar {
     -nastring . -vcfinput
 >>>
   runtime {
-    docker : "perl:5.28.0"
+    docker : "ghcr.io/getwilds/annovar:${ref_name}"
     cpu: 1
     memory: "2GB"
   }
