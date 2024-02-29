@@ -45,4 +45,16 @@ runtime-and-output
 testing-the-workflow
 the-rest-of-the-linear-chain-workflow
 organizing-variables-via-structs
+appendix-backends-and-executors
+commonly-used-runtime-attributes
+general-advice
+executor-specific-notes
+cromwell
+miniwdl
+backend-specific-notes
+gcp
+disk-space
+preemptibles
+hpcs
+fred-hutch-hpc
 references
