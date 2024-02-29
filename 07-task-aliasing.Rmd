@@ -2,11 +2,14 @@
 ottrpal::set_knitr_image_path()
 ```
 
-# Calling the same task more than once 
+# Task Aliasing
+
 We've already gone over running a task multiple times in the context of scattered tasks. However, you may also want a task to run more than one time if that task is to run on multiple sets of inputs. In our case, we want to run a similar analysis on tumor samples and samples taken from normal tissue.
 
 WDL has a sophisticated feature that allows one to reuse the same task repeatedly through your workflow: **task aliasing**
 Simply put **task aliasing**  allows for the re-use of task definitions within the same workflow under different names, or "aliases". 
+
+## Advantages of aliasing
 
 The major advantages of using task aliasing are:
 
@@ -22,6 +25,7 @@ The major advantages of using task aliasing are:
 
 **6. Ensures Consistency**: Task aliasing assures that there is consistency in replicated tasks and helps the reader easily identify where changes are expected in a task. 
 
+# Start to add a task alias
 You can only alias a task that is already defined, so we will start with the BwaMem task rather than writing a new one.
 
 > Note: In the real world, typically two samples would be processed from a patient: One tumor and one normal. However, we are writing a workflow that only takes in one normal sample and multiple tumor samples. This implies that we have taken multiple tumor samples from the same patient, and we're comparing all of them against a single normal sample.
@@ -45,6 +49,8 @@ But don't forget to make sure that all the inputs reflect actually different thi
 
 In this case we will be using a different sample and therefore the input_fastq is directed to the appropriate file source. 
 
+# Add the task alias
+
 ```
   call BwaMem as normalBwaMem {
     input:
@@ -52,6 +58,7 @@ In this case we will be using a different sample and therefore the input_fastq i
       refGenome = refGenome
   }
   ```
+# Modify your output
 
  And finally you will also want to make sure that in your outputs section you are saving the appropriate outputs to reflect the task alias. 
 
@@ -60,6 +67,8 @@ output {
 File normalalignedBamSorted = normalBwaMem.analysisReadySorted
 }
 ```
+
+# Alias for other tasks
 
 We can do this for the other two tasks in our workflow as well
 
@@ -83,6 +92,9 @@ call MarkDuplicates as normalMarkDuplicates {
 Now adding these steps to the workflow we will have our tumor and normal sample aligned and recalibrated and suitable for ingestion into the mutation calling step for a paired mutation calling using MuTect2. 
 
 ```
+
+# The full workflow with task alias
+
 version 1.0
 ## WDL 101 example workflow
 ## 
