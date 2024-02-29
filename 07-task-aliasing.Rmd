@@ -9,12 +9,11 @@ WDL has a sophisticated feature that allows one to reuse the same task repeatedl
 Simply put **task aliasing**  allows for the re-use of task definitions within the same workflow under different names, or "aliases". 
 
 The major advantages of using task aliasing are:
-
- **1. Reduces Redundancy**: You don't need to copy and paste the same task definition multiple times and your workflows will be more concise and organized. 
+**1. Reduces Redundancy**: You don't need to copy and paste the same task definition multiple times and your workflows will be more concise and organized. 
 **2. Simplifies Maintenance** : If you decide to change/update/fix a task, using task aliasing will make life easy as you need to update only once in your workflow. 
- **3. Enhances Readability and Clarity**: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow ( for example are you doing this task for Sample set A or Sample set B)
+**3. Enhances Readability and Clarity**: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow ( for example are you doing this task for Sample set A or Sample set B)
 **4. Facilitates Modular Workflow Design**: Task aliasing help to make your workflow modular. This is easier to adopt by **5. Improves Workflow Scalability**: Using task aliasing it is much easier to scale the workflow across different inputs. For example you want to run a task on different sample groups (Sample set A and B) will allow the same task to be run parallely and if you choose with different modifications. 
-**6. Ensures Consistency**: Task aliasing assures that there is consistency in replicated tasks and helps the reader easily identify where changes are expected in a task. 
+**5. Ensures Consistency**: Task aliasing assures that there is consistency in replicated tasks and helps the reader easily identify where changes are expected in a task. 
 
 You can only alias a task that is already defined, so we will start with the BwaMem task rather than writing a new one.
 
