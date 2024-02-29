@@ -1,4 +1,4 @@
-# {Course Name}
+# Developing WDL Workflows
 
 This course was created from [this GitHub template](https://github.com/jhudsl/OTTR_Template).
 
