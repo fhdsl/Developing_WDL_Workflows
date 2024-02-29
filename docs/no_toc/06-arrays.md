@@ -1,0 +1,163 @@
+
+
+# Using Arrays For Parallelization and Other Use Cases
+
+We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let's look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.
+
+In this chapter, we'll be going over:
+
+- How to use scattered tasks to run a workflow on multiple samples at once
+
+- How to use arrays effectively
+
+- How to reference arrays in a task's command section
+
+- How arrays differ from Structs
+
+## The array type
+Arrays are essentially lists of another [primitive type](https://en.wikipedia.org/wiki/Primitive_data_type). It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primative type. For example, an Array[String] could contain the strings "cat" and "dog" but not the integer 1965 (however, it could have "1965" as a string).
+
+In chapter 4, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.
+
+In WDL, arrays are 0 indexed, so the "first" value in an array is referenced by `[0]`. As per the WDL spec, arrays retain their order and are [immutable](https://en.wikipedia.org/wiki/Immutable_object) -- if you explicitly define an Array[String] with the members ["foo", "bar", "bizz"], you can be confident that "foo" will always be at index 0.
+
+```
+Array[String] foobarbizz = ["foo", "bar", "bizz"]
+String foo = foobarbizz[0] # will always be "foo"
+```
+
+Because arrays are [immutable](https://en.wikipedia.org/wiki/Immutable_object), if you wish to add values to an array, you will need to define a new array.
+
+## Scattered tasks
+Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample's chromosomes in parallel, or similar situations where breaking up data into discrete "chunks" makes sense.
+
+It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the `cpu` WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially "unaware" of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.
+
+### Troubleshooting
+Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintuitive. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.
+
+Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend's hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scalable cloud-based backends such as Terra, but isn't uncommon when running scattered tasks on a local machine.
+
+## Making our workflow run on multiple samples at once using scattered tasks and arrays
+When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we'll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.
+
+For starters, we'll want to change our workflow-level sample variables from File to Array[File]. However, we don't need to change any of the reference genome files, because every instance of our tasks will be taking in the same reference genome files. In other words, our struct is unchanged.
+
+
+```
+version 1.0
+
+struct referenceGenome {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String ref_name
+}
+
+
+workflow minidata_mutation_calling_chapter6 {
+  input {
+    Array[File] tumorSamples
+
+    referenceGenome refGenome
+    
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+
+  }
+
+```
+
+Next, we will want to look at our chain of tasks. Each of these tasks are designed to take in a single sample. In theory, we could rewrite each task to iterate through an array of multiple samples. However, it's much simpler to keep those tasks as single-sample tasks, and simply run them on one sample at a time. To do this, we encapsulate the task calls in the workflow document with `scatter`.
+
+
+```
+  scatter (tumorFastq in tumorSamples) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
+    
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+      input:
+        input_bam = tumorMarkDuplicates.markDuplicates_bam,
+        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+    }
+  }
+```
+
+A scatter is essentially the WDL version of a [for loop](https://en.wikipedia.org/wiki/For_loop). Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only "see" one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays. As a result, our outputs are now Array[File] instead of just File.
+
+```
+  output {
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+  }
+```
+
+You can reference a full copy of this workflow [here](../resources/chapter-6.wdl).
+
+
+## Referencing an array in a task
+
+Because each task only takes in one sample, we are not directly inputting arrays into a file. However, it's important to know how to do this. If a task's input variable is an array, we must include an array separator. In WDL 1.0, this is done using the `sep=` expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via `sep`. In this example, that is a simple space, as that is one way how to construct a bash variable.
+
+```
+task count_words {
+  input {
+    Array[String] a_big_sentence
+  }
+  command <<<
+    ARRAY_OF_WORDS=(~{sep=" " a_big_sentence})
+    echo ${#ARRAY_OF_FILES[@]} >> length.txt
+    # Note how the bash array uses ${} syntax, which could quickly get
+    # confusing if we used that syntax for our WDL variables. This is
+    # why we recommend using tilde + {} for your WDL variables.
+  >>>
+}
+```
+It's usually unnecessary to declare an Array[String], because a single String can have many words in it. That being said, an Array[String] can sometimes come in handy if it is made up of outputs from other tasks. We'll talk more about chaining tasks together in upcoming chapters.
+
+::: {.notice data-latex="warning"}
+The WDL 1.1 spec added a new built-in function, `sep()`, which replaces the `sep=` expression placeholder for arrays. This same version of the spec also notes that the `sep=` expression placeholder [are deprecated and will be removed from future versions of WDL](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options). For the time being, we recommend sticking with `sep=` as it is compatible with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.
+:::
+
+If you're not used to working in bash, the syntax for interacting with bash arrays can be unintuitive, but you don't have to write a WDL's command section only using bash. In fact, working in another language besides bash within a WDL can be a great way to write code quickly, or perform tasks that are more advanced than what a typical bash script can handle. Just be sure to set `sep` properly to ensure that your array is interpreted correctly. In this example, we place quotation marks before and after the variable to ensure that the first and last value of the list are given beginning and ending quotation marks respectively.
+
+```
+task count_words_python {
+  input {
+    Array[String] a_big_sentence
+  }
+  command <<<
+    python << CODE
+    sentence = [ "~{sep='", "' a_big_sentence}" ]
+    print(len(sentence))
+    CODE
+  >>>
+  runtime {
+    docker: "python:latest"
+  }
+}
+```

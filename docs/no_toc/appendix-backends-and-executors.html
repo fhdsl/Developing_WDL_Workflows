@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Appendix: Backends and Executors | WDL Workflows Guide</title>
+  <title>Chapter 7 Appendix: Backends and Executors | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Appendix: Backends and Executors | WDL Workflows Guide" />
+  <meta property="og:title" content="Chapter 7 Appendix: Backends and Executors | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Appendix: Backends and Executors | WDL Workflows Guide" />
+  <meta name="twitter:title" content="Chapter 7 Appendix: Backends and Executors | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,7 +29,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="organizing-variables-via-structs.html"/>
+<link rel="prev" href="using-arrays-for-parallelization-and-other-use-cases.html"/>
 <link rel="next" href="about-the-authors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -138,23 +138,33 @@
 <li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
-<li class="chapter" data-level="6" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>6</b> Appendix: Backends and Executors</a>
+<li class="chapter" data-level="6" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html"><i class="fa fa-check"></i><b>6</b> Using Arrays For Parallelization and Other Use Cases</a>
 <ul>
-<li class="chapter" data-level="6.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>6.1</b> Commonly used runtime attributes</a></li>
-<li class="chapter" data-level="6.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>6.2</b> General advice</a></li>
-<li class="chapter" data-level="6.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>6.3</b> Executor-specific notes</a>
+<li class="chapter" data-level="6.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
+<li class="chapter" data-level="6.2" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
 <ul>
-<li class="chapter" data-level="6.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>6.3.1</b> Cromwell</a></li>
-<li class="chapter" data-level="6.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>6.3.2</b> miniwdl</a></li>
+<li class="chapter" data-level="6.2.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
 </ul></li>
-<li class="chapter" data-level="6.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>6.4</b> Backend-specific notes</a>
+<li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
+<li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>7</b> Appendix: Backends and Executors</a>
 <ul>
-<li class="chapter" data-level="6.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcp"><i class="fa fa-check"></i><b>6.4.1</b> GCP</a></li>
-<li class="chapter" data-level="6.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>6.4.2</b> HPCs</a></li>
+<li class="chapter" data-level="7.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>7.1</b> Commonly used runtime attributes</a></li>
+<li class="chapter" data-level="7.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>7.2</b> General advice</a></li>
+<li class="chapter" data-level="7.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>7.3</b> Executor-specific notes</a>
+<ul>
+<li class="chapter" data-level="7.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>7.3.1</b> Cromwell</a></li>
+<li class="chapter" data-level="7.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>7.3.2</b> miniwdl</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>7.4</b> Backend-specific notes</a>
+<ul>
+<li class="chapter" data-level="7.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcp"><i class="fa fa-check"></i><b>7.4.1</b> GCP</a></li>
+<li class="chapter" data-level="7.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>7.4.2</b> HPCs</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="about-the-authors.html"><a href="about-the-authors.html"><i class="fa fa-check"></i>About the Authors</a></li>
-<li class="chapter" data-level="7" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>7</b> References</a></li>
+<li class="chapter" data-level="8" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>8</b> References</a></li>
 <li class="divider"></li>
 <p style="text-align:center;"> <a href="https://github.com/jhudsl/OTTR_Template" target="blank" > This content was published with</a> <a href="https://bookdown.org/" target="blank"> bookdown by: </a> </p>
 <p style="text-align:center;"> <a href="https://hutchdatascience.org/"> The Fred Hutch Data Science Lab </a></p>
@@ -169,7 +179,7 @@
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">WDL Workflows Guide</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Developing WDL Workflows</a>
           </h1>
         </div>
 
@@ -189,11 +199,11 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="appendix-backends-and-executors" class="section level1" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Appendix: Backends and Executors</h1>
+<div id="appendix-backends-and-executors" class="section level1" number="7">
+<h1><span class="header-section-number">Chapter 7</span> Appendix: Backends and Executors</h1>
 <p>Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software depenendencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.</p>
-<div id="commonly-used-runtime-attributes" class="section level2" number="6.1">
-<h2><span class="header-section-number">6.1</span> Commonly used runtime attributes</h2>
+<div id="commonly-used-runtime-attributes" class="section level2" number="7.1">
+<h2><span class="header-section-number">7.1</span> Commonly used runtime attributes</h2>
 <p>Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.</p>
 <table>
 <colgroup>
@@ -265,8 +275,8 @@
 </tbody>
 </table>
 </div>
-<div id="general-advice" class="section level2" number="6.2">
-<h2><span class="header-section-number">6.2</span> General advice</h2>
+<div id="general-advice" class="section level2" number="7.2">
+<h2><span class="header-section-number">7.2</span> General advice</h2>
 <ul>
 <li>Consider using more runtime attributes, not fewer. miniwdl and Cromwell will ignore runtime attributes as necessary, so including a runtime attribute that only applies to a particular backend will not harm portability on other backends.</li>
 <li>The Dockstore CLI, as of v1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.</li>
@@ -275,10 +285,10 @@
 <li>Workflow systems with a UI like Terra may become unresponsive if you run a task scattered more than 1000x. Outputs may need to be interacted with using an API specific to that backend.</li>
 </ul>
 </div>
-<div id="executor-specific-notes" class="section level2" number="6.3">
-<h2><span class="header-section-number">6.3</span> Executor-specific notes</h2>
-<div id="cromwell" class="section level3" number="6.3.1">
-<h3><span class="header-section-number">6.3.1</span> Cromwell</h3>
+<div id="executor-specific-notes" class="section level2" number="7.3">
+<h2><span class="header-section-number">7.3</span> Executor-specific notes</h2>
+<div id="cromwell" class="section level3" number="7.3.1">
+<h3><span class="header-section-number">7.3.1</span> Cromwell</h3>
 <p>Cromwell running on a local machine has a tendency to heavily use system resources, especially when running scattered tasks. Sometimes, it will use too many resources at once. When this happens, your workflow’s tasks will tend to fail with exit code 137, or you will see hints about running out of memory in the logs of your tasks. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker. To prevent this, modify <code>concurrent-job-limit</code> for your backend in the Cromwell configuration file.</p>
 <p>Other notes:</p>
 <ul>
@@ -289,8 +299,8 @@
 <li><p>Generally speaking, Cromwell will be able to directly modify input files by default without causing permission errors.</p></li>
 </ul>
 </div>
-<div id="miniwdl" class="section level3" number="6.3.2">
-<h3><span class="header-section-number">6.3.2</span> miniwdl</h3>
+<div id="miniwdl" class="section level3" number="7.3.2">
+<h3><span class="header-section-number">7.3.2</span> miniwdl</h3>
 <p>The authors of this course have informally observed that miniwdl appears to be “safer” in terms of using up too many resources than Cromwell. However, if you are sharing a compute with other users, it is still worth looking at the miniwdl configuration file and limiting how many Docker images you spin up at the same time.</p>
 <p>Other notes:</p>
 <ul>
@@ -302,12 +312,12 @@
 </ul>
 </div>
 </div>
-<div id="backend-specific-notes" class="section level2" number="6.4">
-<h2><span class="header-section-number">6.4</span> Backend-specific notes</h2>
-<div id="gcp" class="section level3" number="6.4.1">
-<h3><span class="header-section-number">6.4.1</span> GCP</h3>
-<div id="disk-space" class="section level4" number="6.4.1.1">
-<h4><span class="header-section-number">6.4.1.1</span> Disk space</h4>
+<div id="backend-specific-notes" class="section level2" number="7.4">
+<h2><span class="header-section-number">7.4</span> Backend-specific notes</h2>
+<div id="gcp" class="section level3" number="7.4.1">
+<h3><span class="header-section-number">7.4.1</span> GCP</h3>
+<div id="disk-space" class="section level4" number="7.4.1.1">
+<h4><span class="header-section-number">7.4.1.1</span> Disk space</h4>
 <p>Running Cromwell on GCP is one of the few times that the <code>disks</code> runtime attribute is a soft requirement. Due to how Cromwell works, it must request a certain amount of disk space from GCP before running the task’s command section. In other words, you must know roughly how much disk space your task will use before it runs. If not specified in the runtime attribute of a task, Cromwell will request 10 GB of SSD space.</p>
 <p>A helpful way to handle disk space in WDLs you anticipate will be run on GCP/Terra is to make disk size a function of the size of your task inputs. The task inputs and any private variable declarations made outside of the command section are all calculated before Cromwell requests a disk from GCP, so you can use this section to define a disk size function. For example:</p>
 <!-- TODO: make seperate file in resources and miniwdl check it --->
@@ -339,13 +349,13 @@ task do_something {
 <li><p>Forgetting the space between “local-disk” and the integer (or the integer and “HDD”/“SSD”)</p></li>
 </ul>
 </div>
-<div id="preemptibles" class="section level4" number="6.4.1.2">
-<h4><span class="header-section-number">6.4.1.2</span> Preemptibles</h4>
+<div id="preemptibles" class="section level4" number="7.4.1.2">
+<h4><span class="header-section-number">7.4.1.2</span> Preemptibles</h4>
 <p>Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheaper (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.</p>
 </div>
 </div>
-<div id="hpcs" class="section level3" number="6.4.2">
-<h3><span class="header-section-number">6.4.2</span> HPCs</h3>
+<div id="hpcs" class="section level3" number="7.4.2">
+<h3><span class="header-section-number">7.4.2</span> HPCs</h3>
 <p>It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:</p>
 <ul>
 <li><p>Some HPCs do not support the use of Docker due to security concerns</p>
@@ -354,8 +364,8 @@ task do_something {
 </ul></li>
 <li><p>Some HPCs will use <code>disks</code> to determine which disk to run on, which can be useful for managing disk space</p></li>
 </ul>
-<div id="fred-hutch-hpc" class="section level4" number="6.4.2.1">
-<h4><span class="header-section-number">6.4.2.1</span> Fred Hutch HPC</h4>
+<div id="fred-hutch-hpc" class="section level4" number="7.4.2.1">
+<h4><span class="header-section-number">7.4.2.1</span> Fred Hutch HPC</h4>
 <ul>
 <li><p>The Fred Hutch HPC supports the use of Docker, so the <code>docker</code> runtime attribute works as expected</p></li>
 <li><p>The <code>memory</code> and <code>gpu</code> runtime attributes are ignored, but <code>cpu</code> works as expected</p></li>
@@ -380,7 +390,7 @@ task do_something {
           </div>
         </div>
       </div>
-<a href="organizing-variables-via-structs.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="using-arrays-for-parallelization-and-other-use-cases.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="about-the-authors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>

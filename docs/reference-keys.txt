@@ -45,6 +45,12 @@ runtime-and-output
 testing-the-workflow
 the-rest-of-the-linear-chain-workflow
 organizing-variables-via-structs
+using-arrays-for-parallelization-and-other-use-cases
+the-array-type
+scattered-tasks
+troubleshooting-1
+making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays
+referencing-an-array-in-a-task
 appendix-backends-and-executors
 commonly-used-runtime-attributes
 general-advice
