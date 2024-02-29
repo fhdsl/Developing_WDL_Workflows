@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 5 Organizing variables via Structs | Developing WDL Workflows</title>
+  <title>Chapter 7 Task Aliasing | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 5 Organizing variables via Structs | Developing WDL Workflows" />
+  <meta property="og:title" content="Chapter 7 Task Aliasing | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 5 Organizing variables via Structs | Developing WDL Workflows" />
+  <meta name="twitter:title" content="Chapter 7 Task Aliasing | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="connecting-multiple-tasks-together-in-a-linear-chain.html"/>
-<link rel="next" href="using-arrays-for-parallelization-and-other-use-cases.html"/>
+<link rel="prev" href="using-arrays-for-parallelization-and-other-use-cases.html"/>
+<link rel="next" href="appendix-backends-and-executors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -207,113 +207,97 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="organizing-variables-via-structs" class="section level1" number="5">
-<h1><span class="header-section-number">Chapter 5</span> Organizing variables via Structs</h1>
-<p>In our workflow so far, we see that certain variables are always used together, even for different tasks. For example, variables related to the reference genome are always used for the same purpose and passed on to tasks in almost the same way. This leads to quite a bit of coding redundancy, as when we write down the large set of variables related to the reference genome as task inputs, we are just thinking about one entity. We don’t make distinctions of the reference genome files until the task body itself.</p>
-<p>To improve code organization and readability, we can package all variables related to the reference genome into a compound data structure called a <strong>struct</strong>. With a struct variable, we can refer all the packaged variables as one single variable, and also refer to specific variables within the struct without losing any information. <a href="https://docs.openwdl.org/en/stable/WDL/using_structs/">OpenWDL Docs</a> also has an excellent introduction and examples on structs.</p>
-<p>To define a struct, we must declare it outside of a <code>workflow</code> and <code>task</code>:</p>
-<pre><code>struct referenceGenome {
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-    String ref_name
-}
-
-workflow minidata_mutation_calling_v1 {
+<div id="task-aliasing" class="section level1" number="7">
+<h1><span class="header-section-number">Chapter 7</span> Task Aliasing</h1>
+<p>We’ve already gone over running a task multiple times in the context of scattered tasks. However, you may also want a task to run more than one time if that task is to run on multiple sets of inputs. In our case, we want to run a similar analysis on tumor samples and samples taken from normal tissue.</p>
+<p>WDL has a sophisticated feature that allows one to reuse the same task repeatedly through your workflow: <strong>task aliasing</strong>
+Simply put <strong>task aliasing</strong> allows for the re-use of task definitions within the same workflow under different names, or “aliases”.</p>
+<div id="advantages-of-aliasing" class="section level2" number="7.1">
+<h2><span class="header-section-number">7.1</span> Advantages of aliasing</h2>
+<p>The major advantages of using task aliasing are:</p>
+<p><strong>1. Reduces Redundancy</strong>: You don’t need to copy and paste the same task definition multiple times and your workflows will be more concise and organized.</p>
+<p><strong>2. Simplifies Maintenance</strong> : If you decide to change/update/fix a task, using task aliasing will make life easy as you need to update only once in your workflow.</p>
+<p><strong>3. Enhances Readability and Clarity</strong>: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow ( for example are you doing this task for Sample set A or Sample set B)</p>
+<p><strong>4. Facilitates Modular Workflow Design</strong>: Task aliasing help to make your workflow modular. This is easier to adopt by</p>
+<p><strong>5. Improves Workflow Scalability</strong>: Using task aliasing it is much easier to scale the workflow across different inputs. For example you want to run a task on different sample groups (Sample set A and B) will allow the same task to be run parallely and if you choose with different modifications.</p>
+<p><strong>6. Ensures Consistency</strong>: Task aliasing assures that there is consistency in replicated tasks and helps the reader easily identify where changes are expected in a task.</p>
+</div>
+<div id="start-to-add-a-task-alias" class="section level2" number="7.2">
+<h2><span class="header-section-number">7.2</span> Start to add a task alias</h2>
+<p>You can only alias a task that is already defined, so we will start with the BwaMem task rather than writing a new one.</p>
+<blockquote>
+<p>Note: In the real world, typically two samples would be processed from a patient: One tumor and one normal. However, we are writing a workflow that only takes in one normal sample and multiple tumor samples. This implies that we have taken multiple tumor samples from the same patient, and we’re comparing all of them against a single normal sample.</p>
+</blockquote>
+<p>Here we are creating an alias for the task BwaMem. We want to do this so it can run this task on the “normal” samples and store them seperately.</p>
+<p>First, make sure that in your workflow input, you reference to the normal samples as input.</p>
+<pre><code>workflow mutation_calling {
   input {
-    File sampleFastq
-    referenceGenome refGenome
     ...
-  }
-  # Map reads to reference
-  call BwaMem {
-    input:
-      input_fastq = sampleFastq,
-      refGenome = refGenome
-  }
-}</code></pre>
-<p>The <code>referenceGenome</code> struct contains all the variables related to the reference genome, but values cannot be defined here. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.</p>
-<p>In our workflow inputs, we remove all of the <code>File</code> variables associated with reference genome definitions, but keep anything that isn’t related to the reference genome, such as <code>sampleFastq</code>. We instead declare a <code>referenceGenome</code> struct variable called <code>refGenome</code> via <code>referenceGenome refGenome</code>. We can access the variables within a struct by the following syntax: <code>structVar.varName</code>, such as <code>refGenome.ref_name</code>. The <a href="https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#struct-definition">WDL spec</a> has more information on how to define and use structs.</p>
-<p>To give values to <code>refGenome</code>, we need to modify our JSON metadata file. We define the <code>refGenome</code> variable in a nested structure that corresponds to the <code>referenceGenome</code> struct. Let’s take a look:</p>
-<pre><code>{
-  &quot;minidata_mutation_calling_v1.refGenome&quot;: {
-    &quot;ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
-    &quot;ref_fasta_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai&quot;,
-    &quot;ref_dict&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict&quot;,
-    &quot;ref_pac&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac&quot;,
-    &quot;ref_sa&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa&quot;,
-    &quot;ref_amb&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb&quot;,
-    &quot;ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
-    &quot;ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;,
-    &quot;ref_name&quot;: &quot;hg19&quot;
-  },
-  &quot;minidata_mutation_calling_v1.dbSNP_vcf_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi&quot;,
-  ...
-}</code></pre>
-<p>Now <code>refGenome</code> has all the values it needs for our tasks.</p>
-<p>In addition, we have replaced all the reference genome inputs in call <code>BwaMem</code> with <code>refGenome</code> in order to pass information to a task via structs.</p>
-<p>Within the <code>BwaMem</code> task, we must refer to variables inside the struct, such as <code>refGenome.ref_name</code> (which has a value of “hg19” using this JSON metadata):</p>
-<pre><code>task BwaMem {
-  input {
-    File input_fastq
-    referenceGenome refGenome
-  }
-  
-  String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(refGenome.ref_fasta)
-
-  String read_group_id = &quot;ID:&quot; + base_file_name
-  String sample_name = &quot;SM:&quot; + base_file_name
-  String platform = &quot;illumina&quot;
-  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
-
-
-  command &lt;&lt;&lt;
-    set -eo pipefail
-
-    #can we iterate through a struct??
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-    mv ~{refGenome.ref_amb} .
-    mv ~{refGenome.ref_ann} .
-    mv ~{refGenome.ref_bwt} .
-    mv ~{refGenome.ref_pac} .
-    mv ~{refGenome.ref_sa} .
-
-    bwa mem \
-      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
-      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
-  &gt;&gt;&gt;
-
-  output {
-    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
-  }
-  
-  runtime {
-    memory: &quot;48 GB&quot;
-    cpu: 16
-    docker: &quot;fredhutch/bwa:0.7.17&quot;
-  }
-}</code></pre>
-<p>Other tasks in the workflow, such as <code>ApplyBaseRecalibrator</code> and <code>Mutect2TumorOnly</code> also make use of the reference genome, so we pass <code>refGenome</code> to it. The final task <code>annovar</code> only requires the reference genome name, and none of the files in the <code>referenceGenome</code> struct. We make a stylistic choice to pass only <code>refGenome.ref_name</code> to the input of <code>annovar</code> task call, as the task doesn’t need the full information of the struct. This stylistic choice is based on the principle of passing on the minimally needed information for a modular piece of code to run, which makes the task <code>annovar</code> depend on the minimal amount of inputs. This will also save us time and disk space by not having to localize several gigabytes of reference files into the Docker container that <code>annovar</code> will be running in.</p>
-<pre><code> call annovar {
-    input:
-      input_vcf = Mutect2TumorOnly.output_vcf,
-      ref_name = refGenome.ref_name,
-      annovarTAR = annovarTAR,
-      annovar_operation = annovar_operation,
-      annovar_protocols = annovar_protocols
+    File normalSamples
+...
   }</code></pre>
-<p>Putting everything together in the workflow:</p>
-<pre><code>struct referenceGenome {
+<p>Next all that you need to do is <code>call</code> the <code>task</code> you want to alias and use <code>as</code> to the <code>alias_of_your_choice</code>.</p>
+<p>But don’t forget to make sure that all the inputs reflect actually different things we want to run this task on.</p>
+<p>In this case we will be using a different sample and therefore the input_fastq is directed to the appropriate file source.</p>
+</div>
+<div id="add-the-task-alias" class="section level2" number="7.3">
+<h2><span class="header-section-number">7.3</span> Add the task alias</h2>
+<pre><code>  call BwaMem as normalBwaMem {
+    input:
+      input_fastq = normalSamples,
+      refGenome = refGenome
+  }</code></pre>
+</div>
+<div id="modify-your-output" class="section level2" number="7.4">
+<h2><span class="header-section-number">7.4</span> Modify your output</h2>
+<p>And finally you will also want to make sure that in your outputs section you are saving the appropriate outputs to reflect the task alias.</p>
+<pre><code>output {
+File normalalignedBamSorted = normalBwaMem.analysisReadySorted
+}</code></pre>
+</div>
+<div id="alias-for-other-tasks" class="section level2" number="7.5">
+<h2><span class="header-section-number">7.5</span> Alias for other tasks</h2>
+<p>We can do this for the other two tasks in our workflow as well</p>
+<pre><code>call MarkDuplicates as normalMarkDuplicates {
+    input:
+      input_bam = normalBwaMem.analysisReadySorted
+  }
+
+  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+    input:
+      input_bam = normalMarkDuplicates.markDuplicates_bam,
+      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
+      dbSNP_vcf = dbSNP_vcf,
+      dbSNP_vcf_index = dbSNP_vcf_index,
+      known_indels_sites_VCFs = known_indels_sites_VCFs,
+      known_indels_sites_indices = known_indels_sites_indices,
+      refGenome = refGenome
+  }</code></pre>
+<p>Now adding these steps to the workflow we will have our tumor and normal sample aligned and recalibrated and suitable for ingestion into the mutation calling step for a paired mutation calling using MuTect2.</p>
+<pre><code>
+# The full workflow with task alias
+
+version 1.0
+## WDL 101 example workflow
+## 
+## This WDL workflow is intended to be used along with the WDL 101 docs. 
+## This workflow should be used for inspiration purposes only. 
+##
+## We use three samples 
+## Samples:
+## MOLM13: Normal sample
+## CALU1: KRAS G12C mutant
+## HCC4006: EGFR Ex19 deletion mutant 
+##
+## Input requirements:
+## - combined fastq files for chromosome 12 and 7 +/- 200bp around the sites of mutation only
+##
+## Output Files:
+## - An aligned bam for all 3 samples (with duplicates marked and base quality recalibrated)
+## 
+## Workflow developed by Sitapriya Moorthi, Chris Lo and Taylor Firman @ Fred Hutch and Ash (Aisling) O&#39;Farrell @ UCSC LMD: 02/28/24 for use @ Fred Hutch.
+
+struct referenceGenome {
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -325,9 +309,11 @@ workflow minidata_mutation_calling_v1 {
     String ref_name
 }
 
-workflow minidata_mutation_calling_v1 {
+
+workflow mutation_calling {
   input {
-    File sampleFastq
+    Array[File] tumorSamples
+    File normalSamples
 
     referenceGenome refGenome
     
@@ -339,71 +325,95 @@ workflow minidata_mutation_calling_v1 {
     File af_only_gnomad
     File af_only_gnomad_index
     
-    File annovarTAR
     String annovar_protocols
     String annovar_operation
   }
+ 
+  # Scatter for &quot;tumor&quot; samples   
+  scatter (tumorFastq in tumorSamples) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
     
-  # Map reads to reference
-  call BwaMem {
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+      input:
+        input_bam = tumorMarkDuplicates.markDuplicates_bam,
+        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+      }
+
+    call Mutect2Paired {
     input:
-      input_fastq = sampleFastq,
+      tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
+      tumor_bam_index = tumorApplyBaseRecalibrator.recalibrated_bai,
+      normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
+      normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
+      refGenome = refGenome,
+      genomeReference = af_only_gnomad,
+      genomeReferenceIndex = af_only_gnomad_index
+  }
+
+  call annovar {
+    input:
+      input_vcf = Mutect2Paired.output_vcf,
+      ref_name = refGenome.ref_name,
+      annovar_operation = annovar_operation,
+      annovar_protocols = annovar_protocols
+  }
+}
+  
+  # Do for normal sample
+  call BwaMem as normalBwaMem {
+    input:
+      input_fastq = normalSamples,
       refGenome = refGenome
   }
   
-  call MarkDuplicates {
+  call MarkDuplicates as normalMarkDuplicates {
     input:
-      input_bam = BwaMem.analysisReadySorted
+      input_bam = normalBwaMem.analysisReadySorted
   }
 
-  call ApplyBaseRecalibrator {
+  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
     input:
-      input_bam = MarkDuplicates.markDuplicates_bam,
-      input_bam_index = MarkDuplicates.markDuplicates_bai,
+      input_bam = normalMarkDuplicates.markDuplicates_bam,
+      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
       dbSNP_vcf = dbSNP_vcf,
       dbSNP_vcf_index = dbSNP_vcf_index,
       known_indels_sites_VCFs = known_indels_sites_VCFs,
       known_indels_sites_indices = known_indels_sites_indices,
       refGenome = refGenome
-    }
+  }
 
-  call Mutect2TumorOnly {
-      input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
-        refGenome = refGenome,
-        genomeReference = af_only_gnomad,
-        genomeReferenceIndex = af_only_gnomad_index
-    }
-  
-  call annovar {
-      input:
-        input_vcf = Mutect2TumorOnly.output_vcf,
-        ref_name = refGenome.ref_name,
-        annovarTAR = annovarTAR,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols
-    }
-  
-  # Outputs that will be retained when execution is complete
+
   output {
-    File alignedBamSorted = BwaMem.analysisReadySorted
-    File markDuplicates_bam = MarkDuplicates.markDuplicates_bam
-    File markDuplicates_bai = MarkDuplicates.markDuplicates_bai
-    File analysisReadyBam = ApplyBaseRecalibrator.recalibrated_bam 
-    File analysisReadyIndex = ApplyBaseRecalibrator.recalibrated_bai
-    File Mutect_Vcf = Mutect2TumorOnly.output_vcf
-    File Mutect_VcfIndex = Mutect2TumorOnly.output_vcf_index
-    File Mutect_AnnotatedVcf = annovar.output_annotated_vcf
-    File Mutect_AnnotatedTable = annovar.output_annotated_table
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+    File normalalignedBamSorted = normalBwaMem.analysisReadySorted
+    File normalmarkDuplicates_bam = normalMarkDuplicates.markDuplicates_bam
+    File normalmarkDuplicates_bai = normalMarkDuplicates.markDuplicates_bai
+    File normalanalysisReadyBam = normalApplyBaseRecalibrator.recalibrated_bam 
+    File normalanalysisReadyIndex = normalApplyBaseRecalibrator.recalibrated_bai
+    Array[File] Mutect2Paired_Vcf = Mutect2Paired.output_vcf
+    Array[File] Mutect2Paired_VcfIndex = Mutect2Paired.output_vcf_index
+    Array[File] Mutect2Paired_AnnotatedVcf = annovar.output_annotated_vcf
+    Array[File] Mutect2Paired_AnnotatedTable = annovar.output_annotated_table
   }
 }
-
-
-
-
-
-
 # TASK DEFINITIONS
 
 # Align fastq file to the reference genome
@@ -411,6 +421,7 @@ task BwaMem {
   input {
     File input_fastq
     referenceGenome refGenome
+    Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
@@ -436,7 +447,7 @@ task BwaMem {
     mv ~{refGenome.ref_sa} .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
+      -p -v 3 -t ~{threads} -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
       ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
@@ -449,7 +460,7 @@ task BwaMem {
   runtime {
     memory: &quot;48 GB&quot;
     cpu: 16
-    docker: &quot;fredhutch/bwa:0.7.17&quot;
+    docker: &quot;ghcr.io/getwilds/bwa:0.7.17&quot;
   }
 }
 
@@ -475,7 +486,7 @@ task MarkDuplicates {
   &gt;&gt;&gt;
 
   runtime {
-    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
+    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
     memory: &quot;48 GB&quot;
     cpu: 4
   }
@@ -550,28 +561,29 @@ task ApplyBaseRecalibrator {
   runtime {
     memory: &quot;36 GB&quot;
     cpu: 2
-    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
+    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
   }
 }
 
+# Mutect 2 calling tumor-normal
 
-
-# Mutect 2 calling
-
-task Mutect2TumorOnly {
+task Mutect2Paired {
   input {
-    File input_bam
-    File input_bam_index
+    File tumor_bam
+    File tumor_bam_index
+    File normal_bam
+    File normal_bam_index
     referenceGenome refGenome
     File genomeReference
     File genomeReferenceIndex
   }
 
-    String base_file_name = basename(input_bam, &quot;.recal.bam&quot;)
-    String ref_fasta_local = basename(refGenome.ref_fasta)
-    String genomeReference_local = basename(genomeReference)
+  String base_file_name_tumor = basename(tumor_bam, &quot;.recal.bam&quot;)
+  String base_file_name_normal = basename(normal_bam, &quot;.recal.bam&quot;)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
+  String genomeReference_local = basename(genomeReference)
 
-command &lt;&lt;&lt;
+  command &lt;&lt;&lt;
     set -eo pipefail
 
     mv ~{refGenome.ref_fasta} .
@@ -583,60 +595,54 @@ command &lt;&lt;&lt;
 
     gatk --java-options &quot;-Xms16g&quot; Mutect2 \
       -R ~{ref_fasta_local} \
-      -I ~{input_bam} \
+      -I ~{tumor_bam} \
+      -I ~{normal_bam} \
       -O preliminary.vcf.gz \
       --germline-resource ~{genomeReference_local} \
-     
+
     gatk --java-options &quot;-Xms16g&quot; FilterMutectCalls \
       -V preliminary.vcf.gz \
-      -O ~{base_file_name}.mutect2.vcf.gz \
+      -O ~{base_file_name_tumor}.mutect2.vcf.gz \
       -R ~{ref_fasta_local} \
       --stats preliminary.vcf.gz.stats \
-     
+
 &gt;&gt;&gt;
 
-runtime {
-    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
+  runtime {
+    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
     memory: &quot;24 GB&quot;
     cpu: 1
   }
 
-output {
-    File output_vcf = &quot;${base_file_name}.mutect2.vcf.gz&quot;
-    File output_vcf_index = &quot;${base_file_name}.mutect2.vcf.gz.tbi&quot;
+  output {
+    File output_vcf = &quot;${base_file_name_tumor}.mutect2.vcf.gz&quot;
+    File output_vcf_index = &quot;${base_file_name_tumor}.mutect2.vcf.gz.tbi&quot;
   }
-
 }
 
-
-
-
-# annotate with annovar
+# annotate with annovar mutation calling outputs
 task annovar {
   input {
-  File input_vcf
-  String ref_name
-  File annovarTAR
-  String annovar_protocols
-  String annovar_operation
-}
+    File input_vcf
+    String ref_name
+    String annovar_protocols
+    String annovar_operation
+  }
   String base_vcf_name = basename(input_vcf, &quot;.vcf.gz&quot;)
   
   command &lt;&lt;&lt;
-  set -eo pipefail
+    set -eo pipefail
   
-  tar -xzvf ~{annovarTAR}
-  
-  perl annovar/table_annovar.pl ~{input_vcf} annovar/humandb/ \
-    -buildver ~{ref_name} \
-    -outfile ~{base_vcf_name} \
-    -remove \
-    -protocol ~{annovar_protocols} \
-    -operation ~{annovar_operation} \
-    -nastring . -vcfinput
+    perl /annovar/table_annovar.pl ~{input_vcf} /annovar/humandb/ \
+      -buildver ~{ref_name} \
+      -outfile ~{base_vcf_name} \
+      -remove \
+      -protocol ~{annovar_protocols} \
+      -operation ~{annovar_operation} \
+      -nastring . -vcfinput
 &gt;&gt;&gt;
   runtime {
-    docker : &quot;perl:5.28.0&quot;
+    docker : &quot;ghcr.io/getwilds/annovar:${ref_name}&quot;
     cpu: 1
     memory: &quot;2GB&quot;
   }
@@ -646,6 +652,7 @@ task annovar {
   }
 }</code></pre>
 
+</div>
 </div>
 <hr>
 <center> 
@@ -661,8 +668,8 @@ task annovar {
           </div>
         </div>
       </div>
-<a href="connecting-multiple-tasks-together-in-a-linear-chain.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="using-arrays-for-parallelization-and-other-use-cases.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="using-arrays-for-parallelization-and-other-use-cases.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="appendix-backends-and-executors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
