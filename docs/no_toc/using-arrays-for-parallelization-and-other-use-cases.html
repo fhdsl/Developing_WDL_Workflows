@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 7 Appendix: Backends and Executors | Developing WDL Workflows</title>
+  <title>Chapter 6 Using Arrays For Parallelization and Other Use Cases | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 7 Appendix: Backends and Executors | Developing WDL Workflows" />
+  <meta property="og:title" content="Chapter 6 Using Arrays For Parallelization and Other Use Cases | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 7 Appendix: Backends and Executors | Developing WDL Workflows" />
+  <meta name="twitter:title" content="Chapter 6 Using Arrays For Parallelization and Other Use Cases | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="using-arrays-for-parallelization-and-other-use-cases.html"/>
-<link rel="next" href="about-the-authors.html"/>
+<link rel="prev" href="organizing-variables-via-structs.html"/>
+<link rel="next" href="appendix-backends-and-executors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -199,181 +199,136 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="appendix-backends-and-executors" class="section level1" number="7">
-<h1><span class="header-section-number">Chapter 7</span> Appendix: Backends and Executors</h1>
-<p>Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software depenendencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.</p>
-<div id="commonly-used-runtime-attributes" class="section level2" number="7.1">
-<h2><span class="header-section-number">7.1</span> Commonly used runtime attributes</h2>
-<p>Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.</p>
-<table>
-<colgroup>
-<col width="5%" />
-<col width="34%" />
-<col width="12%" />
-<col width="12%" />
-<col width="34%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Attribute</th>
-<th>Fred Hutch HPC</th>
-<th>Local Cromwell</th>
-<th>Local miniwdl</th>
-<th>Terra</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>bootDiskSizeGB</td>
-<td>n/a</td>
-<td>n/a</td>
-<td>n/a</td>
-<td>Request a disk of this size to boot the Docker image (useful for very large Docker images)</td>
-</tr>
-<tr class="even">
-<td>cpu</td>
-<td>Reserve at most this many cores</td>
-<td>n/a</td>
-<td>Reserve at most this many cores</td>
-<td>Request a minimum of this many cores (scales with memory)</td>
-</tr>
-<tr class="odd">
-<td>disks</td>
-<td>n/a</td>
-<td>n/a</td>
-<td>n/a</td>
-<td>Request this much disk size - soft requirement, if not specified, will request 10 GB</td>
-</tr>
-<tr class="even">
-<td>docker</td>
-<td>Run the task in this Docker image</td>
-<td>Run the task in this Docker image</td>
-<td>Run the task in this Docker image</td>
-<td>Run the task in this Docker image</td>
-</tr>
-<tr class="odd">
-<td>memory</td>
-<td>Maximum amount of memory to use</td>
-<td>n/a</td>
-<td>Maximum amount of memory to use</td>
-<td>Minimum amount of memory to use (scales with CPU)</td>
-</tr>
-<tr class="even">
-<td>preemptible</td>
-<td>n/a</td>
-<td>n/a</td>
-<td>n/a</td>
-<td>Attempt running on a preemptible instance this many times, then switch to a non-preemptible</td>
-</tr>
-<tr class="odd">
-<td>walltime</td>
-<td>How much <a href="https://en.wikipedia.org/wiki/Elapsed_real_time">walltime</a> to request for a task</td>
-<td>n/a</td>
-<td>n/a</td>
-<td>n/a</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="general-advice" class="section level2" number="7.2">
-<h2><span class="header-section-number">7.2</span> General advice</h2>
+<div id="using-arrays-for-parallelization-and-other-use-cases" class="section level1" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Using Arrays For Parallelization and Other Use Cases</h1>
+<p>We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let’s look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.</p>
+<p>In this chapter, we’ll be going over:</p>
 <ul>
-<li>Consider using more runtime attributes, not fewer. miniwdl and Cromwell will ignore runtime attributes as necessary, so including a runtime attribute that only applies to a particular backend will not harm portability on other backends.</li>
-<li>The Dockstore CLI, as of v1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.</li>
-<li>If running a workflow with a scattered task on a local compute, consider using miniwdl instead of Cromwell.</li>
-<li>Whether you are using miniwdl or Cromwell locally, make sure Docker has enough resources to be able to download and run the Docker images specified in your WDL tasks.</li>
-<li>Workflow systems with a UI like Terra may become unresponsive if you run a task scattered more than 1000x. Outputs may need to be interacted with using an API specific to that backend.</li>
+<li><p>How to use scattered tasks to run a workflow on multiple samples at once</p></li>
+<li><p>How to use arrays effectively</p></li>
+<li><p>How to reference arrays in a task’s command section</p></li>
+<li><p>How arrays differ from Structs</p></li>
 </ul>
+<div id="the-array-type" class="section level2" number="6.1">
+<h2><span class="header-section-number">6.1</span> The array type</h2>
+<p>Arrays are essentially lists of another <a href="https://en.wikipedia.org/wiki/Primitive_data_type">primitive type</a>. It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primative type. For example, an Array[String] could contain the strings “cat” and “dog” but not the integer 1965 (however, it could have “1965” as a string).</p>
+<p>In chapter 4, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.</p>
+<p>In WDL, arrays are 0 indexed, so the “first” value in an array is referenced by <code>[0]</code>. As per the WDL spec, arrays retain their order and are <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a> – if you explicitly define an Array[String] with the members [“foo”, “bar”, “bizz”], you can be confident that “foo” will always be at index 0.</p>
+<pre><code>Array[String] foobarbizz = [&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;]
+String foo = foobarbizz[0] # will always be &quot;foo&quot;</code></pre>
+<p>Because arrays are <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a>, if you wish to add values to an array, you will need to define a new array.</p>
 </div>
-<div id="executor-specific-notes" class="section level2" number="7.3">
-<h2><span class="header-section-number">7.3</span> Executor-specific notes</h2>
-<div id="cromwell" class="section level3" number="7.3.1">
-<h3><span class="header-section-number">7.3.1</span> Cromwell</h3>
-<p>Cromwell running on a local machine has a tendency to heavily use system resources, especially when running scattered tasks. Sometimes, it will use too many resources at once. When this happens, your workflow’s tasks will tend to fail with exit code 137, or you will see hints about running out of memory in the logs of your tasks. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker. To prevent this, modify <code>concurrent-job-limit</code> for your backend in the Cromwell configuration file.</p>
-<p>Other notes:</p>
-<ul>
-<li><p>Cromwell runs as a jar file, so it is very portable and does not need to be “installed” provided you have a modern Java runtime environment.</p></li>
-<li><p>If you just want to check workflows are valid, you can run <code>womtool</code> as a jar file (available on Cromwell’s GitHub page). This will check not only the WDL file you pass it, but also any WDLs it imports.</p></li>
-<li><p>Cromwell does not use call cacheing on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.</p></li>
-<li><p>Cromwell supports the <code>gpu</code> and <code>disks</code> runtime attributes on certain backends. If using the <code>gpu</code> runtime attribute, make sure your task is set up correctly to properly use this resource.</p></li>
-<li><p>Generally speaking, Cromwell will be able to directly modify input files by default without causing permission errors.</p></li>
-</ul>
-</div>
-<div id="miniwdl" class="section level3" number="7.3.2">
-<h3><span class="header-section-number">7.3.2</span> miniwdl</h3>
-<p>The authors of this course have informally observed that miniwdl appears to be “safer” in terms of using up too many resources than Cromwell. However, if you are sharing a compute with other users, it is still worth looking at the miniwdl configuration file and limiting how many Docker images you spin up at the same time.</p>
-<p>Other notes:</p>
-<ul>
-<li><p>miniwdl is a Python program, and it must be installed via <code>pip</code> or <code>pip3</code> to use.</p></li>
-<li><p>miniwdl’s equivalent to <code>womtool</code> is <code>miniwdl check</code>, but it also includes <code>shellcheck</code> to check the command section of your tasks.</p></li>
-<li><p>miniwdl supports call cacheing, but it is turned off by default.</p></li>
-<li><p>miniwdl does not support the <code>gpu</code> or <code>disks</code> runtime attributes and will ignore them if present in a task’s runtime section.</p></li>
-<li><p>By default, miniwdl does not duplicate input files. If your workflow only needs to read input files, this helps save disk space, but if your workflow directly modifies input files, this can result in permission errors. A simple fix is to run miniwdl with the <code>--copy-input-files</code> flag.</p></li>
-</ul>
+<div id="scattered-tasks" class="section level2" number="6.2">
+<h2><span class="header-section-number">6.2</span> Scattered tasks</h2>
+<p>Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample’s chromosomes in parallel, or similar situations where breaking up data into discrete “chunks” makes sense.</p>
+<p>It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the <code>cpu</code> WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially “unaware” of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.</p>
+<div id="troubleshooting-1" class="section level3" number="6.2.1">
+<h3><span class="header-section-number">6.2.1</span> Troubleshooting</h3>
+<p>Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintuitive. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.</p>
+<p>Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend’s hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scalable cloud-based backends such as Terra, but isn’t uncommon when running scattered tasks on a local machine.</p>
 </div>
 </div>
-<div id="backend-specific-notes" class="section level2" number="7.4">
-<h2><span class="header-section-number">7.4</span> Backend-specific notes</h2>
-<div id="gcp" class="section level3" number="7.4.1">
-<h3><span class="header-section-number">7.4.1</span> GCP</h3>
-<div id="disk-space" class="section level4" number="7.4.1.1">
-<h4><span class="header-section-number">7.4.1.1</span> Disk space</h4>
-<p>Running Cromwell on GCP is one of the few times that the <code>disks</code> runtime attribute is a soft requirement. Due to how Cromwell works, it must request a certain amount of disk space from GCP before running the task’s command section. In other words, you must know roughly how much disk space your task will use before it runs. If not specified in the runtime attribute of a task, Cromwell will request 10 GB of SSD space.</p>
-<p>A helpful way to handle disk space in WDLs you anticipate will be run on GCP/Terra is to make disk size a function of the size of your task inputs. The task inputs and any private variable declarations made outside of the command section are all calculated before Cromwell requests a disk from GCP, so you can use this section to define a disk size function. For example:</p>
-<!-- TODO: make seperate file in resources and miniwdl check it --->
+<div id="making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays" class="section level2" number="6.3">
+<h2><span class="header-section-number">6.3</span> Making our workflow run on multiple samples at once using scattered tasks and arrays</h2>
+<p>When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we’ll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.</p>
+<p>For starters, we’ll want to change our workflow-level sample variables from File to Array[File]. However, we don’t need to change any of the reference genome files, because every instance of our tasks will be taking in the same reference genome files. In other words, our struct is unchanged.</p>
 <pre><code>version 1.0
 
-task do_something {
-    input {
-        Array[File] some_array_of_files
-        File one_file
-    }
-    
-    Int predicted_disk_space = ceil(size(some_array_of_files), &quot;GB&quot;) + ceil(size(one_file), &quot;GB&quot;) + 1
-    # size(x, &quot;GB&quot;) returns a float representing the size of x in gigabytes
-    # ceil() is a WDL built-in function that rounds a float up into an integer
-    
-    command &lt;&lt;&lt;
-    pass
-    &gt;&gt;&gt;
-    
-    runtime {
-        docker: &quot;ubuntu-latest&quot;
-        disks: &quot;local-disk &quot; + predicted_disk_space &quot; HDD&quot;
-    }
-}</code></pre>
-<p>Common pitfalls:</p>
-<ul>
-<li><p>Not wrapping <code>size()</code> in <code>ceil()</code> – the <code>disks:</code> runtime attribute requires an integer, not a float</p></li>
-<li><p>Not using <code>"GB"</code> when calling <code>size()</code> – if you don’t specify units for <code>size()</code> it will return bytes!</p></li>
-<li><p>Forgetting the space between “local-disk” and the integer (or the integer and “HDD”/“SSD”)</p></li>
-</ul>
-</div>
-<div id="preemptibles" class="section level4" number="7.4.1.2">
-<h4><span class="header-section-number">7.4.1.2</span> Preemptibles</h4>
-<p>Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheaper (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.</p>
-</div>
-</div>
-<div id="hpcs" class="section level3" number="7.4.2">
-<h3><span class="header-section-number">7.4.2</span> HPCs</h3>
-<p>It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:</p>
-<ul>
-<li><p>Some HPCs do not support the use of Docker due to security concerns</p>
-<ul>
-<li>HPCs that do not allow the use of Docker may be able to run WDLs using alternative container technologies such as podman or rootless Docker</li>
-</ul></li>
-<li><p>Some HPCs will use <code>disks</code> to determine which disk to run on, which can be useful for managing disk space</p></li>
-</ul>
-<div id="fred-hutch-hpc" class="section level4" number="7.4.2.1">
-<h4><span class="header-section-number">7.4.2.1</span> Fred Hutch HPC</h4>
-<ul>
-<li><p>The Fred Hutch HPC supports the use of Docker, so the <code>docker</code> runtime attribute works as expected</p></li>
-<li><p>The <code>memory</code> and <code>gpu</code> runtime attributes are ignored, but <code>cpu</code> works as expected</p></li>
-<li><p>The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow</p></li>
-</ul>
+struct referenceGenome {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String ref_name
+}
 
+
+workflow minidata_mutation_calling_chapter6 {
+  input {
+    Array[File] tumorSamples
+
+    referenceGenome refGenome
+    
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+
+  }
+</code></pre>
+<p>Next, we will want to look at our chain of tasks. Each of these tasks are designed to take in a single sample. In theory, we could rewrite each task to iterate through an array of multiple samples. However, it’s much simpler to keep those tasks as single-sample tasks, and simply run them on one sample at a time. To do this, we encapsulate the task calls in the workflow document with <code>scatter</code>.</p>
+<pre><code>  scatter (tumorFastq in tumorSamples) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
+    
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+      input:
+        input_bam = tumorMarkDuplicates.markDuplicates_bam,
+        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+    }
+  }</code></pre>
+<p>A scatter is essentially the WDL version of a <a href="https://en.wikipedia.org/wiki/For_loop">for loop</a>. Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only “see” one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays. As a result, our outputs are now Array[File] instead of just File.</p>
+<pre><code>  output {
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+  }</code></pre>
+<p>You can reference a full copy of this workflow <a href="../resources/chapter-6.wdl">here</a>.</p>
 </div>
+<div id="referencing-an-array-in-a-task" class="section level2" number="6.4">
+<h2><span class="header-section-number">6.4</span> Referencing an array in a task</h2>
+<p>Because each task only takes in one sample, we are not directly inputting arrays into a file. However, it’s important to know how to do this. If a task’s input variable is an array, we must include an array separator. In WDL 1.0, this is done using the <code>sep=</code> expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via <code>sep</code>. In this example, that is a simple space, as that is one way how to construct a bash variable.</p>
+<pre><code>task count_words {
+  input {
+    Array[String] a_big_sentence
+  }
+  command &lt;&lt;&lt;
+    ARRAY_OF_WORDS=(~{sep=&quot; &quot; a_big_sentence})
+    echo ${#ARRAY_OF_FILES[@]} &gt;&gt; length.txt
+    # Note how the bash array uses ${} syntax, which could quickly get
+    # confusing if we used that syntax for our WDL variables. This is
+    # why we recommend using tilde + {} for your WDL variables.
+  &gt;&gt;&gt;
+}</code></pre>
+<p>It’s usually unnecessary to declare an Array[String], because a single String can have many words in it. That being said, an Array[String] can sometimes come in handy if it is made up of outputs from other tasks. We’ll talk more about chaining tasks together in upcoming chapters.</p>
+<div class="notice">
+<p>The WDL 1.1 spec added a new built-in function, <code>sep()</code>, which replaces the <code>sep=</code> expression placeholder for arrays. This same version of the spec also notes that the <code>sep=</code> expression placeholder <a href="https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options">are deprecated and will be removed from future versions of WDL</a>. For the time being, we recommend sticking with <code>sep=</code> as it is compatible with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.</p>
 </div>
+<p>If you’re not used to working in bash, the syntax for interacting with bash arrays can be unintuitive, but you don’t have to write a WDL’s command section only using bash. In fact, working in another language besides bash within a WDL can be a great way to write code quickly, or perform tasks that are more advanced than what a typical bash script can handle. Just be sure to set <code>sep</code> properly to ensure that your array is interpreted correctly. In this example, we place quotation marks before and after the variable to ensure that the first and last value of the list are given beginning and ending quotation marks respectively.</p>
+<pre><code>task count_words_python {
+  input {
+    Array[String] a_big_sentence
+  }
+  command &lt;&lt;&lt;
+    python &lt;&lt; CODE
+    sentence = [ &quot;~{sep=&#39;&quot;, &quot;&#39; a_big_sentence}&quot; ]
+    print(len(sentence))
+    CODE
+  &gt;&gt;&gt;
+  runtime {
+    docker: &quot;python:latest&quot;
+  }
+}</code></pre>
+
 </div>
 </div>
 <hr>
@@ -390,8 +345,8 @@ task do_something {
           </div>
         </div>
       </div>
-<a href="using-arrays-for-parallelization-and-other-use-cases.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="about-the-authors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="organizing-variables-via-structs.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="appendix-backends-and-executors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
