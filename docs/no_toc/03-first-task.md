@@ -230,6 +230,10 @@ task BwaMem {
   # basename() is a built-in WDL function that acts like bash's basename
   String base_file_name = basename(input_fastq, ".fastq")
   String ref_fasta_local = basename(ref_fasta)
+  String read_group_id = "ID:" + base_file_name
+  String sample_name = "SM:" + base_file_name
+  String platform = "illumina"
+  String platform_info = "PL:" + platform   # Create the platform information
 
   command <<<
     set -eo pipefail
@@ -245,10 +249,10 @@ task BwaMem {
 
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
-      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
-    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
-    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
 
   >>>
 }
@@ -261,7 +265,7 @@ The runtime attributes of a task tell the WDL executor important information abo
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
     disks: "local-disk 100 SSD"
   }
 ```
@@ -320,7 +324,6 @@ The outputs of a task are defined in the `output` section of your task. Typicall
 
 ```
   output {
-    File analysisReadyBam = "~{base_file_name}.aligned.bam"
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
 ```
@@ -329,12 +332,11 @@ Another way of writing this is with string concatenation. This is equivalent to 
 
 ```
   output {
-    File analysisReadyBam = base_file_name + ".aligned.bam"
     File analysisReadySorted = base_file_name + ".sorted_query_aligned.bam"
   }
 ```
 
-If the output was not in the working directory, we would need to change the output to point to the file's path relative to the working directory, such as `File analysisReadyBam = "some_folder/~{base_file_name}.aligned.bam"`.
+If the output was not in the working directory, we would need to change the output to point to the file's path relative to the working directory, such as `File analysisReadySorted = "some_folder/~{base_file_name}.sorted_query_aligned.bam"`.
 
 Below are some some additional ways you can handle task outputs.
 
@@ -405,48 +407,47 @@ We've now designed a bwa mem task that can run on essentially any backend that s
 task BwaMem {
   input {
     File input_fastq
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
+    referenceGenome refGenome
     Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
-  String ref_fasta_local = basename(ref_fasta)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
+
+  String read_group_id = "ID:" + base_file_name
+  String sample_name = "SM:" + base_file_name
+  String platform = "illumina"
+  String platform_info = "PL:" + platform   # Create the platform information
+
 
   command <<<
     set -eo pipefail
 
-    mv "~{ref_fasta}" .
-    mv "~{ref_fasta_index}" .
-    mv "~{ref_dict}" .
-    mv "~{ref_amb}" .
-    mv "~{ref_ann}" .
-    mv "~{ref_bwt}" .
-    mv "~{ref_pac}" .
-    mv "~{ref_sa}" .
+    #can we iterate through a struct??
+    mv ~{refGenome.ref_fasta} .
+    mv ~{refGenome.ref_fasta_index} .
+    mv ~{refGenome.ref_dict} .
+    mv ~{refGenome.ref_amb} .
+    mv ~{refGenome.ref_ann} .
+    mv ~{refGenome.ref_bwt} .
+    mv ~{refGenome.ref_pac} .
+    mv ~{refGenome.ref_sa} .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
-      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
-    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
-    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
-
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
   >>>
+
   output {
-    File analysisReadyBam = "~{base_file_name}.aligned.bam"
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
+  
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
-    disks: "local-disk 100 SSD"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }
 ```
@@ -459,10 +460,10 @@ For the workflow to actually "see" the task, the task will either need to be imp
 ```         
 version 1.0
 
-workflow minidata_test_alignment {
+workflow mutation_calling {
   input {
     # Sample info
-    File sampleFastq
+    File tumorFastq
     # Reference Genome information
     File ref_fasta
     File ref_fasta_index
@@ -479,7 +480,7 @@ workflow minidata_test_alignment {
   #  Map reads to reference
   call BwaMem {
     input:
-      input_fastq = sampleFastq,
+      input_fastq = input_fastq,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
       ref_dict = ref_dict,
@@ -525,8 +526,10 @@ task BwaMem {
     Int threads = 16
   }
   
-  String base_file_name = basename(input_fastq, ".fastq")
-  String ref_fasta_local = basename(ref_fasta)
+  String read_group_id = "ID:" + base_file_name
+  String sample_name = "SM:" + base_file_name
+  String platform = "illumina"
+  String platform_info = "PL:" + platform   # Create the platform information
 
   command <<<
     set -eo pipefail
@@ -541,7 +544,7 @@ task BwaMem {
     mv "~{ref_sa}" .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
     samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
     samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
@@ -554,7 +557,7 @@ task BwaMem {
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
     disks: "local-disk 100 SSD"
   }
 }
@@ -563,3 +566,21 @@ task BwaMem {
 ## Testing your first task
 
 To test your first task and your workflow, you should have expectation of output is. For this first `BwaMem` task, we just care that the BAM file is created with aligned reads. You can use `samtools view output.sorted_query_aligned.bam` to examine the reads and pipe it to wordcount `wc` to get the number of total reads. This number should be almost identical as the number of reads from your input FASTQ file if you run `wc input.fastq`. In other tasks, we might have a more precise expectation of what the output file should be, such as containing the specific somatic mutation call that we have curated.
+
+Here is an example JSON with the test data needed to run this single-task workflow:
+```
+{
+  "mutation_calling.tumorFastq": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq",
+  "mutation_calling.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
+  "mutation_calling.ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
+  "mutation_calling.ref_dict": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict",
+  "mutation_calling.ref_pac": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac",
+  "mutation_calling.ref_sa": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa",
+  "mutation_calling.ref_amb": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb",
+  "mutation_calling.ref_ann": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann",
+  "mutation_calling.ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt",
+  "mutation_calling.ref_name": "hg19"
+}
+```
+
+If you are not running on the Fred Hutch HPC, you'll need to modify your JSON file to point to wherever you have the data files stored. You can download the same fastq we're using from [our sandbox repo](https://github.com/fhdsl/WDL-sandbox/tree/main/data), and the reference files can be generated via `samtools index` or [downloaded from the Broad Institute's mirror](https://data.broadinstitute.org/snowman/hg19/).
