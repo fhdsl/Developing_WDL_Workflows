@@ -49,6 +49,9 @@ Of course, nothing is free. WDL does require you to understand the basic concept
 
 The course covers the following: how to write an effective WDL task, link multiple WDL tasks together in a workflow, organize variables via structs, scale multiple samples via Arrays, reuse repeated tasks via task aliasing, and configure settings for the execution engine. 
 
+## Course Toolkit
+To test running the workflow we use as an example go [here](https://github.com/getwilds/wdl_101) and get a copy of the repo it will have all the necessary files and workflows for you to follow along. Don't forget to read the instructions as you may have to modify some file paths. 
+
 ## Relevant resources
 
 An excellent WDL companion resource that is not platform dependent is [OpenWDL Docs](https://docs.openwdl.org/en/stable/). OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.
