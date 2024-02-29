@@ -56,8 +56,8 @@ workflow minidata_mutation_calling_chapter6 {
 
   output {
     Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
-    Array[File] tumormarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
-    Array[File] tumormarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
     Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
     Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
   }
@@ -107,7 +107,7 @@ task BwaMem {
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }
 
@@ -133,7 +133,7 @@ task MarkDuplicates {
   >>>
 
   runtime {
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
     memory: "48 GB"
     cpu: 4
   }
@@ -208,6 +208,6 @@ task ApplyBaseRecalibrator {
   runtime {
     memory: "36 GB"
     cpu: 2
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
   }
 }
