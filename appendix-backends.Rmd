@@ -32,9 +32,13 @@ Cromwell running on a local machine has a tendency to heavily use system resourc
 
 Other notes:
 * Cromwell runs as a jar file, so it is very portable and does not need to be "installed" provided you have a modern Java runtime environment.
+
 * If you just want to check workflows are valid, you can run `womtool` as a jar file (available on Cromwell's GitHub page). This will check not only the WDL file you pass it, but also any WDLs it imports.
+
 * Cromwell does not use call cacheing on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.
+
 * Cromwell supports the `gpu` and `disks` runtime attributes on certain backends. If using the `gpu` runtime attribute, make sure your task is set up correctly to properly use this resource.
+
 * Generally speaking, Cromwell will be able to directly modify input files by default without causing permission errors.
 
 ### miniwdl
@@ -42,9 +46,13 @@ The authors of this course have informally observed that miniwdl appears to be "
 
 Other notes:
 * miniwdl is a Python program, and it must be installed via `pip` or `pip3` to use.
+
 * miniwdl's equivalent to `womtool` is `miniwdl check`, but it also includes `shellcheck` to check the command section of your tasks.
+
 * miniwdl supports call cacheing, but it is turned off by default.
+
 * miniwdl does not support the `gpu` or `disks` runtime attributes and will ignore them if present in a task's runtime section.
+
 * By default, miniwdl does not duplicate input files. If your workflow only needs to read input files, this helps save disk space, but if your workflow directly modifies input files, this can result in permission errors. A simple fix is to run miniwdl with the `--copy-input-files` flag.
 
 ## Backend-specific notes
@@ -82,7 +90,9 @@ task do_something {
 
 Common pitfalls:
 * Not wrapping `size()` in `ceil()` -- the `disks:` runtime attribute requires an integer, not a float
+
 * Not using `"GB"` when calling `size()` -- if you don't specify units for `size()` it will return bytes!
+
 * Forgetting the space between "local-disk" and the integer (or the integer and "HDD"/"SSD")
 
 #### Preemptibles
@@ -91,10 +101,14 @@ Preemptible machines are an excellent way to save money when running workflows. 
 ### HPCs
 It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:
 * Some HPCs do not support the use of Docker due to security concerns
+
   * HPCs that do not allow the use of Docker may be able to run WDLs using alternative container technologies such as podman or rootless Docker
+
 * Some HPCs will use `disks` to determine which disk to run on, which can be useful for managing disk space
 
 #### Fred Hutch HPC
 * The Fred Hutch HPC supports the use of Docker, so the `docker` runtime attribute works as expected
+
 * The `memory` and `gpu` runtime attributes are ignored, but `cpu` works as expected
+
 * The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow
