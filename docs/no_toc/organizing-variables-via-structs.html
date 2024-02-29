@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 5 Organizing variables via Structs | WDL Workflows Guide</title>
+  <meta name="description" content="Description about Course/Book." />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 5 Organizing variables via Structs | WDL Workflows Guide" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Description about Course/Book." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 5 Organizing variables via Structs | WDL Workflows Guide" />
+  
+  <meta name="twitter:description" content="Description about Course/Book." />
+  
+
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
+<link rel="prev" href="connecting-multiple-tasks-together-in-a-linear-chain.html"/>
+<link rel="next" href="about-the-authors.html"/>
+<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+
+
+
+
+<link rel="stylesheet" href="assets/style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<a href="https://hutchdatascience.org/" target="_blank"><img src="assets/big-dasl-stacked.png" style="width: 80%; padding-left: 34px; padding-top: 8px;"</a>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About this Course</a>
+<ul>
+<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a></li>
+<li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#why-wdl"><i class="fa fa-check"></i><b>0.2</b> Why WDL?</a>
+<ul>
+<li class="chapter" data-level="0.2.1" data-path="index.html"><a href="index.html#wdl-pros"><i class="fa fa-check"></i><b>0.2.1</b> WDL Pros</a></li>
+<li class="chapter" data-level="0.2.2" data-path="index.html"><a href="index.html#wdl-cons"><i class="fa fa-check"></i><b>0.2.2</b> WDL Cons</a></li>
+</ul></li>
+<li class="chapter" data-level="0.3" data-path="index.html"><a href="index.html#curriculum"><i class="fa fa-check"></i><b>0.3</b> Curriculum</a></li>
+<li class="chapter" data-level="0.4" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.4</b> Relevant resources</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html"><i class="fa fa-check"></i><b>1</b> Introduction to WDL</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#introduction"><i class="fa fa-check"></i><b>1.1</b> Introduction</a></li>
+<li class="chapter" data-level="1.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#review-of-basic-wdl-syntax"><i class="fa fa-check"></i><b>1.2</b> Review of basic WDL syntax</a></li>
+<li class="chapter" data-level="1.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#using-jsons-to-control-workflow-inputs"><i class="fa fa-check"></i><b>1.3</b> Using JSONs to control workflow inputs</a></li>
+<li class="chapter" data-level="1.4" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#running-wdl-via-a-computing-engine"><i class="fa fa-check"></i><b>1.4</b> Running WDL via a computing engine</a>
+<ul>
+<li class="chapter" data-level="1.4.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-docker"><i class="fa fa-check"></i><b>1.4.1</b> Installing Docker</a></li>
+<li class="chapter" data-level="1.4.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-miniwdl"><i class="fa fa-check"></i><b>1.4.2</b> Installing miniwdl</a></li>
+<li class="chapter" data-level="1.4.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#launching-a-workflow-locally-with-miniwdl"><i class="fa fa-check"></i><b>1.4.3</b> Launching a workflow locally with miniwdl</a></li>
+<li class="chapter" data-level="1.4.4" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#troubleshooting"><i class="fa fa-check"></i><b>1.4.4</b> Troubleshooting</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html"><i class="fa fa-check"></i><b>2</b> Defining a workflow plan</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#somatic-mutation-calling-workflow"><i class="fa fa-check"></i><b>2.1</b> Somatic mutation calling workflow</a></li>
+<li class="chapter" data-level="2.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#workflow-testing-strategy"><i class="fa fa-check"></i><b>2.2</b> Workflow testing strategy</a></li>
+<li class="chapter" data-level="2.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-samples"><i class="fa fa-check"></i><b>2.3</b> Test samples</a>
+<ul>
+<li class="chapter" data-level="2.3.1" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-1-hcc4006"><i class="fa fa-check"></i><b>2.3.1</b> Tumor 1 : HCC4006</a></li>
+<li class="chapter" data-level="2.3.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-2-calu1"><i class="fa fa-check"></i><b>2.3.2</b> Tumor 2 : CALU1</a></li>
+<li class="chapter" data-level="2.3.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#normal-molm13"><i class="fa fa-check"></i><b>2.3.3</b> Normal : MOLM13</a></li>
+<li class="chapter" data-level="2.3.4" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-data-details"><i class="fa fa-check"></i><b>2.3.4</b> Test data details</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="the-first-task.html"><a href="the-first-task.html"><i class="fa fa-check"></i><b>3</b> The first task</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="the-first-task.html"><a href="the-first-task.html#inputs"><i class="fa fa-check"></i><b>3.1</b> Inputs</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="the-first-task.html"><a href="the-first-task.html#referencing-inputs-in-the-command-section"><i class="fa fa-check"></i><b>3.1.1</b> Referencing inputs in the command section</a></li>
+<li class="chapter" data-level="3.1.2" data-path="the-first-task.html"><a href="the-first-task.html#file-localization"><i class="fa fa-check"></i><b>3.1.2</b> File localization</a></li>
+<li class="chapter" data-level="3.1.3" data-path="the-first-task.html"><a href="the-first-task.html#private-variables"><i class="fa fa-check"></i><b>3.1.3</b> Private variables</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="the-first-task.html"><a href="the-first-task.html#runtime-attributes"><i class="fa fa-check"></i><b>3.2</b> Runtime attributes</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="the-first-task.html"><a href="the-first-task.html#docker-images-and-containers"><i class="fa fa-check"></i><b>3.2.1</b> Docker images and containers</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="the-first-task.html"><a href="the-first-task.html#outputs"><i class="fa fa-check"></i><b>3.3</b> Outputs</a></li>
+<li class="chapter" data-level="3.4" data-path="the-first-task.html"><a href="the-first-task.html#the-whole-task"><i class="fa fa-check"></i><b>3.4</b> The whole task</a></li>
+<li class="chapter" data-level="3.5" data-path="the-first-task.html"><a href="the-first-task.html#putting-the-workflow-together"><i class="fa fa-check"></i><b>3.5</b> Putting the workflow together</a></li>
+<li class="chapter" data-level="3.6" data-path="the-first-task.html"><a href="the-first-task.html#testing-your-first-task"><i class="fa fa-check"></i><b>3.6</b> Testing your first task</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html"><i class="fa fa-check"></i><b>4</b> Connecting multiple tasks together in a linear chain</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#how-to-connect-tasks-together-in-a-workflow"><i class="fa fa-check"></i><b>4.1</b> How to connect tasks together in a workflow</a></li>
+<li class="chapter" data-level="4.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#writing-markduplicates-task"><i class="fa fa-check"></i><b>4.2</b> Writing <code>MarkDuplicates</code> task</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#input"><i class="fa fa-check"></i><b>4.2.1</b> Input</a></li>
+<li class="chapter" data-level="4.2.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#private-variables-in-the-task"><i class="fa fa-check"></i><b>4.2.2</b> Private variables in the task</a></li>
+<li class="chapter" data-level="4.2.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#command"><i class="fa fa-check"></i><b>4.2.3</b> Command</a></li>
+<li class="chapter" data-level="4.2.4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#runtime-and-output"><i class="fa fa-check"></i><b>4.2.4</b> Runtime and Output</a></li>
+<li class="chapter" data-level="4.2.5" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#testing-the-workflow"><i class="fa fa-check"></i><b>4.2.5</b> Testing the workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
+<li class="chapter" data-level="" data-path="about-the-authors.html"><a href="about-the-authors.html"><i class="fa fa-check"></i>About the Authors</a></li>
+<li class="chapter" data-level="6" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>6</b> References</a></li>
+<li class="divider"></li>
+<p style="text-align:center;"> <a href="https://github.com/jhudsl/OTTR_Template" target="blank" > This content was published with</a> <a href="https://bookdown.org/" target="blank"> bookdown by: </a> </p>
+<p style="text-align:center;"> <a href="https://hutchdatascience.org/"> The Fred Hutch Data Science Lab </a></p>
+<p style="text-align:center; font-size: 12px;"> <a href="https://github.com/rstudio4edu/rstudio4edu-book/"> Style adapted from: rstudio4edu-book </a> <a href ="https://creativecommons.org/licenses/by/2.0/"> (CC-BY 2.0) </a></p>
+<p style="padding-left: 40px;"><div class="trapezoid" style = "padding-left: 40px;"><span>  <a href="https://forms.gle/W6Mg4rzuMK6Yk3Am8"> Click here to provide feedback</a> <img src="assets/itcr_arrow.png" style=" width: 10%" ></span></div></p>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">WDL Workflows Guide</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<head>
+  <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=10.0,initial-scale=1.0">
+  <!--script src="https://kit.fontawesome.com/6a26f47516.js"></script-->
+  <!--<script src="assets/hideOutput.js"></script>-->
+  <link href="assets/style.css" rel="stylesheet">
+</head>
+        
+
+
+<div class="hero-image-container"> 
+  <img class= "hero-image" src="assets/dasl_thin_main_image.png">
+</div>
+<div id="organizing-variables-via-structs" class="section level1" number="5">
+<h1><span class="header-section-number">Chapter 5</span> Organizing variables via Structs</h1>
+<p>In our workflow so far, we see that certain variables are always used together, even for different tasks. For example, variables related to the reference genome are always used for the same purpose and passed on to tasks in almost the same way. This leads to quite a bit of coding redundancy, as when we write down the large set of variables related to the reference genome as task inputs, we are just thinking about one entity. We don’t make distinctions of the reference genome files until the task body itself.</p>
+<p>To improve code organization and readability, we can package all variables related to the reference genome into a compound data structure called a <strong>struct</strong>. With a struct variable, we can refer all the packaged variables as one single variable, and also refer to specific variables within the struct without losing any information. <a href="https://docs.openwdl.org/en/stable/WDL/using_structs/">OpenWDL Docs</a> also has an excellent introduction and examples on structs.</p>
+<p>To define a struct, we must declare it outside of a <code>workflow</code> and <code>task</code>:</p>
+<pre><code>struct referenceGenome {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String ref_name
+}
+
+workflow minidata_mutation_calling_v1 {
+  input {
+    File sampleFastq
+    referenceGenome refGenome
+    ...
+  }
+  # Map reads to reference
+  call BwaMem {
+    input:
+      input_fastq = sampleFastq,
+      refGenome = refGenome
+  }
+}</code></pre>
+<p>The <code>referenceGenome</code> struct contains all the variables related to the reference genome, but values cannot be defined here. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.</p>
+<p>In our workflow inputs, we remove all of the <code>File</code> variables associated with reference genome definitions, but keep anything that isn’t related to the reference genome, such as <code>sampleFastq</code>. We instead declare a <code>referenceGenome</code> struct variable called <code>refGenome</code> via <code>referenceGenome refGenome</code>. We can access the variables within a struct by the following syntax: <code>structVar.varName</code>, such as <code>refGenome.ref_name</code>. The <a href="https://github.com/openwdl/wdl/blob/main/versions/1.0/SPEC.md#struct-definition">WDL spec</a> has more information on how to define and use structs.</p>
+<p>To give values to <code>refGenome</code>, we need to modify our JSON metadata file. We define the <code>refGenome</code> variable in a nested structure that corresponds to the <code>referenceGenome</code> struct. Let’s take a look:</p>
+<pre><code>{
+  &quot;minidata_mutation_calling_v1.refGenome&quot;: {
+    &quot;ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
+    &quot;ref_fasta_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai&quot;,
+    &quot;ref_dict&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict&quot;,
+    &quot;ref_pac&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac&quot;,
+    &quot;ref_sa&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa&quot;,
+    &quot;ref_amb&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb&quot;,
+    &quot;ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
+    &quot;ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;,
+    &quot;ref_name&quot;: &quot;hg19&quot;
+  },
+  &quot;minidata_mutation_calling_v1.dbSNP_vcf_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi&quot;,
+  ...
+}</code></pre>
+<p>Now <code>refGenome</code> has all the values it needs for our tasks.</p>
+<p>In addition, we have replaced all the reference genome inputs in call <code>BwaMem</code> with <code>refGenome</code> in order to pass information to a task via structs.</p>
+<p>Within the <code>BwaMem</code> task, we must refer to variables inside the struct, such as <code>refGenome.ref_name</code> (which has a value of “hg19” using this JSON metadata):</p>
+<pre><code>task BwaMem {
+  input {
+    File input_fastq
+    referenceGenome refGenome
+  }
+  
+  String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
+
+  String read_group_id = &quot;ID:&quot; + base_file_name
+  String sample_name = &quot;SM:&quot; + base_file_name
+  String platform = &quot;illumina&quot;
+  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
+
+
+  command &lt;&lt;&lt;
+    set -eo pipefail
+
+    #can we iterate through a struct??
+    mv ~{refGenome.ref_fasta} .
+    mv ~{refGenome.ref_fasta_index} .
+    mv ~{refGenome.ref_dict} .
+    mv ~{refGenome.ref_amb} .
+    mv ~{refGenome.ref_ann} .
+    mv ~{refGenome.ref_bwt} .
+    mv ~{refGenome.ref_pac} .
+    mv ~{refGenome.ref_sa} .
+
+    bwa mem \
+      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
+      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+  &gt;&gt;&gt;
+
+  output {
+    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
+  }
+  
+  runtime {
+    memory: &quot;48 GB&quot;
+    cpu: 16
+    docker: &quot;fredhutch/bwa:0.7.17&quot;
+  }
+}</code></pre>
+<p>Other tasks in the workflow, such as <code>ApplyBaseRecalibrator</code> and <code>Mutect2TumorOnly</code> also make use of the reference genome, so we pass <code>refGenome</code> to it. The final task <code>annovar</code> only requires the reference genome name, and none of the files in the <code>referenceGenome</code> struct. We make a stylistic choice to pass only <code>refGenome.ref_name</code> to the input of <code>annovar</code> task call, as the task doesn’t need the full information of the struct. This stylistic choice is based on the principle of passing on the minimally needed information for a modular piece of code to run, which makes the task <code>annovar</code> depend on the minimal amount of inputs. This will also save us time and disk space by not having to localize several gigabytes of reference files into the Docker container that <code>annovar</code> will be running in.</p>
+<pre><code> call annovar {
+    input:
+      input_vcf = Mutect2TumorOnly.output_vcf,
+      ref_name = refGenome.ref_name,
+      annovarTAR = annovarTAR,
+      annovar_operation = annovar_operation,
+      annovar_protocols = annovar_protocols
+  }</code></pre>
+<p>Putting everything together in the workflow:</p>
+<pre><code>struct referenceGenome {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String ref_name
+}
+
+workflow minidata_mutation_calling_v1 {
+  input {
+    File sampleFastq
+
+    referenceGenome refGenome
+    
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+    
+    File af_only_gnomad
+    File af_only_gnomad_index
+    
+    File annovarTAR
+    String annovar_protocols
+    String annovar_operation
+  }
+    
+  # Map reads to reference
+  call BwaMem {
+    input:
+      input_fastq = sampleFastq,
+      refGenome = refGenome
+  }
+  
+  call MarkDuplicates {
+    input:
+      input_bam = BwaMem.analysisReadySorted
+  }
+
+  call ApplyBaseRecalibrator {
+    input:
+      input_bam = MarkDuplicates.markDuplicates_bam,
+      input_bam_index = MarkDuplicates.markDuplicates_bai,
+      dbSNP_vcf = dbSNP_vcf,
+      dbSNP_vcf_index = dbSNP_vcf_index,
+      known_indels_sites_VCFs = known_indels_sites_VCFs,
+      known_indels_sites_indices = known_indels_sites_indices,
+      refGenome = refGenome
+    }
+
+  call Mutect2TumorOnly {
+      input:
+        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
+        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+        refGenome = refGenome,
+        genomeReference = af_only_gnomad,
+        genomeReferenceIndex = af_only_gnomad_index
+    }
+  
+  call annovar {
+      input:
+        input_vcf = Mutect2TumorOnly.output_vcf,
+        ref_name = refGenome.ref_name,
+        annovarTAR = annovarTAR,
+        annovar_operation = annovar_operation,
+        annovar_protocols = annovar_protocols
+    }
+  
+  # Outputs that will be retained when execution is complete
+  output {
+    File alignedBamSorted = BwaMem.analysisReadySorted
+    File markDuplicates_bam = MarkDuplicates.markDuplicates_bam
+    File markDuplicates_bai = MarkDuplicates.markDuplicates_bai
+    File analysisReadyBam = ApplyBaseRecalibrator.recalibrated_bam 
+    File analysisReadyIndex = ApplyBaseRecalibrator.recalibrated_bai
+    File Mutect_Vcf = Mutect2TumorOnly.output_vcf
+    File Mutect_VcfIndex = Mutect2TumorOnly.output_vcf_index
+    File Mutect_AnnotatedVcf = annovar.output_annotated_vcf
+    File Mutect_AnnotatedTable = annovar.output_annotated_table
+  }
+}
+
+
+
+
+
+
+# TASK DEFINITIONS
+
+# Align fastq file to the reference genome
+task BwaMem {
+  input {
+    File input_fastq
+    referenceGenome refGenome
+  }
+  
+  String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
+
+  String read_group_id = &quot;ID:&quot; + base_file_name
+  String sample_name = &quot;SM:&quot; + base_file_name
+  String platform = &quot;illumina&quot;
+  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
+
+
+  command &lt;&lt;&lt;
+    set -eo pipefail
+
+    #can we iterate through a struct??
+    mv ~{refGenome.ref_fasta} .
+    mv ~{refGenome.ref_fasta_index} .
+    mv ~{refGenome.ref_dict} .
+    mv ~{refGenome.ref_amb} .
+    mv ~{refGenome.ref_ann} .
+    mv ~{refGenome.ref_bwt} .
+    mv ~{refGenome.ref_pac} .
+    mv ~{refGenome.ref_sa} .
+
+    bwa mem \
+      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
+      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+  &gt;&gt;&gt;
+
+  output {
+    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
+  }
+  
+  runtime {
+    memory: &quot;48 GB&quot;
+    cpu: 16
+    docker: &quot;fredhutch/bwa:0.7.17&quot;
+  }
+}
+
+# Mark duplicates (not SPARK, for some reason that does something weird)
+task MarkDuplicates {
+  input {
+    File input_bam
+  }
+
+  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
+  String output_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
+  String output_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
+  String metrics_file = &quot;~{base_file_name}.duplicate_metrics&quot;
+
+  command &lt;&lt;&lt;
+    gatk MarkDuplicates \
+      --INPUT ~{input_bam} \
+      --OUTPUT ~{output_bam} \
+      --METRICS_FILE ~{metrics_file} \
+      --CREATE_INDEX true \
+      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
+      --VALIDATION_STRINGENCY SILENT
+  &gt;&gt;&gt;
+
+  runtime {
+    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
+    memory: &quot;48 GB&quot;
+    cpu: 4
+  }
+
+  output {
+    File markDuplicates_bam = &quot;~{output_bam}&quot;
+    File markDuplicates_bai = &quot;~{output_bai}&quot;
+    File duplicate_metrics = &quot;~{metrics_file}&quot;
+  }
+}
+
+# Base quality recalibration
+task ApplyBaseRecalibrator {
+  input {
+    File input_bam
+    File input_bam_index
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+    referenceGenome refGenome
+  }
+  
+  String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
+  
+  String ref_fasta_local = basename(refGenome.ref_fasta)
+  String dbSNP_vcf_local = basename(dbSNP_vcf)
+  String known_indels_sites_VCFs_local = basename(known_indels_sites_VCFs)
+
+
+  command &lt;&lt;&lt;
+  set -eo pipefail
+
+  mv ~{refGenome.ref_fasta} .
+  mv ~{refGenome.ref_fasta_index} .
+  mv ~{refGenome.ref_dict} .
+
+  mv ~{dbSNP_vcf} .
+  mv ~{dbSNP_vcf_index} .
+
+  mv ~{known_indels_sites_VCFs} .
+  mv ~{known_indels_sites_indices} .
+
+  samtools index ~{input_bam} #redundant? markduplicates already does this?
+
+  gatk --java-options &quot;-Xms8g&quot; \
+      BaseRecalibrator \
+      -R ~{ref_fasta_local} \
+      -I ~{input_bam} \
+      -O ~{base_file_name}.recal_data.csv \
+      --known-sites ~{dbSNP_vcf_local} \
+      --known-sites ~{known_indels_sites_VCFs_local} \
+      
+
+  gatk --java-options &quot;-Xms8g&quot; \
+      ApplyBQSR \
+      -bqsr ~{base_file_name}.recal_data.csv \
+      -I ~{input_bam} \
+      -O ~{base_file_name}.recal.bam \
+      -R ~{ref_fasta_local} \
+      
+
+  #finds the current sort order of this bam file
+  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; ~{base_file_name}.sortOrder.txt
+&gt;&gt;&gt;
+
+  output {
+    File recalibrated_bam = &quot;~{base_file_name}.recal.bam&quot;
+    File recalibrated_bai = &quot;~{base_file_name}.recal.bai&quot;
+    File sortOrder = &quot;~{base_file_name}.sortOrder.txt&quot;
+  }
+  runtime {
+    memory: &quot;36 GB&quot;
+    cpu: 2
+    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
+  }
+}
+
+
+
+# Mutect 2 calling
+
+task Mutect2TumorOnly {
+  input {
+    File input_bam
+    File input_bam_index
+    referenceGenome refGenome
+    File genomeReference
+    File genomeReferenceIndex
+  }
+
+    String base_file_name = basename(input_bam, &quot;.recal.bam&quot;)
+    String ref_fasta_local = basename(refGenome.ref_fasta)
+    String genomeReference_local = basename(genomeReference)
+
+command &lt;&lt;&lt;
+    set -eo pipefail
+
+    mv ~{refGenome.ref_fasta} .
+    mv ~{refGenome.ref_fasta_index} .
+    mv ~{refGenome.ref_dict} .
+
+    mv ~{genomeReference} .
+    mv ~{genomeReferenceIndex} .
+
+    gatk --java-options &quot;-Xms16g&quot; Mutect2 \
+      -R ~{ref_fasta_local} \
+      -I ~{input_bam} \
+      -O preliminary.vcf.gz \
+      --germline-resource ~{genomeReference_local} \
+     
+    gatk --java-options &quot;-Xms16g&quot; FilterMutectCalls \
+      -V preliminary.vcf.gz \
+      -O ~{base_file_name}.mutect2.vcf.gz \
+      -R ~{ref_fasta_local} \
+      --stats preliminary.vcf.gz.stats \
+     
+&gt;&gt;&gt;
+
+runtime {
+    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
+    memory: &quot;24 GB&quot;
+    cpu: 1
+  }
+
+output {
+    File output_vcf = &quot;${base_file_name}.mutect2.vcf.gz&quot;
+    File output_vcf_index = &quot;${base_file_name}.mutect2.vcf.gz.tbi&quot;
+  }
+
+}
+
+
+
+
+# annotate with annovar
+task annovar {
+  input {
+  File input_vcf
+  String ref_name
+  File annovarTAR
+  String annovar_protocols
+  String annovar_operation
+}
+  String base_vcf_name = basename(input_vcf, &quot;.vcf.gz&quot;)
+  
+  command &lt;&lt;&lt;
+  set -eo pipefail
+  
+  tar -xzvf ~{annovarTAR}
+  
+  perl annovar/table_annovar.pl ~{input_vcf} annovar/humandb/ \
+    -buildver ~{ref_name} \
+    -outfile ~{base_vcf_name} \
+    -remove \
+    -protocol ~{annovar_protocols} \
+    -operation ~{annovar_operation} \
+    -nastring . -vcfinput
+&gt;&gt;&gt;
+  runtime {
+    docker : &quot;perl:5.28.0&quot;
+    cpu: 1
+    memory: &quot;2GB&quot;
+  }
+  output {
+    File output_annotated_vcf = &quot;${base_vcf_name}.${ref_name}_multianno.vcf&quot;
+    File output_annotated_table = &quot;${base_vcf_name}.${ref_name}_multianno.txt&quot;
+  }
+}</code></pre>
+
+</div>
+<hr>
+<center> 
+  <div class="footer">
+      All illustrations <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY. </a>
+      <br>
+      All other materials <a href= "https://creativecommons.org/licenses/by/4.0/"> CC-BY </a> unless noted otherwise.
+      <a href="https://hutchdatascience.org/" target="_blank"><img src="https://hutchdatascience.org/images/crazy-idea-wide.png" style="width: 80%; padding-left: 15px; padding-top: 8px;"</a>
+  </div>
+</center>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="connecting-multiple-tasks-together-in-a-linear-chain.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="about-the-authors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

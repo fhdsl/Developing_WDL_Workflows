@@ -81,6 +81,14 @@ h1, h2, h3, h4 {
   color: #1B365D;
 }
 
+/*--------detail stye-------------*/
+
+details {
+  width: 620px;
+  background-color: #D3D3D3;
+  border: 4px #00c1d5;
+  border-style: solid;
+}
 
 /*----------DROP CAPS--------------*/
 
@@ -360,7 +368,7 @@ iframe {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   border: #ddd 2px solid;
-  box-shadow: #888 0px 5px 8px;
+  box-shadow: #54af57 0px 5px 8px;
   margin-bottom: 1em;
 }
 

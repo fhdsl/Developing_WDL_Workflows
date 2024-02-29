@@ -1,4 +1,5 @@
 AnVIL
+bioinformatic
 BIPOC
 Bloomberg
 Bookdown
@@ -14,9 +15,12 @@ GDSCN
 GitHub
 Github
 GH
+heredoc
+https
 impactful
 ITCR
 itcrtraining
+iteratively
 ITN
 fyi
 Leanpub
@@ -26,9 +30,11 @@ NCI
 NHGRI
 ottrpal
 Pandoc
+plaintext
+reproducibility
 UE
 UE5
-reproducibility
+unintuitive
 underserved
 www
 bioinformatics
@@ -49,3 +55,5 @@ OpenWDL
 wdl
 WDL
 WDLs
+WDL's
+womtool
