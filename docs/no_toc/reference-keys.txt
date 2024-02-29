@@ -51,6 +51,7 @@ scattered-tasks
 troubleshooting-1
 making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays
 referencing-an-array-in-a-task
+the-workflow-so-far
 task-aliasing
 advantages-of-aliasing
 start-to-add-a-task-alias
