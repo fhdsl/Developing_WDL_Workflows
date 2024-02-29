@@ -1,3 +1,5 @@
+version 1.0
+
 ## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 01/10/24 for use by DaSL @ Fred Hutch.
 ## Workflow updated on: 02/28/24 by Ash O'Farrell (UCSC)
 

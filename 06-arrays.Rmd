@@ -6,6 +6,7 @@ ottrpal::set_knitr_image_path()
 
 We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let's look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.
 
+In this chapter, we'll be going over:
 - How to use scattered tasks to run a workflow on multiple samples at once
 
 - How to use arrays effectively
