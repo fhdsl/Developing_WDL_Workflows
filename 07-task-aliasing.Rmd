@@ -27,7 +27,7 @@ First, you will want to make sure that in your workflow input, you are calling t
 workflow mutation_calling {
   input {
     ...
-    File normal
+    File normalSamples
 ...
   }
 ```
@@ -41,7 +41,7 @@ In this case we will be using a different sample and therefore the input_fastq i
 ```
   call BwaMem as normalBwaMem {
     input:
-      input_fastq = normal,
+      input_fastq = normalSamples,
       refGenome = refGenome
   }
   ```
