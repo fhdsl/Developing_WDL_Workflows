@@ -46,6 +46,24 @@ For starters, we'll want to change our workflow-level sample variables from File
 
 
 ```
+workflow mutation_calling {
+  input {
+    Array[File] tumorFastq
+    File normalFastq
+
+    referenceGenome refGenome
+    
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+    
+    File af_only_gnomad
+    File af_only_gnomad_index
+    
+    String annovar_protocols
+    String annovar_operation
+  }
 
 ```
 
@@ -53,11 +71,76 @@ Next, we will want to look at our chain of tasks. Each of these tasks are design
 
 
 ```
+workflow mutation_calling {
+  input {
+    ...
+  }
+ 
+  # Scatter for "tumor" samples   
+  scatter (tumorFastq in tumorFastq) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
+    
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+      input:
+        input_bam = tumorMarkDuplicates.markDuplicates_bam,
+        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+      }
+
+    call Mutect2Paired {
+    input:
+      tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
+      tumor_bam_index = tumorApplyBaseRecalibrator.recalibrated_bai,
+      normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
+      normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
+      refGenome = refGenome,
+      genomeReference = af_only_gnomad,
+      genomeReferenceIndex = af_only_gnomad_index
+  }
+
+  call annovar {
+    input:
+      input_vcf = Mutect2Paired.output_vcf,
+      ref_name = refGenome.ref_name,
+      annovar_operation = annovar_operation,
+      annovar_protocols = annovar_protocols
+  }
+}
+...
 ```
 
 A scatter is essentially the WDL version of a [for loop](https://en.wikipedia.org/wiki/For_loop). Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only "see" one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays. As a result, our outputs are now Array[File] instead of just File.
 
 ```
+output {
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+    File normalalignedBamSorted = normalBwaMem.analysisReadySorted
+    File normalmarkDuplicates_bam = normalMarkDuplicates.markDuplicates_bam
+    File normalmarkDuplicates_bai = normalMarkDuplicates.markDuplicates_bai
+    File normalanalysisReadyBam = normalApplyBaseRecalibrator.recalibrated_bam 
+    File normalanalysisReadyIndex = normalApplyBaseRecalibrator.recalibrated_bai
+    Array[File] Mutect2Paired_Vcf = Mutect2Paired.output_vcf
+    Array[File] Mutect2Paired_VcfIndex = Mutect2Paired.output_vcf_index
+    Array[File] Mutect2Paired_AnnotatedVcf = annovar.output_annotated_vcf
+    Array[File] Mutect2Paired_AnnotatedTable = annovar.output_annotated_table
+  }
 ```
 
 
