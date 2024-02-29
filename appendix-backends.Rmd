@@ -31,6 +31,7 @@ Runtime attributes do not behave the same on all platforms. Here are how some of
 Cromwell running on a local machine has a tendency to heavily use system resources, especially when running scattered tasks. Sometimes, it will use too many resources at once. When this happens, your workflow's tasks will tend to fail with exit code 137, or you will see hints about running out of memory in the logs of your tasks. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker. To prevent this, modify `concurrent-job-limit` for your backend in the Cromwell configuration file.
 
 Other notes:
+
 * Cromwell runs as a jar file, so it is very portable and does not need to be "installed" provided you have a modern Java runtime environment.
 
 * If you just want to check workflows are valid, you can run `womtool` as a jar file (available on Cromwell's GitHub page). This will check not only the WDL file you pass it, but also any WDLs it imports.
@@ -45,6 +46,7 @@ Other notes:
 The authors of this course have informally observed that miniwdl appears to be "safer" in terms of using up too many resources than Cromwell. However, if you are sharing a compute with other users, it is still worth looking at the miniwdl configuration file and limiting how many Docker images you spin up at the same time.
 
 Other notes:
+
 * miniwdl is a Python program, and it must be installed via `pip` or `pip3` to use.
 
 * miniwdl's equivalent to `womtool` is `miniwdl check`, but it also includes `shellcheck` to check the command section of your tasks.
@@ -89,6 +91,7 @@ task do_something {
 ```
 
 Common pitfalls:
+
 * Not wrapping `size()` in `ceil()` -- the `disks:` runtime attribute requires an integer, not a float
 
 * Not using `"GB"` when calling `size()` -- if you don't specify units for `size()` it will return bytes!
@@ -100,6 +103,7 @@ Preemptible machines are an excellent way to save money when running workflows. 
 
 ### HPCs
 It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:
+
 * Some HPCs do not support the use of Docker due to security concerns
 
   * HPCs that do not allow the use of Docker may be able to run WDLs using alternative container technologies such as podman or rootless Docker
