@@ -147,6 +147,7 @@
 </ul></li>
 <li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
 <li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+<li class="chapter" data-level="6.5" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="task-aliasing.html"><a href="task-aliasing.html"><i class="fa fa-check"></i><b>7</b> Task Aliasing</a>
 <ul>
@@ -209,7 +210,7 @@
 </div>
 <div id="appendix-backends-and-executors" class="section level1" number="8">
 <h1><span class="header-section-number">Chapter 8</span> Appendix: Backends and Executors</h1>
-<p>Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software depenendencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.</p>
+<p>Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software dependencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.</p>
 <div id="commonly-used-runtime-attributes" class="section level2" number="8.1">
 <h2><span class="header-section-number">8.1</span> Commonly used runtime attributes</h2>
 <p>Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.</p>
@@ -302,7 +303,7 @@
 <ul>
 <li><p>Cromwell runs as a jar file, so it is very portable and does not need to be “installed” provided you have a modern Java runtime environment.</p></li>
 <li><p>If you just want to check workflows are valid, you can run <code>womtool</code> as a jar file (available on Cromwell’s GitHub page). This will check not only the WDL file you pass it, but also any WDLs it imports.</p></li>
-<li><p>Cromwell does not use call cacheing on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.</p></li>
+<li><p>Cromwell does not use call caching on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.</p></li>
 <li><p>Cromwell supports the <code>gpu</code> and <code>disks</code> runtime attributes on certain backends. If using the <code>gpu</code> runtime attribute, make sure your task is set up correctly to properly use this resource.</p></li>
 <li><p>Generally speaking, Cromwell will be able to directly modify input files by default without causing permission errors.</p></li>
 </ul>
@@ -314,7 +315,7 @@
 <ul>
 <li><p>miniwdl is a Python program, and it must be installed via <code>pip</code> or <code>pip3</code> to use.</p></li>
 <li><p>miniwdl’s equivalent to <code>womtool</code> is <code>miniwdl check</code>, but it also includes <code>shellcheck</code> to check the command section of your tasks.</p></li>
-<li><p>miniwdl supports call cacheing, but it is turned off by default.</p></li>
+<li><p>miniwdl supports call caching, but it is turned off by default.</p></li>
 <li><p>miniwdl does not support the <code>gpu</code> or <code>disks</code> runtime attributes and will ignore them if present in a task’s runtime section.</p></li>
 <li><p>By default, miniwdl does not duplicate input files. If your workflow only needs to read input files, this helps save disk space, but if your workflow directly modifies input files, this can result in permission errors. A simple fix is to run miniwdl with the <code>--copy-input-files</code> flag.</p></li>
 </ul>

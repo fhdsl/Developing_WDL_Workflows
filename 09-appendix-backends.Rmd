@@ -3,7 +3,7 @@ ottrpal::set_knitr_image_path()
 ```
 
 # Appendix: Backends and Executors
-Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software depenendencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.
+Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software dependencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.
 
 ## Commonly used runtime attributes
 Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.
@@ -36,7 +36,7 @@ Other notes:
 
 * If you just want to check workflows are valid, you can run `womtool` as a jar file (available on Cromwell's GitHub page). This will check not only the WDL file you pass it, but also any WDLs it imports.
 
-* Cromwell does not use call cacheing on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.
+* Cromwell does not use call caching on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.
 
 * Cromwell supports the `gpu` and `disks` runtime attributes on certain backends. If using the `gpu` runtime attribute, make sure your task is set up correctly to properly use this resource.
 
@@ -51,7 +51,7 @@ Other notes:
 
 * miniwdl's equivalent to `womtool` is `miniwdl check`, but it also includes `shellcheck` to check the command section of your tasks.
 
-* miniwdl supports call cacheing, but it is turned off by default.
+* miniwdl supports call caching, but it is turned off by default.
 
 * miniwdl does not support the `gpu` or `disks` runtime attributes and will ignore them if present in a task's runtime section.
 

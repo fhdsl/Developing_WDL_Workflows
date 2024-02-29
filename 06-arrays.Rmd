@@ -17,7 +17,7 @@ In this chapter, we'll be going over:
 - How arrays differ from Structs
 
 ## The array type
-Arrays are essentially lists of another [primitive type](https://en.wikipedia.org/wiki/Primitive_data_type). It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primative type. For example, an Array[String] could contain the strings "cat" and "dog" but not the integer 1965 (however, it could have "1965" as a string).
+Arrays are essentially lists of another [primitive type](https://en.wikipedia.org/wiki/Primitive_data_type). It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primitive type. For example, an Array[String] could contain the strings "cat" and "dog" but not the integer 1965 (however, it could have "1965" as a string).
 
 In chapter 4, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.
 
