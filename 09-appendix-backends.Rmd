@@ -2,7 +2,7 @@
 ottrpal::set_knitr_image_path()
 ```
 
-# Designing WDLs for different backends and executors
+# Appendix: Backends and Executors
 Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software depenendencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.
 
 ## Commonly used runtime attributes
