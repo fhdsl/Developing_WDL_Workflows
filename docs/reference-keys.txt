@@ -1,5 +1,9 @@
 target-audience
+why-wdl
+wdl-pros
+wdl-cons
 curriculum
+relevant-resources
 introduction-to-wdl
 introduction
 review-of-basic-wdl-syntax
