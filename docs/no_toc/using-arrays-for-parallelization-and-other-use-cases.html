@@ -147,6 +147,7 @@
 </ul></li>
 <li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
 <li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+<li class="chapter" data-level="6.5" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="task-aliasing.html"><a href="task-aliasing.html"><i class="fa fa-check"></i><b>7</b> Task Aliasing</a>
 <ul>
@@ -300,7 +301,7 @@ workflow minidata_mutation_calling_chapter6 {
     Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
     Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
   }</code></pre>
-<p>You can reference a full copy of this workflow <a href="../resources/chapter-6.wdl">here</a>.</p>
+<p>You can reference a full copy of this workflow at the end of this chapter.</p>
 </div>
 <div id="referencing-an-array-in-a-task" class="section level2" number="6.4">
 <h2><span class="header-section-number">6.4</span> Referencing an array in a task</h2>
@@ -334,6 +335,222 @@ workflow minidata_mutation_calling_chapter6 {
   &gt;&gt;&gt;
   runtime {
     docker: &quot;python:latest&quot;
+  }
+}</code></pre>
+</div>
+<div id="the-workflow-so-far" class="section level2" number="6.5">
+<h2><span class="header-section-number">6.5</span> The workflow so far</h2>
+<pre><code>version 1.0
+
+## Workflow developed by Sitapriya Moorthi @ Fred Hutch LMD: 01/10/24 for use by DaSL @ Fred Hutch.
+## Workflow updated on: 02/28/24 by Ash O&#39;Farrell (UCSC)
+
+struct referenceGenome {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String ref_name
+}
+
+
+workflow minidata_mutation_calling_chapter6 {
+  input {
+    Array[File] tumorSamples
+
+    referenceGenome refGenome
+    
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+
+  }
+ 
+  # Scatter for tumor samples   
+  scatter (tumorFastq in tumorSamples) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
+    
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+      input:
+        input_bam = tumorMarkDuplicates.markDuplicates_bam,
+        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+    }
+  }
+
+  output {
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+  }
+}
+# TASK DEFINITIONS
+
+# Align fastq file to the reference genome
+task BwaMem {
+  input {
+    File input_fastq
+    referenceGenome refGenome
+    Int threads = 16
+  }
+  
+  String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
+
+  String read_group_id = &quot;ID:&quot; + base_file_name
+  String sample_name = &quot;SM:&quot; + base_file_name
+  String platform = &quot;illumina&quot;
+  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
+
+
+  command &lt;&lt;&lt;
+    set -eo pipefail
+
+    mv ~{refGenome.ref_fasta} .
+    mv ~{refGenome.ref_fasta_index} .
+    mv ~{refGenome.ref_dict} .
+    mv ~{refGenome.ref_amb} .
+    mv ~{refGenome.ref_ann} .
+    mv ~{refGenome.ref_bwt} .
+    mv ~{refGenome.ref_pac} .
+    mv ~{refGenome.ref_sa} .
+
+    bwa mem \
+      -p -v 3 -t ~{threads} -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
+      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
+    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
+    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+  &gt;&gt;&gt;
+
+  output {
+    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
+  }
+  
+  runtime {
+    memory: &quot;48 GB&quot;
+    cpu: 16
+    docker: &quot;ghcr.io/getwilds/bwa:0.7.17&quot;
+  }
+}
+
+# Mark duplicates
+task MarkDuplicates {
+  input {
+    File input_bam
+  }
+
+  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
+  String output_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
+  String output_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
+  String metrics_file = &quot;~{base_file_name}.duplicate_metrics&quot;
+
+  command &lt;&lt;&lt;
+    gatk MarkDuplicates \
+      --INPUT ~{input_bam} \
+      --OUTPUT ~{output_bam} \
+      --METRICS_FILE ~{metrics_file} \
+      --CREATE_INDEX true \
+      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
+      --VALIDATION_STRINGENCY SILENT
+  &gt;&gt;&gt;
+
+  runtime {
+    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
+    memory: &quot;48 GB&quot;
+    cpu: 4
+  }
+
+  output {
+    File markDuplicates_bam = &quot;~{output_bam}&quot;
+    File markDuplicates_bai = &quot;~{output_bai}&quot;
+    File duplicate_metrics = &quot;~{metrics_file}&quot;
+  }
+}
+
+# Base quality recalibration
+task ApplyBaseRecalibrator {
+  input {
+    File input_bam
+    File input_bam_index
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+    referenceGenome refGenome
+  }
+  
+  String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
+  
+  String ref_fasta_local = basename(refGenome.ref_fasta)
+  String dbSNP_vcf_local = basename(dbSNP_vcf)
+  String known_indels_sites_VCFs_local = basename(known_indels_sites_VCFs)
+
+
+  command &lt;&lt;&lt;
+  set -eo pipefail
+
+  mv ~{refGenome.ref_fasta} .
+  mv ~{refGenome.ref_fasta_index} .
+  mv ~{refGenome.ref_dict} .
+
+  mv ~{dbSNP_vcf} .
+  mv ~{dbSNP_vcf_index} .
+
+  mv ~{known_indels_sites_VCFs} .
+  mv ~{known_indels_sites_indices} .
+
+  samtools index ~{input_bam} #redundant? markduplicates already does this?
+
+  gatk --java-options &quot;-Xms8g&quot; \
+      BaseRecalibrator \
+      -R ~{ref_fasta_local} \
+      -I ~{input_bam} \
+      -O ~{base_file_name}.recal_data.csv \
+      --known-sites ~{dbSNP_vcf_local} \
+      --known-sites ~{known_indels_sites_VCFs_local} \
+      
+
+  gatk --java-options &quot;-Xms8g&quot; \
+      ApplyBQSR \
+      -bqsr ~{base_file_name}.recal_data.csv \
+      -I ~{input_bam} \
+      -O ~{base_file_name}.recal.bam \
+      -R ~{ref_fasta_local} \
+      
+
+  #finds the current sort order of this bam file
+  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; ~{base_file_name}.sortOrder.txt
+&gt;&gt;&gt;
+
+  output {
+    File recalibrated_bam = &quot;~{base_file_name}.recal.bam&quot;
+    File recalibrated_bai = &quot;~{base_file_name}.recal.bai&quot;
+    File sortOrder = &quot;~{base_file_name}.sortOrder.txt&quot;
+  }
+  runtime {
+    memory: &quot;36 GB&quot;
+    cpu: 2
+    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
   }
 }</code></pre>
 
