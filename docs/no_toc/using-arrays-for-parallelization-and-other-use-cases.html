@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 2 Defining a workflow plan | WDL Workflows Guide</title>
+  <title>Chapter 6 Using Arrays For Parallelization and Other Use Cases | WDL Workflows Guide</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 2 Defining a workflow plan | WDL Workflows Guide" />
+  <meta property="og:title" content="Chapter 6 Using Arrays For Parallelization and Other Use Cases | WDL Workflows Guide" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 2 Defining a workflow plan | WDL Workflows Guide" />
+  <meta name="twitter:title" content="Chapter 6 Using Arrays For Parallelization and Other Use Cases | WDL Workflows Guide" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="introduction-to-wdl.html"/>
-<link rel="next" href="the-first-task.html"/>
+<link rel="prev" href="organizing-variables-via-structs.html"/>
+<link rel="next" href="appendix-backends-and-executors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -199,58 +199,136 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="defining-a-workflow-plan" class="section level1" number="2">
-<h1><span class="header-section-number">Chapter 2</span> Defining a workflow plan</h1>
-<p>Our WDL guide will center around building a workflow from scratch. As we build out this workflow step-by-step, you will see what strategies and resources are used to develop a workflow that is iterative, reproducible, and efficient in terms of time and resource used. The goal is to use this workflow to illustrate common lessons in writing WDL workflows.</p>
-<div id="somatic-mutation-calling-workflow" class="section level2" number="2.1">
-<h2><span class="header-section-number">2.1</span> Somatic mutation calling workflow</h2>
-<p>The workflow used as the example here is tailored to detect somatic mutations in two tumor samples. Initially, the workflow takes as input FASTQ-formatted sequencing data from two tumor specimens and one normal sample (a single normal sample is used here, but typically each tumor might have its own associated normal). Subsequently, it aligns the FASTQ files of each sample with the human reference genome (hg19), proceeds to identify and mark PCR duplicates, and conducts base quality recalibration. Following these steps, the workflow engages in somatic mutation calling, operating in a paired mode, to pinpoint mutations unique to the tumor samples in comparison to the normal one. Concluding the process, the workflow undertakes the annotation of the identified mutations, enriching the dataset with additional insights into the nature of the mutations detected.</p>
-<p>The workflow diagram:</p>
-<p><a href="assets/WDL_101_Course.png"><img src="assets/WDL_101_Course.png" alt="Workflow Diagram" /></a></p>
-<p>The tasks involved:</p>
-<ol style="list-style-type: decimal">
-<li><code>BwaMem</code> aligns the samples to the reference genome (hg19).</li>
-<li><code>MarkDuplicates</code> marks PCR duplicates.</li>
-<li><code>ApplyBaseRecalibrator</code> perform base quality recalibration.</li>
-<li><code>Mutect2</code> performs paired somatic mutation calling.</li>
-<li><code>annovar</code> annotates the called somatic mutations.</li>
-</ol>
-</div>
-<div id="workflow-testing-strategy" class="section level2" number="2.2">
-<h2><span class="header-section-number">2.2</span> Workflow testing strategy</h2>
-<p>As we build out our workflow, how do we know it is running correctly besides getting a message such as “Workflow finished with status ‘Succeeded’” or an exit code 0? In <a href="https://www.atlassian.com/continuous-delivery/software-testing">software development</a>, it is essential to test your code to see whether it generates the expected output given a specified input. This principle applies into bioinformatics workflow development also:</p>
-<ol style="list-style-type: decimal">
-<li><p>Unit Testing: We need to incorporate tests to ensure that each task we develop is correct.</p></li>
-<li><p>End-to-end testing: When we connect all the tasks together to form a workflow, we test that the workflow running end-to-end is correct.</p></li>
-</ol>
-<p>Here are some guidelines for any form of testing:</p>
+<div id="using-arrays-for-parallelization-and-other-use-cases" class="section level1" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Using Arrays For Parallelization and Other Use Cases</h1>
+<p>We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let’s look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.</p>
+<p>In this chapter, we’ll be going over:</p>
 <ul>
-<li><p>The data you use for testing is representative of “real” data.</p></li>
-<li><p>You have an expectation of what the resulting output is <em>before</em> you run your workflow on it. It can be as specific as a MD5 checksum, or vague such as a certain file format.</p></li>
-<li><p>The process is quick to run, ideally in the range of just a few minutes. This often means using a small subset of actual data.</p></li>
-<li><p>The data you use for testing is ideally open access so others can verify your workflow also.</p></li>
+<li><p>How to use scattered tasks to run a workflow on multiple samples at once</p></li>
+<li><p>How to use arrays effectively</p></li>
+<li><p>How to reference arrays in a task’s command section</p></li>
+<li><p>How arrays differ from Structs</p></li>
 </ul>
+<div id="the-array-type" class="section level2" number="6.1">
+<h2><span class="header-section-number">6.1</span> The array type</h2>
+<p>Arrays are essentially lists of another <a href="https://en.wikipedia.org/wiki/Primitive_data_type">primitive type</a>. It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primative type. For example, an Array[String] could contain the strings “cat” and “dog” but not the integer 1965 (however, it could have “1965” as a string).</p>
+<p>In chapter 4, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.</p>
+<p>In WDL, arrays are 0 indexed, so the “first” value in an array is referenced by <code>[0]</code>. As per the WDL spec, arrays retain their order and are <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a> – if you explicitly define an Array[String] with the members [“foo”, “bar”, “bizz”], you can be confident that “foo” will always be at index 0.</p>
+<pre><code>Array[String] foobarbizz = [&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;]
+String foo = foobarbizz[0] # will always be &quot;foo&quot;</code></pre>
+<p>Because arrays are <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a>, if you wish to add values to an array, you will need to define a new array.</p>
 </div>
-<div id="test-samples" class="section level2" number="2.3">
-<h2><span class="header-section-number">2.3</span> Test samples</h2>
-<p>To serve as an example we use here whole exome sequencing data from three cell lines from the <a href="https://pubmed.ncbi.nlm.nih.gov/31068700/">Cancer Cell Line Encyclopedia</a>.</p>
-<div id="tumor-1-hcc4006" class="section level3" number="2.3.1">
-<h3><span class="header-section-number">2.3.1</span> Tumor 1 : HCC4006</h3>
-<p>HCC4006 is a lung cancer cell line that has a mutation in the gene <em>EGFR</em> (Epithelial Growth Factor Receptor) a proto-oncogene. Mutations in <em>EGFR</em> result in the abnormal constitutive activation of the EGFR signaling pathway and drive cancer. In this cell-line specifically the <em>EGFR</em> mutation is an in-frame deletion in Exon 19. This mutation results in the constitutive activation of the EGFR protein and is therefore oncogenic.</p>
+<div id="scattered-tasks" class="section level2" number="6.2">
+<h2><span class="header-section-number">6.2</span> Scattered tasks</h2>
+<p>Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample’s chromosomes in parallel, or similar situations where breaking up data into discrete “chunks” makes sense.</p>
+<p>It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the <code>cpu</code> WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially “unaware” of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.</p>
+<div id="troubleshooting-1" class="section level3" number="6.2.1">
+<h3><span class="header-section-number">6.2.1</span> Troubleshooting</h3>
+<p>Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintuitive. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.</p>
+<p>Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend’s hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scalable cloud-based backends such as Terra, but isn’t uncommon when running scattered tasks on a local machine.</p>
 </div>
-<div id="tumor-2-calu1" class="section level3" number="2.3.2">
-<h3><span class="header-section-number">2.3.2</span> Tumor 2 : CALU1</h3>
-<p>CALU1 is a lung cancer cell line that has a mutation in the gene <em>KRAS</em> (Kirsten rat sarcoma viral oncogene homolog) . <em>KRAS</em> is also a proto-oncogene and the most common cancer-causing mutations lock the protien in an active conformation. Constitutive activation of <em>KRAS</em> results in carcinogenesis. In this cell-line <em>KRAS</em> has a point/missense mutation resulting in the substitution of the amino acid glycine (G) with cysteine (C) at position 12 of the KRAS protein (commonly known as the KRAS G12C mutation). This mutation results in the constitutive activation of KRAS and drives carcinogenesis.</p>
 </div>
-<div id="normal-molm13" class="section level3" number="2.3.3">
-<h3><span class="header-section-number">2.3.3</span> Normal : MOLM13</h3>
-<p>MOLM 13 is a human leukemia cell line commonly used in research. While it is also a cancer cell line for the purposes of this workflow example we are going to consider it as a “normal”. This cell line does not have mutations in <em>EGFR</em> nor in <em>KRAS</em> and therefore is a practical surrogate in lieu of a conventional normal sample</p>
-</div>
-<div id="test-data-details" class="section level3" number="2.3.4">
-<h3><span class="header-section-number">2.3.4</span> Test data details</h3>
-<p>Fastq files for all these three samples were derived from their respective whole exome sequencing. However for the purpose of this guide we have limited the sequencing reads to span +/- 200 bp around the mutation sites for both genes. In doing so we are able to shrink the data files for quick testing.</p>
+<div id="making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays" class="section level2" number="6.3">
+<h2><span class="header-section-number">6.3</span> Making our workflow run on multiple samples at once using scattered tasks and arrays</h2>
+<p>When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we’ll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.</p>
+<p>For starters, we’ll want to change our workflow-level sample variables from File to Array[File]. However, we don’t need to change any of the reference genome files, because every instance of our tasks will be taking in the same reference genome files. In other words, our struct is unchanged.</p>
+<pre><code>version 1.0
 
+struct referenceGenome {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String ref_name
+}
+
+
+workflow minidata_mutation_calling_chapter6 {
+  input {
+    Array[File] tumorSamples
+
+    referenceGenome refGenome
+    
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+
+  }
+</code></pre>
+<p>Next, we will want to look at our chain of tasks. Each of these tasks are designed to take in a single sample. In theory, we could rewrite each task to iterate through an array of multiple samples. However, it’s much simpler to keep those tasks as single-sample tasks, and simply run them on one sample at a time. To do this, we encapsulate the task calls in the workflow document with <code>scatter</code>.</p>
+<pre><code>  scatter (tumorFastq in tumorSamples) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
+    
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+      input:
+        input_bam = tumorMarkDuplicates.markDuplicates_bam,
+        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+    }
+  }</code></pre>
+<p>A scatter is essentially the WDL version of a <a href="https://en.wikipedia.org/wiki/For_loop">for loop</a>. Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only “see” one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays. As a result, our outputs are now Array[File] instead of just File.</p>
+<pre><code>  output {
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+  }</code></pre>
+<p>You can reference a full copy of this workflow <a href="../resources/chapter-6.wdl">here</a>.</p>
 </div>
+<div id="referencing-an-array-in-a-task" class="section level2" number="6.4">
+<h2><span class="header-section-number">6.4</span> Referencing an array in a task</h2>
+<p>Because each task only takes in one sample, we are not directly inputting arrays into a file. However, it’s important to know how to do this. If a task’s input variable is an array, we must include an array separator. In WDL 1.0, this is done using the <code>sep=</code> expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via <code>sep</code>. In this example, that is a simple space, as that is one way how to construct a bash variable.</p>
+<pre><code>task count_words {
+  input {
+    Array[String] a_big_sentence
+  }
+  command &lt;&lt;&lt;
+    ARRAY_OF_WORDS=(~{sep=&quot; &quot; a_big_sentence})
+    echo ${#ARRAY_OF_FILES[@]} &gt;&gt; length.txt
+    # Note how the bash array uses ${} syntax, which could quickly get
+    # confusing if we used that syntax for our WDL variables. This is
+    # why we recommend using tilde + {} for your WDL variables.
+  &gt;&gt;&gt;
+}</code></pre>
+<p>It’s usually unnecessary to declare an Array[String], because a single String can have many words in it. That being said, an Array[String] can sometimes come in handy if it is made up of outputs from other tasks. We’ll talk more about chaining tasks together in upcoming chapters.</p>
+<div class="notice">
+<p>The WDL 1.1 spec added a new built-in function, <code>sep()</code>, which replaces the <code>sep=</code> expression placeholder for arrays. This same version of the spec also notes that the <code>sep=</code> expression placeholder <a href="https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options">are deprecated and will be removed from future versions of WDL</a>. For the time being, we recommend sticking with <code>sep=</code> as it is compatible with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.</p>
+</div>
+<p>If you’re not used to working in bash, the syntax for interacting with bash arrays can be unintuitive, but you don’t have to write a WDL’s command section only using bash. In fact, working in another language besides bash within a WDL can be a great way to write code quickly, or perform tasks that are more advanced than what a typical bash script can handle. Just be sure to set <code>sep</code> properly to ensure that your array is interpreted correctly. In this example, we place quotation marks before and after the variable to ensure that the first and last value of the list are given beginning and ending quotation marks respectively.</p>
+<pre><code>task count_words_python {
+  input {
+    Array[String] a_big_sentence
+  }
+  command &lt;&lt;&lt;
+    python &lt;&lt; CODE
+    sentence = [ &quot;~{sep=&#39;&quot;, &quot;&#39; a_big_sentence}&quot; ]
+    print(len(sentence))
+    CODE
+  &gt;&gt;&gt;
+  runtime {
+    docker: &quot;python:latest&quot;
+  }
+}</code></pre>
+
 </div>
 </div>
 <hr>
@@ -267,8 +345,8 @@
           </div>
         </div>
       </div>
-<a href="introduction-to-wdl.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="the-first-task.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="organizing-variables-via-structs.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="appendix-backends-and-executors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
