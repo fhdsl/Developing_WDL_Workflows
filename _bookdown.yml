@@ -5,8 +5,6 @@ rmd_files: ["index.Rmd",
             "01-intro.Rmd",
             "02-workflow-plan.Rmd",
             "03-first-task.Rmd",
-            "04-linear-chain.Rmd",
-            "05-structs.Rmd",
             "appendix-backends.Rmd",
             "About.Rmd",
             "References.Rmd"]
