@@ -1,5 +1,5 @@
 ---
-title: "WDL Workflows Guide"
+title: "Developing WDL Workflows"
 date: "`r format(Sys.time(), '%B, %Y')`"
 site: bookdown::bookdown_site
 documentclass: book
@@ -15,7 +15,7 @@ output:
 
 # About this Course {-}
 
-This WDL workflow development guide shows a bioinformatics workflow developer how to strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used. This guide is flexible regardless of where the data is, what computing resources are being used, and what software is being used. 
+"Developing WDL Workflows" shows a bioinformatics workflow developer how to strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used. This guide is flexible regardless of where the data is, what computing resources are being used, and what software is being used. 
 
 ## Target Audience
 
