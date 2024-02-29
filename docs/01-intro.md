@@ -6,7 +6,7 @@
 
 Welcome to building your first WDL workflow! This guide will help you strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used.
 
-To make sure that we are on the same page, this guide assumes that you are able to run a WDL on a computing engine of your choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore. This guide also assumes that you have a beginner's understanding of the WDL syntax, and we will link out to additional resources to fill in the knowledge gap as needed! If you have never seen the WDL language in action, a great place to start is [OpenWDL docs](https://docs.openwdl.org/en/stable/) -- it teaches you the basic syntax and showcases WDL features via concrete examples.
+To make sure that we are on the same page, this guide assumes that you are able to run a WDL on a computing engine of your choice, such as Cromwell, miniwdl, or a cloud computing environment such as Terra, AnVIL, or Dockstore. This guide also assumes that you have a beginner's understanding of the WDL syntax, and we will link out to additional resources to fill in the knowledge gap as needed! If you have never seen the WDL language in action, a great place to start is [OpenWDL docs](https://docs.openwdl.org/en/stable/) -- it teaches you the basic syntax and showcases WDL features via concrete examples.
 
 ## Review of basic WDL syntax
 
