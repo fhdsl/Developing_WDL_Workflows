@@ -21,6 +21,10 @@ output:
 
 The course is intended for first time developers of the [WDL workflow language](https://github.com/openwdl/wdl), who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore. 
 
+### Relevant Resources
+
+If you are new to WDL, [OpenWDL Docs](https://docs.openwdl.org/en/stable/) is an excellent WDL companion resource to help you get started and is platform agnostic. OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.
+
 ## Why WDL?
 
 You may have encountered other workflow tools, such as Snakemake or Nextflow, and those are highly capable. Why learn a brand new workflow language? Let's review some WDL Pros and Cons:
@@ -56,6 +60,4 @@ The course covers the following:
 - Reuse repeated tasks via task aliasing
 - Configure settings for the execution engine
 
-## Suggested Background
 
-If you are new to WDL, an excellent WDL companion resource that is not platform dependent is [OpenWDL Docs](https://docs.openwdl.org/en/stable/). OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.
