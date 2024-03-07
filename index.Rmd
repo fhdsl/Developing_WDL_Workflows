@@ -39,7 +39,7 @@ WDL has some really helpful advantages compared to other frameworks:
 
 - **Sharing**. A WDL workflow is much easier to share with colleagues and is a good way to get credit for work you do everyday. If you spent time building it, why not share it? WDL is also an open standard and supported by a number of software tools.
 
-- **Running and Making WDL workflows is a transferrable skill.** Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry. 
+- **Running and Making WDL workflows is a transferable skill.** Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry. 
 
 ### WDL Cons
 
