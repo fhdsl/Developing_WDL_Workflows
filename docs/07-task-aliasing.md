@@ -17,7 +17,7 @@ The major advantages of using task aliasing are:
 
 **3. Enhances Readability and Clarity**: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow ( for example are you doing this task for Sample set A or Sample set B)
 
-**4. Facilitates Modular Workflow Design**: Task aliasing help to make your workflow modular. This is easier to adopt by 
+**4. Facilitates Modular Workflow Design**: Task aliasing help to make your workflow modular. This is easier to adopt.
 
 **5. Improves Workflow Scalability**: Using task aliasing it is much easier to scale the workflow across different inputs. For example you want to run a task on different sample groups (Sample set A and B) will allow the same task to be run parallely and if you choose with different modifications. 
 
@@ -92,9 +92,7 @@ call MarkDuplicates as normalMarkDuplicates {
 
 Now adding these steps to the workflow we will have our tumor and normal sample aligned and recalibrated and suitable for ingestion into the mutation calling step for a paired mutation calling using MuTect2. 
 
-```
-
-# The full workflow with task alias
+<pre><code># The full workflow with task alias
 
 version 1.0
 ## WDL 101 example workflow
@@ -193,18 +191,18 @@ workflow mutation_calling {
 }
   
   # Do for normal sample
-  call BwaMem as normalBwaMem {
+  call BwaMem as <span style="color:red;">normalBwaMem</span> {
     input:
       input_fastq = normalSamples,
       refGenome = refGenome
   }
   
-  call MarkDuplicates as normalMarkDuplicates {
+  call MarkDuplicates as <span style="color:red;">normalMarkDuplicates</span> {
     input:
       input_bam = normalBwaMem.analysisReadySorted
   }
 
-  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+  call ApplyBaseRecalibrator as <span style="color:red;">normalApplyBaseRecalibrator</span> {
     input:
       input_bam = normalMarkDuplicates.markDuplicates_bam,
       input_bam_index = normalMarkDuplicates.markDuplicates_bai,
@@ -470,5 +468,5 @@ task annovar {
     File output_annotated_table = "${base_vcf_name}.${ref_name}_multianno.txt"
   }
 }
-```
+</code></pre>
 

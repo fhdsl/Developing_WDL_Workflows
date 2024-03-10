@@ -2,13 +2,13 @@
 
 # Connecting multiple tasks together in a linear chain
 
-Now that you have a first task in a workflow up and running, the next step is to continue building out the workflow as described in our Workflow Plan:
+Now that you have a first task in a workflow up and running, the next step is to continue building out the workflow as described in our Workflow Plan:  
 
-1.  `BwaMem` aligns the samples to the reference genome.
-2.  `MarkDuplicates` marks PCR duplicates.
-3.  `ApplyBaseRecalibrator` applies base recalibration.
-4.  `Mutect2` performs somatic mutation calling. For this current iteration, we start with `Mutect2TumorOnly` which only uses the tumor sample.
-5.  `annovar` annotates the called somatic mutations.
+1.  `BwaMem` aligns the samples to the reference genome
+2.  `MarkDuplicates` marks PCR duplicates
+3.  `ApplyBaseRecalibrator` applies base recalibration
+4.  `Mutect2` performs somatic mutation calling. For this current iteration, we start with `Mutect2TumorOnly` which only uses the tumor sample
+5.  `annovar` annotates the called somatic mutations
 
 We do this via a **linear chain**, in which we feed the output of one task to the input of the next task. Let's see how to build a linear chain in a workflow.
 
@@ -25,7 +25,7 @@ output {
   }
 ```
 
-The File variables `analysisReadyBam` and `analysisReadySorted` can now be accessed anywhere in the workflow block after the `BwaMem` task as `BwaMem.analysisReadyBam` and `BwaMem.analysisReadySorted`, respectively. Therefore, when we call the `MarkDuplicates` task, we can pass it the input `BwaMem.analysisReadySorted` from the `BwaMem` task:
+The File variables `analysisReadyBam` and `analysisReadySorted` can now be accessed anywhere in the workflow block after the `BwaMem` task as `BwaMem.analysisReadyBam` and `BwaMem.analysisReadySorted` respectively. Therefore, when we call the `MarkDuplicates` task, we can pass it the input `BwaMem.analysisReadySorted` from the `BwaMem` task:
 
 
 ```         
@@ -86,7 +86,7 @@ Of course, the task `MarkDuplicates` hasn't been written yet! Let's go through i
 
 ### Input
 
-The task takes an input bam file that has been aligned to the reference genome. It needs to be a File `input_bam` based on how we introduced it in the workflow above. That is easy to write up:
+The task takes an input BAM file that has been aligned to the reference genome. It needs to be a File `input_bam` based on how we introduced it in the workflow above. That is easy to write up:
 
 ```         
 task MarkDuplicates {
@@ -135,7 +135,7 @@ task MarkDuplicates {
 
 ### Runtime and Output
 
-We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a bam index file that is automatically created by the command section.
+We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a BAM index file that is automatically created by the command section.
 
 Below is the task all together. It has a form very similar to our first task `BwaMem`.
 

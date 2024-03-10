@@ -53,4 +53,4 @@ CALU1 is a lung cancer cell line that has a mutation in the gene *KRAS* (Kirsten
 MOLM 13 is a human leukemia cell line commonly used in research. While it is also a cancer cell line for the purposes of this workflow example we are going to consider it as a "normal". This cell line does not have mutations in *EGFR* nor in *KRAS* and therefore is a practical surrogate in lieu of a conventional normal sample
 
 ### Test data details
-Fastq files for all these three samples were derived from their respective whole exome sequencing. However for the purpose of this guide we have limited the sequencing reads to span +/- 200 bp around the mutation sites for both genes. In doing so we are able to shrink the data files for quick testing. 
+FASTQ files for all these three samples were derived from their respective whole exome sequencing. However for the purpose of this guide we have limited the sequencing reads to span +/- 200 bps around the mutation sites for both genes. In doing so we are able to shrink the data files for quick testing. 
