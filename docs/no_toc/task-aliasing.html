@@ -219,7 +219,7 @@ Simply put <strong>task aliasing</strong> allows for the re-use of task definiti
 <p><strong>1. Reduces Redundancy</strong>: You don’t need to copy and paste the same task definition multiple times and your workflows will be more concise and organized.</p>
 <p><strong>2. Simplifies Maintenance</strong> : If you decide to change/update/fix a task, using task aliasing will make life easy as you need to update only once in your workflow.</p>
 <p><strong>3. Enhances Readability and Clarity</strong>: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow ( for example are you doing this task for Sample set A or Sample set B)</p>
-<p><strong>4. Facilitates Modular Workflow Design</strong>: Task aliasing help to make your workflow modular. This is easier to adopt by</p>
+<p><strong>4. Facilitates Modular Workflow Design</strong>: Task aliasing help to make your workflow modular. This is easier to adopt.</p>
 <p><strong>5. Improves Workflow Scalability</strong>: Using task aliasing it is much easier to scale the workflow across different inputs. For example you want to run a task on different sample groups (Sample set A and B) will allow the same task to be run parallely and if you choose with different modifications.</p>
 <p><strong>6. Ensures Consistency</strong>: Task aliasing assures that there is consistency in replicated tasks and helps the reader easily identify where changes are expected in a task.</p>
 </div>
@@ -275,8 +275,7 @@ File normalalignedBamSorted = normalBwaMem.analysisReadySorted
       refGenome = refGenome
   }</code></pre>
 <p>Now adding these steps to the workflow we will have our tumor and normal sample aligned and recalibrated and suitable for ingestion into the mutation calling step for a paired mutation calling using MuTect2.</p>
-<pre><code>
-# The full workflow with task alias
+<pre><code># The full workflow with task alias
 
 version 1.0
 ## WDL 101 example workflow
@@ -296,7 +295,7 @@ version 1.0
 ## Output Files:
 ## - An aligned bam for all 3 samples (with duplicates marked and base quality recalibrated)
 ## 
-## Workflow developed by Sitapriya Moorthi, Chris Lo and Taylor Firman @ Fred Hutch and Ash (Aisling) O&#39;Farrell @ UCSC LMD: 02/28/24 for use @ Fred Hutch.
+## Workflow developed by Sitapriya Moorthi, Chris Lo and Taylor Firman @ Fred Hutch and Ash (Aisling) O'Farrell @ UCSC LMD: 02/28/24 for use @ Fred Hutch.
 
 struct referenceGenome {
     File ref_fasta
@@ -330,7 +329,7 @@ workflow mutation_calling {
     String annovar_operation
   }
  
-  # Scatter for &quot;tumor&quot; samples   
+  # Scatter for "tumor" samples   
   scatter (tumorFastq in tumorSamples) {
     call BwaMem as tumorBwaMem {
       input:
@@ -375,18 +374,18 @@ workflow mutation_calling {
 }
   
   # Do for normal sample
-  call BwaMem as normalBwaMem {
+  call BwaMem as <span style="color:red;">normalBwaMem</span> {
     input:
       input_fastq = normalSamples,
       refGenome = refGenome
   }
   
-  call MarkDuplicates as normalMarkDuplicates {
+  call MarkDuplicates as <span style="color:red;">normalMarkDuplicates</span> {
     input:
       input_bam = normalBwaMem.analysisReadySorted
   }
 
-  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+  call ApplyBaseRecalibrator as <span style="color:red;">normalApplyBaseRecalibrator</span> {
     input:
       input_bam = normalMarkDuplicates.markDuplicates_bam,
       input_bam_index = normalMarkDuplicates.markDuplicates_bai,
@@ -425,16 +424,16 @@ task BwaMem {
     Int threads = 16
   }
   
-  String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
+  String base_file_name = basename(input_fastq, ".fastq")
   String ref_fasta_local = basename(refGenome.ref_fasta)
 
-  String read_group_id = &quot;ID:&quot; + base_file_name
-  String sample_name = &quot;SM:&quot; + base_file_name
-  String platform = &quot;illumina&quot;
-  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
+  String read_group_id = "ID:" + base_file_name
+  String sample_name = "SM:" + base_file_name
+  String platform = "illumina"
+  String platform_info = "PL:" + platform   # Create the platform information
 
 
-  command &lt;&lt;&lt;
+  command <<<
     set -eo pipefail
 
     #can we iterate through a struct??
@@ -448,20 +447,20 @@ task BwaMem {
     mv ~{refGenome.ref_sa} .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
-      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
-  &gt;&gt;&gt;
+  >>>
 
   output {
-    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
+    File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
   
   runtime {
-    memory: &quot;48 GB&quot;
+    memory: "48 GB"
     cpu: 16
-    docker: &quot;ghcr.io/getwilds/bwa:0.7.17&quot;
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }
 
@@ -471,12 +470,12 @@ task MarkDuplicates {
     File input_bam
   }
 
-  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-  String output_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
-  String output_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
-  String metrics_file = &quot;~{base_file_name}.duplicate_metrics&quot;
+  String base_file_name = basename(input_bam, ".sorted_query_aligned.bam")
+  String output_bam = "~{base_file_name}.duplicates_marked.bam"
+  String output_bai = "~{base_file_name}.duplicates_marked.bai"
+  String metrics_file = "~{base_file_name}.duplicate_metrics"
 
-  command &lt;&lt;&lt;
+  command <<<
     gatk MarkDuplicates \
       --INPUT ~{input_bam} \
       --OUTPUT ~{output_bam} \
@@ -484,18 +483,18 @@ task MarkDuplicates {
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
-  &gt;&gt;&gt;
+  >>>
 
   runtime {
-    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
-    memory: &quot;48 GB&quot;
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
+    memory: "48 GB"
     cpu: 4
   }
 
   output {
-    File markDuplicates_bam = &quot;~{output_bam}&quot;
-    File markDuplicates_bai = &quot;~{output_bai}&quot;
-    File duplicate_metrics = &quot;~{metrics_file}&quot;
+    File markDuplicates_bam = "~{output_bam}"
+    File markDuplicates_bai = "~{output_bai}"
+    File duplicate_metrics = "~{metrics_file}"
   }
 }
 
@@ -511,14 +510,14 @@ task ApplyBaseRecalibrator {
     referenceGenome refGenome
   }
   
-  String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
+  String base_file_name = basename(input_bam, ".duplicates_marked.bam")
   
   String ref_fasta_local = basename(refGenome.ref_fasta)
   String dbSNP_vcf_local = basename(dbSNP_vcf)
   String known_indels_sites_VCFs_local = basename(known_indels_sites_VCFs)
 
 
-  command &lt;&lt;&lt;
+  command <<<
   set -eo pipefail
 
   mv ~{refGenome.ref_fasta} .
@@ -533,7 +532,7 @@ task ApplyBaseRecalibrator {
 
   samtools index ~{input_bam} #redundant? markduplicates already does this?
 
-  gatk --java-options &quot;-Xms8g&quot; \
+  gatk --java-options "-Xms8g" \
       BaseRecalibrator \
       -R ~{ref_fasta_local} \
       -I ~{input_bam} \
@@ -542,7 +541,7 @@ task ApplyBaseRecalibrator {
       --known-sites ~{known_indels_sites_VCFs_local} \
       
 
-  gatk --java-options &quot;-Xms8g&quot; \
+  gatk --java-options "-Xms8g" \
       ApplyBQSR \
       -bqsr ~{base_file_name}.recal_data.csv \
       -I ~{input_bam} \
@@ -551,18 +550,18 @@ task ApplyBaseRecalibrator {
       
 
   #finds the current sort order of this bam file
-  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; ~{base_file_name}.sortOrder.txt
-&gt;&gt;&gt;
+  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > ~{base_file_name}.sortOrder.txt
+>>>
 
   output {
-    File recalibrated_bam = &quot;~{base_file_name}.recal.bam&quot;
-    File recalibrated_bai = &quot;~{base_file_name}.recal.bai&quot;
-    File sortOrder = &quot;~{base_file_name}.sortOrder.txt&quot;
+    File recalibrated_bam = "~{base_file_name}.recal.bam"
+    File recalibrated_bai = "~{base_file_name}.recal.bai"
+    File sortOrder = "~{base_file_name}.sortOrder.txt"
   }
   runtime {
-    memory: &quot;36 GB&quot;
+    memory: "36 GB"
     cpu: 2
-    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
   }
 }
 
@@ -579,12 +578,12 @@ task Mutect2Paired {
     File genomeReferenceIndex
   }
 
-  String base_file_name_tumor = basename(tumor_bam, &quot;.recal.bam&quot;)
-  String base_file_name_normal = basename(normal_bam, &quot;.recal.bam&quot;)
+  String base_file_name_tumor = basename(tumor_bam, ".recal.bam")
+  String base_file_name_normal = basename(normal_bam, ".recal.bam")
   String ref_fasta_local = basename(refGenome.ref_fasta)
   String genomeReference_local = basename(genomeReference)
 
-  command &lt;&lt;&lt;
+  command <<<
     set -eo pipefail
 
     mv ~{refGenome.ref_fasta} .
@@ -594,30 +593,30 @@ task Mutect2Paired {
     mv ~{genomeReference} .
     mv ~{genomeReferenceIndex} .
 
-    gatk --java-options &quot;-Xms16g&quot; Mutect2 \
+    gatk --java-options "-Xms16g" Mutect2 \
       -R ~{ref_fasta_local} \
       -I ~{tumor_bam} \
       -I ~{normal_bam} \
       -O preliminary.vcf.gz \
       --germline-resource ~{genomeReference_local} \
 
-    gatk --java-options &quot;-Xms16g&quot; FilterMutectCalls \
+    gatk --java-options "-Xms16g" FilterMutectCalls \
       -V preliminary.vcf.gz \
       -O ~{base_file_name_tumor}.mutect2.vcf.gz \
       -R ~{ref_fasta_local} \
       --stats preliminary.vcf.gz.stats \
 
-&gt;&gt;&gt;
+>>>
 
   runtime {
-    docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
-    memory: &quot;24 GB&quot;
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
+    memory: "24 GB"
     cpu: 1
   }
 
   output {
-    File output_vcf = &quot;${base_file_name_tumor}.mutect2.vcf.gz&quot;
-    File output_vcf_index = &quot;${base_file_name_tumor}.mutect2.vcf.gz.tbi&quot;
+    File output_vcf = "${base_file_name_tumor}.mutect2.vcf.gz"
+    File output_vcf_index = "${base_file_name_tumor}.mutect2.vcf.gz.tbi"
   }
 }
 
@@ -629,9 +628,9 @@ task annovar {
     String annovar_protocols
     String annovar_operation
   }
-  String base_vcf_name = basename(input_vcf, &quot;.vcf.gz&quot;)
+  String base_vcf_name = basename(input_vcf, ".vcf.gz")
   
-  command &lt;&lt;&lt;
+  command <<<
     set -eo pipefail
   
     perl /annovar/table_annovar.pl ~{input_vcf} /annovar/humandb/ \
@@ -641,17 +640,18 @@ task annovar {
       -protocol ~{annovar_protocols} \
       -operation ~{annovar_operation} \
       -nastring . -vcfinput
-&gt;&gt;&gt;
+>>>
   runtime {
-    docker : &quot;ghcr.io/getwilds/annovar:${ref_name}&quot;
+    docker : "ghcr.io/getwilds/annovar:${ref_name}"
     cpu: 1
-    memory: &quot;2GB&quot;
+    memory: "2GB"
   }
   output {
-    File output_annotated_vcf = &quot;${base_vcf_name}.${ref_name}_multianno.vcf&quot;
-    File output_annotated_table = &quot;${base_vcf_name}.${ref_name}_multianno.txt&quot;
+    File output_annotated_vcf = "${base_vcf_name}.${ref_name}_multianno.vcf"
+    File output_annotated_table = "${base_vcf_name}.${ref_name}_multianno.txt"
   }
-}</code></pre>
+}
+</code></pre>
 
 </div>
 </div>

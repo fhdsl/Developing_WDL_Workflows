@@ -258,7 +258,7 @@ struct referenceGenome {
 
 workflow minidata_mutation_calling_chapter6 {
   input {
-    Array[File] tumorSamples
+    <span style="color:red;">Array[File]</span> tumorSamples
 
     referenceGenome refGenome
     
@@ -268,9 +268,14 @@ workflow minidata_mutation_calling_chapter6 {
     File known_indels_sites_indices
 
   }
-</code></pre>
-<p>Next, we will want to look at our chain of tasks. Each of these tasks are designed to take in a single sample. In theory, we could rewrite each task to iterate through an array of multiple samples. However, it’s much simpler to keep those tasks as single-sample tasks, and simply run them on one sample at a time. To do this, we encapsulate the task calls in the workflow document with <code>scatter</code>.</p>
-<pre><code>  scatter (tumorFastq in tumorSamples) {
+
+```
+
+Next, we will want to look at our chain of tasks. Each of these tasks are designed to take in a single sample. In theory, we could rewrite each task to iterate through an array of multiple samples. However, it's much simpler to keep those tasks as single-sample tasks, and simply run them on one sample at a time. To do this, we encapsulate the task calls in the workflow document with `scatter`.
+
+
+```
+  scatter (tumorFastq in tumorSamples) {
     call BwaMem as tumorBwaMem {
       input:
         input_fastq = tumorFastq,
@@ -292,7 +297,8 @@ workflow minidata_mutation_calling_chapter6 {
         known_indels_sites_indices = known_indels_sites_indices,
         refGenome = refGenome
     }
-  }</code></pre>
+  }
+</code></pre>
 <p>A scatter is essentially the WDL version of a <a href="https://en.wikipedia.org/wiki/For_loop">for loop</a>. Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only “see” one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays. As a result, our outputs are now Array[File] instead of just File.</p>
 <pre><code>  output {
     Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted

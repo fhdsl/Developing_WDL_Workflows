@@ -212,11 +212,11 @@
 <h1><span class="header-section-number">Chapter 4</span> Connecting multiple tasks together in a linear chain</h1>
 <p>Now that you have a first task in a workflow up and running, the next step is to continue building out the workflow as described in our Workflow Plan:</p>
 <ol style="list-style-type: decimal">
-<li><code>BwaMem</code> aligns the samples to the reference genome.</li>
-<li><code>MarkDuplicates</code> marks PCR duplicates.</li>
-<li><code>ApplyBaseRecalibrator</code> applies base recalibration.</li>
-<li><code>Mutect2</code> performs somatic mutation calling. For this current iteration, we start with <code>Mutect2TumorOnly</code> which only uses the tumor sample.</li>
-<li><code>annovar</code> annotates the called somatic mutations.</li>
+<li><code>BwaMem</code> aligns the samples to the reference genome</li>
+<li><code>MarkDuplicates</code> marks PCR duplicates</li>
+<li><code>ApplyBaseRecalibrator</code> applies base recalibration</li>
+<li><code>Mutect2</code> performs somatic mutation calling. For this current iteration, we start with <code>Mutect2TumorOnly</code> which only uses the tumor sample</li>
+<li><code>annovar</code> annotates the called somatic mutations</li>
 </ol>
 <p>We do this via a <strong>linear chain</strong>, in which we feed the output of one task to the input of the next task. Let’s see how to build a linear chain in a workflow.</p>
 <div id="how-to-connect-tasks-together-in-a-workflow" class="section level2" number="4.1">
@@ -227,7 +227,7 @@
     File analysisReadyBam = &quot;~{base_file_name}.aligned.bam&quot;
     File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
   }</code></pre>
-<p>The File variables <code>analysisReadyBam</code> and <code>analysisReadySorted</code> can now be accessed anywhere in the workflow block after the <code>BwaMem</code> task as <code>BwaMem.analysisReadyBam</code> and <code>BwaMem.analysisReadySorted</code>, respectively. Therefore, when we call the <code>MarkDuplicates</code> task, we can pass it the input <code>BwaMem.analysisReadySorted</code> from the <code>BwaMem</code> task:</p>
+<p>The File variables <code>analysisReadyBam</code> and <code>analysisReadySorted</code> can now be accessed anywhere in the workflow block after the <code>BwaMem</code> task as <code>BwaMem.analysisReadyBam</code> and <code>BwaMem.analysisReadySorted</code> respectively. Therefore, when we call the <code>MarkDuplicates</code> task, we can pass it the input <code>BwaMem.analysisReadySorted</code> from the <code>BwaMem</code> task:</p>
 <pre><code>workflow minidata_mutation_calling_v1 {
   input {
     # Sample info
@@ -279,7 +279,7 @@ To see other examples of linear chain and variations, see <a href="https://docs.
 <p>Of course, the task <code>MarkDuplicates</code> hasn’t been written yet! Let’s go through it together:</p>
 <div id="input" class="section level3" number="4.2.1">
 <h3><span class="header-section-number">4.2.1</span> Input</h3>
-<p>The task takes an input bam file that has been aligned to the reference genome. It needs to be a File <code>input_bam</code> based on how we introduced it in the workflow above. That is easy to write up:</p>
+<p>The task takes an input BAM file that has been aligned to the reference genome. It needs to be a File <code>input_bam</code> based on how we introduced it in the workflow above. That is easy to write up:</p>
 <pre><code>task MarkDuplicates {
   input {
     File input_bam
@@ -319,7 +319,7 @@ To see other examples of linear chain and variations, see <a href="https://docs.
 </div>
 <div id="runtime-and-output" class="section level3" number="4.2.4">
 <h3><span class="header-section-number">4.2.4</span> Runtime and Output</h3>
-<p>We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a bam index file that is automatically created by the command section.</p>
+<p>We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a BAM index file that is automatically created by the command section.</p>
 <p>Below is the task all together. It has a form very similar to our first task <code>BwaMem</code>.</p>
 <pre><code> task MarkDuplicates {
   input {
