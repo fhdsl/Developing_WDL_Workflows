@@ -40,14 +40,24 @@ WDL has some really helpful advantages compared to other frameworks:
 ### WDL Cons
 
 Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:
+
  - Basics of Docker
+
  - Understanding the WDL framework
+
  - WDLizing your bash scripts into tasks
 
 
 ## Curriculum
 
-The course covers the following: how to write an effective WDL task, link multiple WDL tasks together in a workflow, organize variables via structs, scale multiple samples via Arrays, reuse repeated tasks via task aliasing, and configure settings for the execution engine. 
+The course covers the following learning objectives. By the end of this course, you should be able to:
+
+- **Write** an effective WDL Task
+- **Link** multiple WDL tasks together into a Workflow
+- **Organize** variables into structs
+- **Scale** Multiple Samples via Arrays
+- **Reuse** repeated tasks with aliases
+- **Configure** settings for your execution engine
 
 ## Relevant resources
 

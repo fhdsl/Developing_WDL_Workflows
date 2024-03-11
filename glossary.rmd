@@ -1,0 +1,33 @@
+```{r, include = FALSE}
+ottrpal::set_knitr_image_path()
+```
+
+Computing Engine
+: A program that executes WDL on files. It may execute them your own laptop, a HPC cluster, or a Cloud Computing Platform
+
+Container
+: A collection of software and dependencies that can run on nearly any machine
+
+Docker
+: A technology that allows you to containerize software
+
+Docker Image: 
+: what you download from a registry - the “recipe” for building the software environment. Stored in a registry. use docker pull to get image, docker commit to push changes to registry, can also generate image from a Dockerfile,
+
+Docker Container
+: The executable software environment installed on a machine. Runnable. Generate from docker pull from a repository.
+
+Dockerfile
+: A Dockerfile is a recipe for installing software and its dependencies. Can be based on another Docker image
+
+Registry
+: A collection of repositories that you pull docker images from
+
+Snapshot File
+:  An single archive file (.tar.gz) that contains the Docker container. Generate using docker save on a container. Also known as an image file on the platform.
+
+Task
+: The primary unit of a workflow. Contains inputs, commands to execute, and the outputs
+
+Workflow
+: The top level of a workflow. Contains tasks. Has its own inputs and outputs, which can be passed on to tasks
