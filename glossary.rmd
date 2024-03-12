@@ -3,31 +3,31 @@ ottrpal::set_knitr_image_path()
 ```
 
 Computing Engine
-: A program that executes WDL on files. It may execute them your own laptop, a HPC cluster, or a Cloud Computing Platform
+: A program that executes WDL on files. It may execute them your own laptop, a HPC cluster, or a cloud computing platform. The two most commonly used computing engines are miniwdl and Cromwell.
 
 Container
-: A collection of software and dependencies that can run on nearly any machine
+: A collection of software and dependencies that can run on nearly any machine with the same hardware architecture.
 
 Docker
-: A technology that allows you to containerize software
+: A technology that allows you to containerize software, and to run said containers.
 
 Docker Image: 
-: what you download from a registry - the “recipe” for building the software environment. Stored in a registry. use docker pull to get image, docker commit to push changes to registry, can also generate image from a Dockerfile,
+: The “recipe” for building the software environment. Can be downloaded from a registry using `docker pull` or can be generated using a Dockerfile.
 
 Docker Container
-: The executable software environment installed on a machine. Runnable. Generate from docker pull from a repository.
+: An instance of an executable software environment created from a Docker image.
 
 Dockerfile
-: A Dockerfile is a recipe for installing software and its dependencies. Can be based on another Docker image
+: A recipe for installing software and its dependencies so it can be packaged as a Docker image. Dockerfiles typically start by pulling an existing Docker image to act as the base.
 
 Registry
-: A collection of repositories that you pull docker images from
+: A collection of repositories that you pull Docker images from, such as Docker Hub, Google Container Registry, etc.
 
 Snapshot File
-:  An single archive file (.tar.gz) that contains the Docker container. Generate using docker save on a container. Also known as an image file on the platform.
+:  An single archive file (.tar.gz) that contains a Docker container. Generated using `docker save` on a container. Also known as an image file on the platform, but is distinct from a Docker image.
 
 Task
-: The primary unit of a workflow. Contains inputs, commands to execute, and the outputs
+: The primary unit of a WDL workflow. Contains inputs, bash commands to execute, and the outputs.
 
 Workflow
-: The top level of a workflow. Contains tasks. Has its own inputs and outputs, which can be passed on to tasks
+: The top level of a WDL workflow. Contains calls to tasks. Has its own inputs and outputs, which can be passed on to tasks.
