@@ -1,10 +1,6 @@
 ```{r, include = FALSE}
 ottrpal::set_knitr_image_path()
 ```
-
-Computing Engine
-: A program that executes WDL on files. It may execute them your own laptop, a HPC cluster, or a cloud computing platform. The two most commonly used computing engines are miniwdl and Cromwell.
-
 Container
 : A collection of software and dependencies that can run on nearly any machine with the same hardware architecture.
 
@@ -20,11 +16,11 @@ Docker Container
 Dockerfile
 : A recipe for installing software and its dependencies so it can be packaged as a Docker image. Dockerfiles typically start by pulling an existing Docker image to act as the base.
 
+Execution Engine
+: A program that executes WDL on files. It may execute them your own laptop, a HPC cluster, or a cloud computing platform. The two most commonly used computing engines are miniwdl and Cromwell.
+
 Registry
 : A collection of repositories that you pull Docker images from, such as Docker Hub, Google Container Registry, etc.
-
-Snapshot File
-:  An single archive file (.tar.gz) that contains a Docker container. Generated using `docker save` on a container. Also known as an image file on the platform, but is distinct from a Docker image.
 
 Task
 : The primary unit of a WDL workflow. Contains inputs, bash commands to execute, and the outputs.
