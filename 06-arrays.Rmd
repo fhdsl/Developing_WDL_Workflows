@@ -209,15 +209,15 @@ workflow mutation_calling {
         threads = bwa_mem_threads
     }
     
-    call MarkDuplicates as tumorMarkDuplicates {
+    call MarkDuplicates {
       input:
         input_bam = tumorBwaMem.analysisReadySorted
     }
 
-    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+    call ApplyBaseRecalibrator{
       input:
-        input_bam = tumorMarkDuplicates.markDuplicates_bam,
-        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        input_bam = MarkDuplicates.markDuplicates_bam,
+        input_bam_index = MarkDuplicates.markDuplicates_bai,
         dbSNP_vcf = dbSNP_vcf,
         dbSNP_vcf_index = dbSNP_vcf_index,
         known_indels_sites_VCFs = known_indels_sites_VCFs,
@@ -228,28 +228,20 @@ workflow mutation_calling {
 
   output {
     Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
-    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
-    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
-    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
-    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+    Array[File] tumorMarkDuplicates_bam = MarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = MarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = ApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = ApplyBaseRecalibrator.recalibrated_bai
+  }
+
+  parameter_meta {
+    tumorSamples: "Sample tumor .fastq (expects Illumina) in array"
+
+    bwa_mem_threads: "Number of threads for bwa threading"
   }
 }
 
-parameter_meta {
-    tumorSamples: "Sample tumor .fastq (expects Illumina) in array"
 
-    refGenome.ref_fasta: "Reference genome to align reads to"
-    refGenome.ref_fasta_index: "Reference genome index file (created by bwa index)"
-    refGenome.ref_dict: "Reference genome dictionary file (created by bwa index)"
-    refGenome.ref_amb: "Reference genome non-ATCG file (created by bwa index)"
-    refGenome.ref_ann: "Reference genome ref seq annotation file (created by bwa index)"
-    refGenome.ref_bwt: "Reference genome binary file (created by bwa index)"
-    refGenome.ref_pac: "Reference genome binary file (created by bwa index)"
-    refGenome.ref_sa: "Reference genome binary file (created by bwa index)"
-    refGenome.ref_name: "Reference genome name (hg19, hg37, etc.)"
-
-    bwa_mem_threads: "Number of threads for bwa threading"
-}
 
 # TASK DEFINITIONS
 
@@ -330,7 +322,7 @@ task MarkDuplicates {
     File duplicate_metrics = "~{base_file_name}.duplicates_marked.bai"
   }
 }
-}
+
 
 # Base quality recalibration
 task ApplyBaseRecalibrator {
@@ -385,7 +377,7 @@ task ApplyBaseRecalibrator {
 
   #finds the current sort order of this bam file
   samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > ~{base_file_name}.sortOrder.txt
->>>
+  >>>
 
   output {
     File recalibrated_bam = "~{base_file_name}.recal.bam"
