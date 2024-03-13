@@ -46,8 +46,7 @@ When we originally wrote our workflow, we designed it to only run on a single sa
 For starters, we'll want to change our workflow-level sample variables from File to Array[File]. However, we don't need to change any of the reference genome files, because every instance of our tasks will be taking in the same reference genome files. In other words, our struct is unchanged.
 
 
-```
-version 1.0
+<pre><code>version 1.0
 
 struct referenceGenome {
     File ref_fasta
@@ -64,7 +63,7 @@ struct referenceGenome {
 
 workflow minidata_mutation_calling_chapter6 {
   input {
-    Array[File] tumorSamples
+    <span style="color:red;">Array[File]</span> tumorSamples
 
     referenceGenome refGenome
     
@@ -104,7 +103,7 @@ Next, we will want to look at our chain of tasks. Each of these tasks are design
         refGenome = refGenome
     }
   }
-```
+</code></pre>
 
 A scatter is essentially the WDL version of a [for loop](https://en.wikipedia.org/wiki/For_loop). Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only "see" one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays. As a result, our outputs are now Array[File] instead of just File.
 

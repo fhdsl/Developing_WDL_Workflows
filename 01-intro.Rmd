@@ -12,16 +12,13 @@ To make sure that we are on the same page, this guide assumes that you are able 
 
 ## Review of basic WDL syntax
 
-We will do some review of the WDL syntax. A WDL workflow consists of at least one task.
+We will do some review of the WDL syntax. A WDL workflow consists of at least one `task`.
 
 <!-- resources/basic_01.wdl -->
 
+<pre><code>version 1.0
 
-
-```         
-version 1.0
-
-task do_something {
+<span style="color:red;">task</span> do_something {
     command <<<
         exit 0
     >>>
@@ -30,17 +27,16 @@ task do_something {
 workflow my_workflow {
     call do_something
 }
-```
+</code></pre>
 
-A workflow, and the tasks it calls, generally has inputs.
+A workflow, and the tasks it calls, generally has an `input` section.
 
 <!-- resources/basic_02.wdl -->
 
-```         
-version 1.0
+<pre><code>version 1.0
 
 task do_something {
-    input {
+    <span style="color:red;">input</span> {
         File fastq
     }
     command <<<
@@ -49,24 +45,23 @@ task do_something {
 }
 
 workflow my_workflow {
-    input {
+    <span style="color:red;">input</span> {
         File fq
     }
     call do_something {
-        input:
+        <span style="color:red;">input</span>:
             fastq = fq
     }
 }
-```
+</code></pre>
 
-The input `fq` is defined to be a File variable type. WDL supports various variable types, such as String, Integer, Float, and Boolean. For more information on types in WDL, we recommend [OpenWDL's documentation on variable types](https://docs.openwdl.org/en/stable/WDL/variable_types/).
+The input `fq` is defined to be a **File** variable type. WDL supports various variable types, such as String, Integer, Float, and Boolean. For more information on types in WDL, we recommend [OpenWDL's documentation on variable types](https://docs.openwdl.org/en/stable/WDL/variable_types/).
 
 To access a task-level input variable in a task's command section, it is usually referenced using \~{this} notation. To access a workflow-level variable in a workflow, it is referenced just by its name without any special notation. To access a workflow-level variable in a task, it must be passed into the task as an input.
 
 <!-- resources/basic_03.wdl -->
 
-```         
-version 1.0
+<pre><code>version 1.0
 
 task do_something {
     input {
@@ -74,7 +69,7 @@ task do_something {
         String basename_of_fq
     }
     command <<<
-        echo "First ten lines of ~{basename_of_fq}: "
+        echo "First ten lines of <span style="color:red;">~{basename_of_fq}</span>: "
         head ~{fastq}
     >>>
 }
@@ -92,14 +87,13 @@ workflow my_workflow {
             basename_of_fq = basename_of_fq
     }
 }
-```
+</code></pre>
 
-Tasks and workflows also typically have outputs. The task-level outputs can be accessed by the workflow or any subsequent tasks. The workflow-level outputs represent the final output of the overall workflow.
+Tasks and workflows also typically have an `output` section. The task-level outputs can be accessed by the workflow or any subsequent tasks. The workflow-level outputs represent the final output of the overall workflow.
 
 <!-- resources/basic_04.wdl -->
 
-```         
-version 1.0
+<pre><code>version 1.0
 
 task do_something {
     input {
@@ -110,7 +104,7 @@ task do_something {
         echo "First ten lines of ~{basename_of_fq}: " >> output.txt
         head ~{fastq} >> output.txt
     >>>
-    output {
+    <span style="color:red;">output</span> {
         File first_ten_lines = "output.txt"
     }
 }
@@ -128,15 +122,18 @@ workflow my_workflow {
             basename_of_fq = basename_of_fq
     }
     
-    output {
+    <span style="color:red;">output</span> {
         File ten_lines = do_something.first_ten_lines
     }
 }
-```
+</code></pre>
 
 ## Using JSONs to control workflow inputs
 
-Running a WDL workflow generally requires two files: A .wdl file, which contains the actual workflow, and a .json file, which provides the inputs for the workflow.
+Running a WDL workflow generally requires two files:  
+
++ **.wdl** file - it contains the actual workflow  
++ **.json** file - it provides the inputs for the workflow.
 
 In the example we showed earlier, the workflow takes in a file referred to by the variable `fq`. This needs to be provided by the user. Typically, this is done with a JSON file. Here's what a JSON file for this workflow might look like:
 
@@ -150,20 +147,21 @@ In the example we showed earlier, the workflow takes in a file referred to by th
 
 JSON files consist of key-value pairs. In this case, the key is `"my_workflow.fq"` and the value is the path `"./data/example.fq"`. The first part of the key is the name of the workflow as written in the WDL file, in this case `my_workflow`. The variable being represented is referred to its name, in this case, `fq`. So, the file located at the path `./data/example.fq` is being input as a variable called `fq` into the workflow named `my_workflow`.
 
+One can use this methodolgy to name key:value pairs `"name_of_workflow.name_of_variable":"path_to_variable"`.
+
 Files aren't the only type of variable you can refer to when using JSONs. Here's an example JSON for every common WDL variable type.
 
 <!-- resources/variables.json -->
 
-```         
-{
-    "some_workflow.file": "./data/example.fq",
-    "some_workflow.string": "Hello world!",
-    "some_workflow.integer": 1965,
-    "some_workflow.float": 3.1415,
-    "some_workflow.boolean": true,
-    "some_workflow.array_of_files": ["./data/example01.fq", "./data/example02.fq"]
+<code><pre>{
+    "some_workflow.file": "./data/example.fq",                                       <i># file_path</i>
+    "some_workflow.string": "Hello world!",                                          <i># string</i>
+    "some_workflow.integer": 1965,                                                   <i># int</i>
+    "some_workflow.float": 3.1415,                                                   <i># float</i>
+    "some_workflow.boolean": true,                                                   <i># boolean</i>
+    "some_workflow.array_of_files": ["./data/example01.fq", "./data/example02.fq"]   <i># array</i>
 }
-```
+</code></pre>
 
 ::: {.notice data-latex="notice"}
 Resources:
