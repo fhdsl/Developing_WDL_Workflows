@@ -111,7 +111,7 @@ task do_something {
         head ~{fastq} >> output.txt
     >>>
     output {
-        File first_ten_lines = "output.txt"  #output variable for task
+        File first_ten_lines = "output.txt"  ## output variable for task
     }
 }
 
@@ -129,7 +129,7 @@ workflow my_workflow {
     }
     
     output {
-        File ten_lines = do_something.first_ten_lines #referring to task output here
+        File ten_lines = do_something.first_ten_lines ## referring to task output here
     }
 }
 ```

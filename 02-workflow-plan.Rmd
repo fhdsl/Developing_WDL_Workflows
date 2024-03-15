@@ -17,11 +17,14 @@ The workflow diagram:
 
 The tasks involved:
 
-1.  `BwaMem` aligns the samples to the reference genome (hg19). (outputs a `.bam` file)
-2.  `MarkDuplicates` marks PCR duplicates. (outputs a `.bam` file)
-3.  `ApplyBaseRecalibrator` perform base quality recalibration. (outputs a `.bam` file)
-4.  `Mutect2` performs paired somatic mutation calling. (outputs a `.vcf` file)
-5.  `annovar` annotates the called somatic mutations. (outputs a `.vcf` file)
+|Task|Function|Inputs|Outputs|
+|----|--------|------|-------|
+|`BwaMem`|aligns the samples to the reference genome (hg19)|FASTA (`.fa`) file|`.bam` file|
+|`MarkDuplicates|marks PCR duplicates|`.bam` file|marked `.bam` file|
+|`ApplyBaseRecalibrator`|performs base quality recalibration|marked `.bam` file|`.bam` file|
+|`Mutect2`|performs paired somatic mutation calling|`.bam` file|`.vcf` file|
+|`annovar`|annotates the called somatic mutations|`.vcf` file with somatic mutations|annotated `.vcf` file| 
+
 
 ## Workflow testing strategy
 
