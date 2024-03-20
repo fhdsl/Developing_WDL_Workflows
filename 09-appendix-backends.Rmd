@@ -116,3 +116,5 @@ It is difficult to provide specific advice on HPCs, as they can vary greatly. So
 * The `memory` and `gpu` runtime attributes are ignored, but `cpu` works as expected
 
 * The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
