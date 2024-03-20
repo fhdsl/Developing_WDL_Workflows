@@ -94,7 +94,6 @@ Running Cromwell on GCP is one of the few times that the `disks` runtime attribu
 
 A helpful way to handle disk space in WDLs you anticipate will be run on GCP/Terra is to make disk size a function of the size of your task inputs. The task inputs and any private variable declarations made outside of the command section are all calculated before Cromwell requests a disk from GCP, so you can use this section to define a disk size function. For example:
 
-<!-- TODO: make seperate file in resources and miniwdl check it --->
 ```
 version 1.0
 
@@ -104,7 +103,7 @@ task do_something {
         File one_file
     }
     
-    Int predicted_disk_space = ceil(size(some_array_of_files), "GB") + ceil(size(one_file), "GB") + 1
+    Int predicted_disk_space = ceil(size(some_array_of_files, "GB")) + ceil(size(one_file, "GB")) + 1
     # size(x, "GB") returns a float representing the size of x in gigabytes
     # ceil() is a WDL built-in function that rounds a float up into an integer
     
@@ -114,7 +113,7 @@ task do_something {
     
     runtime {
         docker: "ubuntu-latest"
-        disks: "local-disk " + predicted_disk_space " HDD"
+        disks: "local-disk " + predicted_disk_space + " HDD"
     }
 }
 ```
