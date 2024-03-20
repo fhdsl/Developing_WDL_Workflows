@@ -4,7 +4,7 @@ ottrpal::set_knitr_image_path()
 
 # Optional types
 
-WDL supports defining optional variables, which are denoted with a question mark next to the type declaration. These variables may or may not defined. 
+WDL supports defining optional variables, which are denoted with a question mark next to the type declaration. These variables may or may not defined. Optional types are powerful, but they can quickly cause problems in complicated workflows. This is especially the case when working with scattered tasks. In this section, we'll go over how optional variables can be used, and where they can cause problems.
 
 ## Optional inputs
 The most common use case for optional variables are optional inputs for the user to provide some sort of file, for example, a reference genome or a metadata file. Sometimes, you will want optional inputs to fall back on a known file or value.
@@ -19,8 +19,141 @@ Other times, you will want optional inputs to not have a fallback value.
 ## Optional outputs
 Optional outputs are usually created by explictly declaring a task or workflow's output variable to be optional. They can also be created by enclosing a task within an if-block, which will cause all outputs of that task to be considered optional.
 
+### Declaring a task's output to be optional
+Most backends will save the task-level outputs of a task, even if those outputs are not workflow-level outputs. This can be very useful if you want to be able to check intermediate files, or perhaps log files for certain bioinformatic tools. However, if you're not actively debugging, those files may take up a lot of space on your backend if you're running on many samples over time.
 
-Optional types are powerful, but they can quickly cause problems in complicated workflows. This is especially the case when working with scattered tasks.
+You could change the workflow every time you wish to keep those intermediate inputs, but it would be easier to make the output optional.
+
+
+```
+example of an intermediate file (bam?) toggled by a boolean
+```
+
+If we want, we can make this task-level output a workflow-level output -- perhaps we use a backend that does not save task-level outputs, or it is simply easier to access workflow-level outputs on this particular backend. Provided that the task is not scattered, this is very easy to do. (We'll talk about scattered tasks later, as they complicate matters.) In the workflow output sections, we simply define the output as optional like we did in the task itself.
+
+```
+output {
+    #### example
+}
+```
+
+### Making an entire task optional
+Let's say we want to make an entire task optional. Perhaps it provides additional QC information, or isn't relevent to certain data types.
+
+
+Although WDL has a concept of `if`, it does not have any concept of `else`, so to make mutually exclusive tasks, you need to do something like this:
+```
+workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        File some_input
+    }
+    if (do_x = true) {
+        call task_x {
+            input:
+                some_input = some_input
+        }
+    }
+    if (do_x = false) {
+        call task_y {
+         input:
+                some_input = some_input
+        }
+    }
+}
+```
+
+However, we need to be aware that WDL is not "aware" that these two tasks are mutually exclusive. You and I both know that if task_x has run, then task_y must not have run, but your WDL executor does not know this. So, as a consequence, you cannot use mutually exclusive if-blocks to set a variable to a particular value.
+
+```
+# this workflow will fail miniwdl check or womtool
+workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        File some_input
+    }
+    if (do_x = true) {
+        Int some_variable = 10  # this is problematic, even though only one of these if blocks will execute!
+        call task_x {
+            input:
+                some_input = some_input
+        }
+    }
+    if (do_x = false) {
+        Int some_variable = 5  # this is problematic, even though only one of these if blocks will execute!
+        call task_y {
+         input:
+                some_input = some_input
+        }
+    }
+}
+```
+Another consequence is that both of your mutually exclusive tasks' outputs will be considered optional types, even though you can be certain that set of outputs absolutely do exist and one set of outputs absolutely do not exist.
+
+```
+workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        File some_input
+    }
+    if (do_x = true) {
+        call task_x {
+            input:
+                some_input = some_input
+        }
+    }
+    if (do_x = false) {
+        call task_y {
+         input:
+                some_input = some_input
+        }
+    }
+    outputs {
+        # these MUST be optional
+        File? task_x_output = task_x.something
+        File? task_y_output = task_y.something
+    }
+}
+```
+
+
+### Optional, mutually exclusive tasks
+# ** The "Scattered Optional Tasks Have Weird Outputs" (SOTHWO) Issue **
+# Let's say task X and Y are mutually exclusive tasks which each output a single File named outfile.
+#
+# scatter {
+#  if (input_variable = true) { call x }
+#  if (input_variable = false) { call y }
+# }
+#
+# If input_variable is true and this is a three way scatter, it APPEARS that, from outside the scatter...
+#  * x.outfile has type Array[File?] and has three Files in it
+#  * y.outfile has type Array[File?] and has at least one null (not None!) in it
+#  * defined(x.outfile) is true
+#  * defined(y.outfile) is true (!)
+#  * length(x.outfile) is 3
+#  * length(y.outfile) is 0
+#  * select_all(x.outfile) creates an Array[File] with three Files
+#    * You can scatter on the resulting array
+#    * You can output the resulting array as a workflow-level output to a Terra data table
+#  * select_all(y.outfile) creates... ???????
+#    * Attempting to scatter on the resulting array will simply do nothing
+#    * Idk what will happen on Terra if you have an Array[File] that is ONLY null
+#  * flatten(select_all(x.outfile, y.outfile)) will result in an Array[File] that DOES have at least one null
+#  * flatten(select_all(x.outfile), select_all(y.outfile)) will result in an Array[File] that DOES NOT have any nulls
+#    * select_all() will also coerce x.outfile and/or y.outfile from File? to File if necessary
+#  * select_first(select_all(x.outfile), select_all(y.outfile)) will result in an Array[File] that DOES NOT have any nulls
+#
+# Implications:
+#  * nulls and Nones exist in Cromwell-WDL in spite of spec implying otherwise
+#  * the mere act of scattering a task defines one array for each of its outputs, and if that task never
+#    runs, the arrays remain defined and full of null(s)
+#  * length() does not count null values
+#  * select_all() is not "recursive" so flatten(select_all(x.outfile, y.outfile)) can have null(s)
+#  * Array[File] can have nulls, so it may not be much different from Array[File?] in practice
+#
+# So, the correct way to gather mutually exclusive scattered optional task outputs is...
+# Array[File] foo = flatten(select_all(x.outfile), select_all(y.outfile))
 
 
 ## Checking if a variable is defined
@@ -56,3 +189,6 @@ if defined(some_integer) { # needed to define real_some_integer, beware of chang
 You should not use 
 {what miniwdl suggests}
 as it tends not to work at runtime.
+
+
+
