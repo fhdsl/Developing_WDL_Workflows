@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 8 Appendix: Backends and Executors | Developing WDL Workflows</title>
+  <meta name="description" content="Description about Course/Book." />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 8 Appendix: Backends and Executors | Developing WDL Workflows" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Description about Course/Book." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 8 Appendix: Backends and Executors | Developing WDL Workflows" />
+  
+  <meta name="twitter:description" content="Description about Course/Book." />
+  
+
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
+<link rel="prev" href="task-aliasing.html"/>
+<link rel="next" href="about-the-authors.html"/>
+<script src="libs/header-attrs-2.10/header-attrs.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+ 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N5Q1FEXP22');
+</script>
+
+
+
+
+
+<link rel="stylesheet" href="assets/style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<a href="https://hutchdatascience.org/" target="_blank"><img src="assets/big-dasl-stacked.png" style="width: 80%; padding-left: 34px; padding-top: 8px;"</a>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About this Course</a>
+<ul>
+<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a>
+<ul>
+<li class="chapter" data-level="0.1.1" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.1.1</b> Relevant Resources</a></li>
+</ul></li>
+<li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#why-wdl"><i class="fa fa-check"></i><b>0.2</b> Why WDL?</a>
+<ul>
+<li class="chapter" data-level="0.2.1" data-path="index.html"><a href="index.html#wdl-pros"><i class="fa fa-check"></i><b>0.2.1</b> WDL Pros</a></li>
+<li class="chapter" data-level="0.2.2" data-path="index.html"><a href="index.html#wdl-cons"><i class="fa fa-check"></i><b>0.2.2</b> WDL Cons</a></li>
+</ul></li>
+<li class="chapter" data-level="0.3" data-path="index.html"><a href="index.html#curriculum"><i class="fa fa-check"></i><b>0.3</b> Curriculum</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html"><i class="fa fa-check"></i><b>1</b> Introduction to WDL</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#introduction"><i class="fa fa-check"></i><b>1.1</b> Introduction</a></li>
+<li class="chapter" data-level="1.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#review-of-basic-wdl-syntax"><i class="fa fa-check"></i><b>1.2</b> Review of basic WDL syntax</a></li>
+<li class="chapter" data-level="1.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#using-jsons-to-control-workflow-inputs"><i class="fa fa-check"></i><b>1.3</b> Using JSONs to control workflow inputs</a></li>
+<li class="chapter" data-level="1.4" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#running-wdl-via-a-computing-engine"><i class="fa fa-check"></i><b>1.4</b> Running WDL via a computing engine</a>
+<ul>
+<li class="chapter" data-level="1.4.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-docker"><i class="fa fa-check"></i><b>1.4.1</b> Installing Docker</a></li>
+<li class="chapter" data-level="1.4.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-miniwdl"><i class="fa fa-check"></i><b>1.4.2</b> Installing miniwdl</a></li>
+<li class="chapter" data-level="1.4.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#launching-a-workflow-locally-with-miniwdl"><i class="fa fa-check"></i><b>1.4.3</b> Launching a workflow locally with miniwdl</a></li>
+<li class="chapter" data-level="1.4.4" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#troubleshooting"><i class="fa fa-check"></i><b>1.4.4</b> Troubleshooting</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html"><i class="fa fa-check"></i><b>2</b> Defining a workflow plan</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#somatic-mutation-calling-workflow"><i class="fa fa-check"></i><b>2.1</b> Somatic mutation calling workflow</a></li>
+<li class="chapter" data-level="2.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#workflow-testing-strategy"><i class="fa fa-check"></i><b>2.2</b> Workflow testing strategy</a></li>
+<li class="chapter" data-level="2.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-samples"><i class="fa fa-check"></i><b>2.3</b> Test samples</a>
+<ul>
+<li class="chapter" data-level="2.3.1" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-1-hcc4006"><i class="fa fa-check"></i><b>2.3.1</b> Tumor 1 : HCC4006</a></li>
+<li class="chapter" data-level="2.3.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-2-calu1"><i class="fa fa-check"></i><b>2.3.2</b> Tumor 2 : CALU1</a></li>
+<li class="chapter" data-level="2.3.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#normal-molm13"><i class="fa fa-check"></i><b>2.3.3</b> Normal : MOLM13</a></li>
+<li class="chapter" data-level="2.3.4" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-data-details"><i class="fa fa-check"></i><b>2.3.4</b> Test data details</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="the-first-task.html"><a href="the-first-task.html"><i class="fa fa-check"></i><b>3</b> The first task</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="the-first-task.html"><a href="the-first-task.html#inputs"><i class="fa fa-check"></i><b>3.1</b> Inputs</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="the-first-task.html"><a href="the-first-task.html#referencing-inputs-in-the-command-section"><i class="fa fa-check"></i><b>3.1.1</b> Referencing inputs in the command section</a></li>
+<li class="chapter" data-level="3.1.2" data-path="the-first-task.html"><a href="the-first-task.html#file-localization"><i class="fa fa-check"></i><b>3.1.2</b> File localization</a></li>
+<li class="chapter" data-level="3.1.3" data-path="the-first-task.html"><a href="the-first-task.html#private-variables"><i class="fa fa-check"></i><b>3.1.3</b> Private variables</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="the-first-task.html"><a href="the-first-task.html#runtime-attributes"><i class="fa fa-check"></i><b>3.2</b> Runtime attributes</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="the-first-task.html"><a href="the-first-task.html#docker-images-and-containers"><i class="fa fa-check"></i><b>3.2.1</b> Docker images and containers</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="the-first-task.html"><a href="the-first-task.html#outputs"><i class="fa fa-check"></i><b>3.3</b> Outputs</a></li>
+<li class="chapter" data-level="3.4" data-path="the-first-task.html"><a href="the-first-task.html#the-whole-task"><i class="fa fa-check"></i><b>3.4</b> The whole task</a></li>
+<li class="chapter" data-level="3.5" data-path="the-first-task.html"><a href="the-first-task.html#putting-the-workflow-together"><i class="fa fa-check"></i><b>3.5</b> Putting the workflow together</a></li>
+<li class="chapter" data-level="3.6" data-path="the-first-task.html"><a href="the-first-task.html#testing-your-first-task"><i class="fa fa-check"></i><b>3.6</b> Testing your first task</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html"><i class="fa fa-check"></i><b>4</b> Connecting multiple tasks together in a linear chain</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#how-to-connect-tasks-together-in-a-workflow"><i class="fa fa-check"></i><b>4.1</b> How to connect tasks together in a workflow</a></li>
+<li class="chapter" data-level="4.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#writing-markduplicates-task"><i class="fa fa-check"></i><b>4.2</b> Writing <code>MarkDuplicates</code> task</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#input"><i class="fa fa-check"></i><b>4.2.1</b> Input</a></li>
+<li class="chapter" data-level="4.2.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#private-variables-in-the-task"><i class="fa fa-check"></i><b>4.2.2</b> Private variables in the task</a></li>
+<li class="chapter" data-level="4.2.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#command"><i class="fa fa-check"></i><b>4.2.3</b> Command</a></li>
+<li class="chapter" data-level="4.2.4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#runtime-and-output"><i class="fa fa-check"></i><b>4.2.4</b> Runtime and Output</a></li>
+<li class="chapter" data-level="4.2.5" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#testing-the-workflow"><i class="fa fa-check"></i><b>4.2.5</b> Testing the workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
+<li class="chapter" data-level="6" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html"><i class="fa fa-check"></i><b>6</b> Using Arrays For Parallelization and Other Use Cases</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
+<li class="chapter" data-level="6.2" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
+<ul>
+<li class="chapter" data-level="6.2.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
+<li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+<li class="chapter" data-level="6.5" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="task-aliasing.html"><a href="task-aliasing.html"><i class="fa fa-check"></i><b>7</b> Task Aliasing</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="task-aliasing.html"><a href="task-aliasing.html#advantages-of-aliasing"><i class="fa fa-check"></i><b>7.1</b> Advantages of aliasing</a></li>
+<li class="chapter" data-level="7.2" data-path="task-aliasing.html"><a href="task-aliasing.html#start-to-add-a-task-alias"><i class="fa fa-check"></i><b>7.2</b> Start to add a task alias</a></li>
+<li class="chapter" data-level="7.3" data-path="task-aliasing.html"><a href="task-aliasing.html#add-the-task-alias"><i class="fa fa-check"></i><b>7.3</b> Add the task alias</a></li>
+<li class="chapter" data-level="7.4" data-path="task-aliasing.html"><a href="task-aliasing.html#modify-your-output"><i class="fa fa-check"></i><b>7.4</b> Modify your output</a></li>
+<li class="chapter" data-level="7.5" data-path="task-aliasing.html"><a href="task-aliasing.html#alias-for-other-tasks"><i class="fa fa-check"></i><b>7.5</b> Alias for other tasks</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>8</b> Appendix: Backends and Executors</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>8.1</b> Commonly used runtime attributes</a></li>
+<li class="chapter" data-level="8.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>8.2</b> General advice</a></li>
+<li class="chapter" data-level="8.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>8.3</b> Executor-specific notes</a>
+<ul>
+<li class="chapter" data-level="8.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>8.3.1</b> Cromwell</a></li>
+<li class="chapter" data-level="8.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>8.3.2</b> miniwdl</a></li>
+</ul></li>
+<li class="chapter" data-level="8.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>8.4</b> Backend-specific notes</a>
+<ul>
+<li class="chapter" data-level="8.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcp"><i class="fa fa-check"></i><b>8.4.1</b> GCP</a></li>
+<li class="chapter" data-level="8.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>8.4.2</b> HPCs</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="about-the-authors.html"><a href="about-the-authors.html"><i class="fa fa-check"></i>About the Authors</a></li>
+<li class="chapter" data-level="9" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>9</b> References</a></li>
+<li class="divider"></li>
+<p style="text-align:center;"> <a href="https://github.com/jhudsl/OTTR_Template" target="blank" > This content was published with</a> <a href="https://bookdown.org/" target="blank"> bookdown by: </a> </p>
+<p style="text-align:center;"> <a href="https://hutchdatascience.org/"> The Fred Hutch Data Science Lab </a></p>
+<p style="text-align:center; font-size: 12px;"> <a href="https://github.com/rstudio4edu/rstudio4edu-book/"> Style adapted from: rstudio4edu-book </a> <a href ="https://creativecommons.org/licenses/by/2.0/"> (CC-BY 2.0) </a></p>
+<p style="padding-left: 40px;"><div class="trapezoid" style = "padding-left: 40px;"><span>  <a href="https://forms.gle/W6Mg4rzuMK6Yk3Am8"> Click here to provide feedback</a> <img src="assets/itcr_arrow.png" style=" width: 10%" ></span></div></p>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Developing WDL Workflows</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<head>
+  <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=10.0,initial-scale=1.0">
+  <!--script src="https://kit.fontawesome.com/6a26f47516.js"></script-->
+  <!--<script src="assets/hideOutput.js"></script>-->
+  <link href="assets/style.css" rel="stylesheet">
+</head>
+        
+
+
+<div class="hero-image-container"> 
+  <img class= "hero-image" src="assets/dasl_thin_main_image.png">
+</div>
+<div id="appendix-backends-and-executors" class="section level1" number="8">
+<h1><span class="header-section-number">Chapter 8</span> Appendix: Backends and Executors</h1>
+<p>Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software dependencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.</p>
+<div id="commonly-used-runtime-attributes" class="section level2" number="8.1">
+<h2><span class="header-section-number">8.1</span> Commonly used runtime attributes</h2>
+<p>Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.</p>
+<table>
+<colgroup>
+<col width="5%" />
+<col width="34%" />
+<col width="12%" />
+<col width="12%" />
+<col width="34%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Attribute</th>
+<th>Fred Hutch HPC</th>
+<th>Local Cromwell</th>
+<th>Local miniwdl</th>
+<th>Terra</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>bootDiskSizeGB</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>Request a disk of this size to boot the Docker image (useful for very large Docker images)</td>
+</tr>
+<tr class="even">
+<td>cpu</td>
+<td>Reserve at most this many cores</td>
+<td>n/a</td>
+<td>Reserve at most this many cores</td>
+<td>Request a minimum of this many cores (scales with memory)</td>
+</tr>
+<tr class="odd">
+<td>disks</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>Request this much disk size - soft requirement, if not specified, will request 10 GB</td>
+</tr>
+<tr class="even">
+<td>docker</td>
+<td>Run the task in this Docker image</td>
+<td>Run the task in this Docker image</td>
+<td>Run the task in this Docker image</td>
+<td>Run the task in this Docker image</td>
+</tr>
+<tr class="odd">
+<td>memory</td>
+<td>Maximum amount of memory to use</td>
+<td>n/a</td>
+<td>Maximum amount of memory to use</td>
+<td>Minimum amount of memory to use (scales with CPU)</td>
+</tr>
+<tr class="even">
+<td>preemptible</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>Attempt running on a preemptible instance this many times, then switch to a non-preemptible</td>
+</tr>
+<tr class="odd">
+<td>walltime</td>
+<td>How much <a href="https://en.wikipedia.org/wiki/Elapsed_real_time">walltime</a> to request for a task</td>
+<td>n/a</td>
+<td>n/a</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="general-advice" class="section level2" number="8.2">
+<h2><span class="header-section-number">8.2</span> General advice</h2>
+<ul>
+<li>Consider using more runtime attributes, not fewer. miniwdl and Cromwell will ignore runtime attributes as necessary, so including a runtime attribute that only applies to a particular backend will not harm portability on other backends.</li>
+<li>The Dockstore CLI, as of v1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.</li>
+<li>If running a workflow with a scattered task on a local compute, consider using miniwdl instead of Cromwell.</li>
+<li>Whether you are using miniwdl or Cromwell locally, make sure Docker has enough resources to be able to download and run the Docker images specified in your WDL tasks.</li>
+<li>Workflow systems with a UI like Terra may become unresponsive if you run a task scattered more than 1000x. Outputs may need to be interacted with using an API specific to that backend.</li>
+</ul>
+</div>
+<div id="executor-specific-notes" class="section level2" number="8.3">
+<h2><span class="header-section-number">8.3</span> Executor-specific notes</h2>
+<div id="cromwell" class="section level3" number="8.3.1">
+<h3><span class="header-section-number">8.3.1</span> Cromwell</h3>
+<p>Cromwell running on a local machine has a tendency to heavily use system resources, especially when running scattered tasks. Sometimes, it will use too many resources at once. When this happens, your workflow’s tasks will tend to fail with exit code 137, or you will see hints about running out of memory in the logs of your tasks. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker. To prevent this, modify <code>concurrent-job-limit</code> for your backend in the Cromwell configuration file.</p>
+<p>Other notes:</p>
+<ul>
+<li><p>Cromwell runs as a jar file, so it is very portable and does not need to be “installed” provided you have a modern Java runtime environment.</p></li>
+<li><p>If you just want to check workflows are valid, you can run <code>womtool</code> as a jar file (available on Cromwell’s GitHub page). This will check not only the WDL file you pass it, but also any WDLs it imports.</p></li>
+<li><p>Cromwell does not use call caching on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.</p></li>
+<li><p>Cromwell supports the <code>gpu</code> and <code>disks</code> runtime attributes on certain backends. If using the <code>gpu</code> runtime attribute, make sure your task is set up correctly to properly use this resource.</p></li>
+<li><p>Generally speaking, Cromwell will be able to directly modify input files by default without causing permission errors.</p></li>
+</ul>
+</div>
+<div id="miniwdl" class="section level3" number="8.3.2">
+<h3><span class="header-section-number">8.3.2</span> miniwdl</h3>
+<p>The authors of this course have informally observed that miniwdl appears to be “safer” in terms of using up too many resources than Cromwell. However, if you are sharing a compute with other users, it is still worth looking at the miniwdl configuration file and limiting how many Docker images you spin up at the same time.</p>
+<p>Other notes:</p>
+<ul>
+<li><p>miniwdl is a Python program, and it must be installed via <code>pip</code> or <code>pip3</code> to use.</p></li>
+<li><p>miniwdl’s equivalent to <code>womtool</code> is <code>miniwdl check</code>, but it also includes <code>shellcheck</code> to check the command section of your tasks.</p></li>
+<li><p>miniwdl supports call caching, but it is turned off by default.</p></li>
+<li><p>miniwdl does not support the <code>gpu</code> or <code>disks</code> runtime attributes and will ignore them if present in a task’s runtime section.</p></li>
+<li><p>By default, miniwdl does not duplicate input files. If your workflow only needs to read input files, this helps save disk space, but if your workflow directly modifies input files, this can result in permission errors. A simple fix is to run miniwdl with the <code>--copy-input-files</code> flag.</p></li>
+</ul>
+</div>
+</div>
+<div id="backend-specific-notes" class="section level2" number="8.4">
+<h2><span class="header-section-number">8.4</span> Backend-specific notes</h2>
+<div id="gcp" class="section level3" number="8.4.1">
+<h3><span class="header-section-number">8.4.1</span> GCP</h3>
+<div id="disk-space" class="section level4" number="8.4.1.1">
+<h4><span class="header-section-number">8.4.1.1</span> Disk space</h4>
+<p>Running Cromwell on GCP is one of the few times that the <code>disks</code> runtime attribute is a soft requirement. Due to how Cromwell works, it must request a certain amount of disk space from GCP before running the task’s command section. In other words, you must know roughly how much disk space your task will use before it runs. If not specified in the runtime attribute of a task, Cromwell will request 10 GB of SSD space.</p>
+<p>A helpful way to handle disk space in WDLs you anticipate will be run on GCP/Terra is to make disk size a function of the size of your task inputs. The task inputs and any private variable declarations made outside of the command section are all calculated before Cromwell requests a disk from GCP, so you can use this section to define a disk size function. For example:</p>
+<!-- TODO: make seperate file in resources and miniwdl check it --->
+<pre><code>version 1.0
+
+task do_something {
+    input {
+        Array[File] some_array_of_files
+        File one_file
+    }
+    
+    Int predicted_disk_space = ceil(size(some_array_of_files), &quot;GB&quot;) + ceil(size(one_file), &quot;GB&quot;) + 1
+    # size(x, &quot;GB&quot;) returns a float representing the size of x in gigabytes
+    # ceil() is a WDL built-in function that rounds a float up into an integer
+    
+    command &lt;&lt;&lt;
+    pass
+    &gt;&gt;&gt;
+    
+    runtime {
+        docker: &quot;ubuntu-latest&quot;
+        disks: &quot;local-disk &quot; + predicted_disk_space &quot; HDD&quot;
+    }
+}</code></pre>
+<p>Common pitfalls:</p>
+<ul>
+<li><p>Not wrapping <code>size()</code> in <code>ceil()</code> – the <code>disks:</code> runtime attribute requires an integer, not a float</p></li>
+<li><p>Not using <code>"GB"</code> when calling <code>size()</code> – if you don’t specify units for <code>size()</code> it will return bytes!</p></li>
+<li><p>Forgetting the space between “local-disk” and the integer (or the integer and “HDD”/“SSD”)</p></li>
+</ul>
+</div>
+<div id="preemptibles" class="section level4" number="8.4.1.2">
+<h4><span class="header-section-number">8.4.1.2</span> Preemptibles</h4>
+<p>Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheaper (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.</p>
+</div>
+</div>
+<div id="hpcs" class="section level3" number="8.4.2">
+<h3><span class="header-section-number">8.4.2</span> HPCs</h3>
+<p>It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:</p>
+<ul>
+<li><p>Some HPCs do not support the use of Docker due to security concerns</p>
+<ul>
+<li>HPCs that do not allow the use of Docker may be able to run WDLs using alternative container technologies such as podman or rootless Docker</li>
+</ul></li>
+<li><p>Some HPCs will use <code>disks</code> to determine which disk to run on, which can be useful for managing disk space</p></li>
+</ul>
+<div id="fred-hutch-hpc" class="section level4" number="8.4.2.1">
+<h4><span class="header-section-number">8.4.2.1</span> Fred Hutch HPC</h4>
+<ul>
+<li><p>The Fred Hutch HPC supports the use of Docker, so the <code>docker</code> runtime attribute works as expected</p></li>
+<li><p>The <code>memory</code> and <code>gpu</code> runtime attributes are ignored, but <code>cpu</code> works as expected</p></li>
+<li><p>The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow</p></li>
+</ul>
+
+</div>
+</div>
+</div>
+</div>
+<hr>
+<center> 
+  <div class="footer">
+      All illustrations <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY. </a>
+      <br>
+      All other materials <a href= "https://creativecommons.org/licenses/by/4.0/"> CC-BY </a> unless noted otherwise.
+      <a href="https://hutchdatascience.org/" target="_blank"><img src="https://hutchdatascience.org/images/crazy-idea-wide.png" style="width: 80%; padding-left: 15px; padding-top: 8px;"</a>
+  </div>
+</center>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="task-aliasing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="about-the-authors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "section"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

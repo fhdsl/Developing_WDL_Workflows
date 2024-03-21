@@ -2,18 +2,19 @@
 
 # Introduction to WDL
 
-Welcome!
+## Introduction
 
--   Review of basic WDL syntax
--   How to use input JSONs
--   (optional) Installing Docker and miniwdl
--   How to run simple workflows locally
+Welcome to building your first WDL workflow! This guide will help you strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used.
+
+To make sure that we are on the same page, this guide assumes that you are able to run a WDL on a computing engine of your choice, such as Cromwell, miniwdl, or a cloud computing environment such as Terra, AnVIL, or Dockstore. This guide also assumes that you have a beginner's understanding of the WDL syntax, and we will link out to additional resources to fill in the knowledge gap as needed! If you have never seen the WDL language in action, a great place to start is [OpenWDL docs](https://docs.openwdl.org/en/stable/) -- it teaches you the basic syntax and showcases WDL features via concrete examples.
 
 ## Review of basic WDL syntax
 
-A WDL workflow consists of at least one task.
+We will do some review of the WDL syntax. A WDL workflow consists of at least one task.
 
 <!-- resources/basic_01.wdl -->
+
+
 
 ```         
 version 1.0
@@ -55,6 +56,8 @@ workflow my_workflow {
     }
 }
 ```
+
+The input `fq` is defined to be a File variable type. WDL supports various variable types, such as String, Integer, Float, and Boolean. For more information on types in WDL, we recommend [OpenWDL's documentation on variable types](https://docs.openwdl.org/en/stable/WDL/variable_types/).
 
 To access a task-level input variable in a task's command section, it is usually referenced using \~{this} notation. To access a workflow-level variable in a workflow, it is referenced just by its name without any special notation. To access a workflow-level variable in a task, it must be passed into the task as an input.
 
@@ -145,7 +148,7 @@ In the example we showed earlier, the workflow takes in a file referred to by th
 
 JSON files consist of key-value pairs. In this case, the key is `"my_workflow.fq"` and the value is the path `"./data/example.fq"`. The first part of the key is the name of the workflow as written in the WDL file, in this case `my_workflow`. The variable being represented is referred to its name, in this case, `fq`. So, the file located at the path `./data/example.fq` is being input as a variable called `fq` into the workflow named `my_workflow`.
 
-In WDL, like most programming languages, variables have a specific type. Files aren't the only type of variable you can refer to when using JSONs. Here's an example JSON for every common WDL variable type.
+Files aren't the only type of variable you can refer to when using JSONs. Here's an example JSON for every common WDL variable type.
 
 <!-- resources/variables.json -->
 
@@ -165,6 +168,8 @@ Resources:
 
 <ul>
 
+<li>For more basic examples of WDL workflow with a single task, we recommend [OpenWDL's documentation on WDL's base structure](https://docs.openwdl.org/en/stable/WDL/Base_structure/).</li>
+
 <li>For more information on types in WDL, we recommend [OpenWDL's documentation on variable types](https://docs.openwdl.org/en/stable/WDL/variable_types/).</li>
 
 <li>If you are having difficulty writing valid JSON files, considering using <https://jsonlint.com/> to check your JSON for any errors.</li>
@@ -172,11 +177,24 @@ Resources:
 </ul>
 :::
 
-## How to run simple workflows locally
+
+## Running WDL via a computing engine
+
+In order to run a WDL workflow, we need a computing engine to execute it. The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs on a local machine, High Performance Computing (HPC), or cloud computing backend. If you are trying to run WDL at Fred Hutch Cancer Center's HPC system, you should use the PROOF executor. 
+
+If you are computing on a HPC or the Cloud, you should find the best practice of running a WDL computing engine based on your institution's information technology system. 
+
+If you are computing locally on your computer, below is a short guide on how to set that up. 
+
+
+<details>
+
+<summary><b>How to run simple workflows locally</b></summary>
+
 
 Not every WDL workflow will run well on a laptop, but it can be helpful to have a basic setup for testing and catching simple syntax errors. Let's quickly set up a WDL executor to run our WDLs.
 
-The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs on a local machine, HPC, or cloud computing backend. In this course, we will be using miniwdl, but everything in this course will also be compatible with Cromwell unless explicitly stated otherwise. Additionally, almost all WDLs use Docker images, so you will also need to install Docker or a Docker-like alternative.
+ In this course, we will be using miniwdl, but everything in this course will also be compatible with Cromwell unless explicitly stated otherwise. Additionally, almost all WDLs use Docker images, so you will also need to install Docker or a Docker-like alternative.
 
 **Installing Docker and miniwdl is not required to use this course.** We don't want anybody to get stuck here! If you already have a method for submitting workflows, such as Terra, feel free to use that for this course instead of running workflows directly on your local machine. If you don't have any way of running workflows at the moment, that's also okay -- we have provided plenty of examples for following along.
 
@@ -312,3 +330,5 @@ check JSON input; unknown input/output: greetings.username
 Double-check your input JSON. The first part of your JSON's keys refer to the name of the workflow in the WDL file, not the filename of the WDL itself. Even though our WDL is saved as `greetings.wdl`, within that file, the workflow is named `my_workflow`. This means that the input JSON must say `"my_workflow.username"`, not `"greetings.username"`.
 
 Other common issues with JSON files are mistyping input variables (such as `"my_workflow.ussername"`) or forgetting to enclose strings in quotation marks. When in doubt, try using <https://jsonlint.com/> to check your input JSON, and double-check the name of your input variables.
+
+</details>

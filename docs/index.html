@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>WDL Workflows Guide</title>
+  <title>Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="WDL Workflows Guide" />
+  <meta property="og:title" content="Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="WDL Workflows Guide" />
+  <meta name="twitter:title" content="Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -51,6 +51,17 @@
 
 <link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+ 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N5Q1FEXP22');
+</script>
+
 
 
 
@@ -73,32 +84,109 @@
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About this Course</a>
 <ul>
-<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a></li>
-<li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#curriculum"><i class="fa fa-check"></i><b>0.2</b> Curriculum</a></li>
+<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a>
+<ul>
+<li class="chapter" data-level="0.1.1" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.1.1</b> Relevant Resources</a></li>
+</ul></li>
+<li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#why-wdl"><i class="fa fa-check"></i><b>0.2</b> Why WDL?</a>
+<ul>
+<li class="chapter" data-level="0.2.1" data-path="index.html"><a href="index.html#wdl-pros"><i class="fa fa-check"></i><b>0.2.1</b> WDL Pros</a></li>
+<li class="chapter" data-level="0.2.2" data-path="index.html"><a href="index.html#wdl-cons"><i class="fa fa-check"></i><b>0.2.2</b> WDL Cons</a></li>
+</ul></li>
+<li class="chapter" data-level="0.3" data-path="index.html"><a href="index.html#curriculum"><i class="fa fa-check"></i><b>0.3</b> Curriculum</a></li>
 </ul></li>
 <li class="chapter" data-level="1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html"><i class="fa fa-check"></i><b>1</b> Introduction to WDL</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#review-of-basic-wdl-syntax"><i class="fa fa-check"></i><b>1.1</b> Review of basic WDL syntax</a></li>
-<li class="chapter" data-level="1.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#using-jsons-to-control-workflow-inputs"><i class="fa fa-check"></i><b>1.2</b> Using JSONs to control workflow inputs</a></li>
-<li class="chapter" data-level="1.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#how-to-run-simple-workflows-locally"><i class="fa fa-check"></i><b>1.3</b> How to run simple workflows locally</a>
+<li class="chapter" data-level="1.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#introduction"><i class="fa fa-check"></i><b>1.1</b> Introduction</a></li>
+<li class="chapter" data-level="1.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#review-of-basic-wdl-syntax"><i class="fa fa-check"></i><b>1.2</b> Review of basic WDL syntax</a></li>
+<li class="chapter" data-level="1.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#using-jsons-to-control-workflow-inputs"><i class="fa fa-check"></i><b>1.3</b> Using JSONs to control workflow inputs</a></li>
+<li class="chapter" data-level="1.4" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#running-wdl-via-a-computing-engine"><i class="fa fa-check"></i><b>1.4</b> Running WDL via a computing engine</a>
 <ul>
-<li class="chapter" data-level="1.3.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-docker"><i class="fa fa-check"></i><b>1.3.1</b> Installing Docker</a></li>
-<li class="chapter" data-level="1.3.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-miniwdl"><i class="fa fa-check"></i><b>1.3.2</b> Installing miniwdl</a></li>
-<li class="chapter" data-level="1.3.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#launching-a-workflow-locally-with-miniwdl"><i class="fa fa-check"></i><b>1.3.3</b> Launching a workflow locally with miniwdl</a></li>
-<li class="chapter" data-level="1.3.4" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#troubleshooting"><i class="fa fa-check"></i><b>1.3.4</b> Troubleshooting</a></li>
+<li class="chapter" data-level="1.4.1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-docker"><i class="fa fa-check"></i><b>1.4.1</b> Installing Docker</a></li>
+<li class="chapter" data-level="1.4.2" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#installing-miniwdl"><i class="fa fa-check"></i><b>1.4.2</b> Installing miniwdl</a></li>
+<li class="chapter" data-level="1.4.3" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#launching-a-workflow-locally-with-miniwdl"><i class="fa fa-check"></i><b>1.4.3</b> Launching a workflow locally with miniwdl</a></li>
+<li class="chapter" data-level="1.4.4" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html#troubleshooting"><i class="fa fa-check"></i><b>1.4.4</b> Troubleshooting</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.html"><a href="defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.html"><i class="fa fa-check"></i><b>2</b> Defining a workflow plan: Introduce somatic mutation calling workflow</a>
+<li class="chapter" data-level="2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html"><i class="fa fa-check"></i><b>2</b> Defining a workflow plan</a>
 <ul>
-<li class="chapter" data-level="2.1" data-path="defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.html"><a href="defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.html#the-workflow"><i class="fa fa-check"></i><b>2.1</b> The workflow</a></li>
-<li class="chapter" data-level="2.2" data-path="defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.html"><a href="defining-a-workflow-plan-introduce-somatic-mutation-calling-workflow.html#the-test-data"><i class="fa fa-check"></i><b>2.2</b> The test data</a></li>
+<li class="chapter" data-level="2.1" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#somatic-mutation-calling-workflow"><i class="fa fa-check"></i><b>2.1</b> Somatic mutation calling workflow</a></li>
+<li class="chapter" data-level="2.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#workflow-testing-strategy"><i class="fa fa-check"></i><b>2.2</b> Workflow testing strategy</a></li>
+<li class="chapter" data-level="2.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-samples"><i class="fa fa-check"></i><b>2.3</b> Test samples</a>
+<ul>
+<li class="chapter" data-level="2.3.1" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-1-hcc4006"><i class="fa fa-check"></i><b>2.3.1</b> Tumor 1 : HCC4006</a></li>
+<li class="chapter" data-level="2.3.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-2-calu1"><i class="fa fa-check"></i><b>2.3.2</b> Tumor 2 : CALU1</a></li>
+<li class="chapter" data-level="2.3.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#normal-molm13"><i class="fa fa-check"></i><b>2.3.3</b> Normal : MOLM13</a></li>
+<li class="chapter" data-level="2.3.4" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-data-details"><i class="fa fa-check"></i><b>2.3.4</b> Test data details</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="the-first-task.html"><a href="the-first-task.html"><i class="fa fa-check"></i><b>3</b> The first task</a>
 <ul>
-<li class="chapter" data-level="3.1" data-path="the-first-task.html"><a href="the-first-task.html#anatomy-of-a-task"><i class="fa fa-check"></i><b>3.1</b> Anatomy of a task</a></li>
+<li class="chapter" data-level="3.1" data-path="the-first-task.html"><a href="the-first-task.html#inputs"><i class="fa fa-check"></i><b>3.1</b> Inputs</a>
+<ul>
+<li class="chapter" data-level="3.1.1" data-path="the-first-task.html"><a href="the-first-task.html#referencing-inputs-in-the-command-section"><i class="fa fa-check"></i><b>3.1.1</b> Referencing inputs in the command section</a></li>
+<li class="chapter" data-level="3.1.2" data-path="the-first-task.html"><a href="the-first-task.html#file-localization"><i class="fa fa-check"></i><b>3.1.2</b> File localization</a></li>
+<li class="chapter" data-level="3.1.3" data-path="the-first-task.html"><a href="the-first-task.html#private-variables"><i class="fa fa-check"></i><b>3.1.3</b> Private variables</a></li>
+</ul></li>
+<li class="chapter" data-level="3.2" data-path="the-first-task.html"><a href="the-first-task.html#runtime-attributes"><i class="fa fa-check"></i><b>3.2</b> Runtime attributes</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="the-first-task.html"><a href="the-first-task.html#docker-images-and-containers"><i class="fa fa-check"></i><b>3.2.1</b> Docker images and containers</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="the-first-task.html"><a href="the-first-task.html#outputs"><i class="fa fa-check"></i><b>3.3</b> Outputs</a></li>
+<li class="chapter" data-level="3.4" data-path="the-first-task.html"><a href="the-first-task.html#the-whole-task"><i class="fa fa-check"></i><b>3.4</b> The whole task</a></li>
+<li class="chapter" data-level="3.5" data-path="the-first-task.html"><a href="the-first-task.html#putting-the-workflow-together"><i class="fa fa-check"></i><b>3.5</b> Putting the workflow together</a></li>
+<li class="chapter" data-level="3.6" data-path="the-first-task.html"><a href="the-first-task.html#testing-your-first-task"><i class="fa fa-check"></i><b>3.6</b> Testing your first task</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html"><i class="fa fa-check"></i><b>4</b> Connecting multiple tasks together in a linear chain</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#how-to-connect-tasks-together-in-a-workflow"><i class="fa fa-check"></i><b>4.1</b> How to connect tasks together in a workflow</a></li>
+<li class="chapter" data-level="4.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#writing-markduplicates-task"><i class="fa fa-check"></i><b>4.2</b> Writing <code>MarkDuplicates</code> task</a>
+<ul>
+<li class="chapter" data-level="4.2.1" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#input"><i class="fa fa-check"></i><b>4.2.1</b> Input</a></li>
+<li class="chapter" data-level="4.2.2" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#private-variables-in-the-task"><i class="fa fa-check"></i><b>4.2.2</b> Private variables in the task</a></li>
+<li class="chapter" data-level="4.2.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#command"><i class="fa fa-check"></i><b>4.2.3</b> Command</a></li>
+<li class="chapter" data-level="4.2.4" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#runtime-and-output"><i class="fa fa-check"></i><b>4.2.4</b> Runtime and Output</a></li>
+<li class="chapter" data-level="4.2.5" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#testing-the-workflow"><i class="fa fa-check"></i><b>4.2.5</b> Testing the workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
+<li class="chapter" data-level="6" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html"><i class="fa fa-check"></i><b>6</b> Using Arrays For Parallelization and Other Use Cases</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
+<li class="chapter" data-level="6.2" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
+<ul>
+<li class="chapter" data-level="6.2.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
+<li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+<li class="chapter" data-level="6.5" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="task-aliasing.html"><a href="task-aliasing.html"><i class="fa fa-check"></i><b>7</b> Task Aliasing</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="task-aliasing.html"><a href="task-aliasing.html#advantages-of-aliasing"><i class="fa fa-check"></i><b>7.1</b> Advantages of aliasing</a></li>
+<li class="chapter" data-level="7.2" data-path="task-aliasing.html"><a href="task-aliasing.html#start-to-add-a-task-alias"><i class="fa fa-check"></i><b>7.2</b> Start to add a task alias</a></li>
+<li class="chapter" data-level="7.3" data-path="task-aliasing.html"><a href="task-aliasing.html#add-the-task-alias"><i class="fa fa-check"></i><b>7.3</b> Add the task alias</a></li>
+<li class="chapter" data-level="7.4" data-path="task-aliasing.html"><a href="task-aliasing.html#modify-your-output"><i class="fa fa-check"></i><b>7.4</b> Modify your output</a></li>
+<li class="chapter" data-level="7.5" data-path="task-aliasing.html"><a href="task-aliasing.html#alias-for-other-tasks"><i class="fa fa-check"></i><b>7.5</b> Alias for other tasks</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>8</b> Appendix: Backends and Executors</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>8.1</b> Commonly used runtime attributes</a></li>
+<li class="chapter" data-level="8.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>8.2</b> General advice</a></li>
+<li class="chapter" data-level="8.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>8.3</b> Executor-specific notes</a>
+<ul>
+<li class="chapter" data-level="8.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>8.3.1</b> Cromwell</a></li>
+<li class="chapter" data-level="8.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>8.3.2</b> miniwdl</a></li>
+</ul></li>
+<li class="chapter" data-level="8.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>8.4</b> Backend-specific notes</a>
+<ul>
+<li class="chapter" data-level="8.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcp"><i class="fa fa-check"></i><b>8.4.1</b> GCP</a></li>
+<li class="chapter" data-level="8.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>8.4.2</b> HPCs</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="about-the-authors.html"><a href="about-the-authors.html"><i class="fa fa-check"></i>About the Authors</a></li>
-<li class="chapter" data-level="4" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>4</b> References</a></li>
+<li class="chapter" data-level="9" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>9</b> References</a></li>
 <li class="divider"></li>
 <p style="text-align:center;"> <a href="https://github.com/jhudsl/OTTR_Template" target="blank" > This content was published with</a> <a href="https://bookdown.org/" target="blank"> bookdown by: </a> </p>
 <p style="text-align:center;"> <a href="https://hutchdatascience.org/"> The Fred Hutch Data Science Lab </a></p>
@@ -113,7 +201,7 @@
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">WDL Workflows Guide</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Developing WDL Workflows</a>
           </h1>
         </div>
 
@@ -134,20 +222,53 @@
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
 <div id="header">
-<h1 class="title">WDL Workflows Guide</h1>
-<p class="date"><em>January, 2024</em></p>
+<h1 class="title">Developing WDL Workflows</h1>
+<p class="date"><em>March, 2024</em></p>
 </div>
 <div id="about-this-course" class="section level1 unnumbered">
 <h1>About this Course</h1>
-<p>This WDL workflow development guide shows a bioinformatics workflow developer how to strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used. This guide is flexible regardless of where the data is, what computing resources are being used, and what software is being used.</p>
+<p>“Developing WDL Workflows” shows a bioinformatics workflow developer how to strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used. This guide is flexible regardless of where the data is, what computing resources are being used, and what software is being used.</p>
 <div id="target-audience" class="section level2" number="0.1">
 <h2><span class="header-section-number">0.1</span> Target Audience</h2>
-<p>The course is intended for first time developers of the <a href="https://github.com/openwdl/wdl">WDL workflow language</a>, who wants to iteratively develop a WDL bioinformatics workflow. The audience should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore.</p>
+<p>The course is intended for first time developers of the <a href="https://github.com/openwdl/wdl">WDL workflow language</a>, who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore.</p>
+<div id="relevant-resources" class="section level3" number="0.1.1">
+<h3><span class="header-section-number">0.1.1</span> Relevant Resources</h3>
+<p>If you are new to WDL, <a href="https://docs.openwdl.org/en/stable/">OpenWDL Docs</a> is an excellent WDL companion resource to help you get started and is platform agnostic. OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.</p>
 </div>
-<div id="curriculum" class="section level2" number="0.2">
-<h2><span class="header-section-number">0.2</span> Curriculum</h2>
-<p>The course covers…</p>
-<p>An excellent WDL companion resource that is not platform dependent is <a href="https://docs.openwdl.org/en/stable/">OpenWDL Docs</a>. OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.</p>
+</div>
+<div id="why-wdl" class="section level2" number="0.2">
+<h2><span class="header-section-number">0.2</span> Why WDL?</h2>
+<p>You may have encountered other workflow tools, such as Snakemake or Nextflow, and those are highly capable. Why learn a brand new workflow language? Let’s review some WDL Pros and Cons:</p>
+<div id="wdl-pros" class="section level3" number="0.2.1">
+<h3><span class="header-section-number">0.2.1</span> WDL Pros</h3>
+<p>WDL has some really helpful advantages compared to other frameworks:</p>
+<ul>
+<li><p><strong>Portability</strong>. WDL can run on nearly any system, whether it be your local computer, or on an HPC cluster, or on the Cloud, with platforms such as DNAnexus. In fact, a lot of developers will prototype a WDL workflow on their own local computer before moving it to the cloud.</p></li>
+<li><p><strong>Reproducibility</strong>. Ever have the headache of having to reproduce the exact package versions to get your workflow to work again? If you use Docker containers to specify your software environment, you do not have to worry about this headache. A workflow will run identically locally, on HPC, or the cloud.</p></li>
+<li><p><strong>Sharing</strong>. A WDL workflow is much easier to share with colleagues and is a good way to get credit for work you do everyday. If you spent time building it, why not share it? WDL is also an open standard and supported by a number of software tools.</p></li>
+<li><p><strong>Running and Making WDL workflows is a transferable skill.</strong> Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry.</p></li>
+</ul>
+</div>
+<div id="wdl-cons" class="section level3" number="0.2.2">
+<h3><span class="header-section-number">0.2.2</span> WDL Cons</h3>
+<p>Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:</p>
+<ul>
+<li>Basics of Docker</li>
+<li>Understanding the WDL framework</li>
+<li>WDLizing your bash scripts into tasks</li>
+</ul>
+</div>
+</div>
+<div id="curriculum" class="section level2" number="0.3">
+<h2><span class="header-section-number">0.3</span> Curriculum</h2>
+<p>The course covers the following:</p>
+<ul>
+<li>How to write an effective WDL task</li>
+<li>Link multiple WDL tasks together in a workflow</li>
+<li>Organize variables via structs, scale multiple samples via Arrays</li>
+<li>Reuse repeated tasks via task aliasing</li>
+<li>Configure settings for the execution engine</li>
+</ul>
 
 </div>
 </div>
