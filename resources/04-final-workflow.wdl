@@ -138,8 +138,7 @@ task BwaMem {
   String ref_fasta_local = basename(ref_fasta)
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:illumina"
 
 
   command <<<
