@@ -107,7 +107,7 @@ workflow mutation_calling {
 task BwaMem {
   input {
     File input_fastq
-    referenceGenome referenceGenome
+    referenceGenome refGenome
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
