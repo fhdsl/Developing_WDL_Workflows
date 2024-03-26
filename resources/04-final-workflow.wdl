@@ -92,7 +92,7 @@ workflow mutation_calling {
   }
 
   parameter_meta {
-    sampleFastq: "Sample tumor .fastq (expects Illumina)"
+    sampleFastq: "Tumor .fastq (expects Illumina)"
 
     ref_fasta: "Reference genome to align reads to"
     ref_fasta_index: "Reference genome index file (created by bwa index)"

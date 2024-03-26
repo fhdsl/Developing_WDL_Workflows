@@ -85,7 +85,7 @@ workflow mutation_calling {
   }
 
   parameter_meta {
-    sampleFastq: "Sample tumor .fastq (expects Illumina)"
+    sampleFastq: "Tumor .fastq (expects Illumina)"
 
     dbSNP_vcf: "dbSNP VCF for mutation calling"
     dbSNP_vcf_index: "dbSNP VCF index"

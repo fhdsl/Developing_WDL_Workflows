@@ -137,8 +137,8 @@ workflow mutation_calling {
   }
 
   parameter_meta {
-    tumorFastq: "Sample tumor .fastq (expects Illumina) in array"
-    normalFastq: "Sample normal .fastq (expects Illumina)"
+    tumorFastq: "Tumor .fastq, one sample per .fastq file (expects Illumina)"
+    normalFastq: "Non-tumor .fastq (expects Illumina)"
 
     dbSNP_vcf: "dbSNP VCF for mutation calling"
     dbSNP_vcf_index: "dbSNP VCF index"

@@ -59,7 +59,17 @@ workflow mutation_calling {
   }
 
   parameter_meta {
-    tumorSamples: "Sample tumor .fastq (expects Illumina) in array"
+    tumorSamples: "Tumor .fastq, one sample per .fastq file (expects Illumina)"
+
+    dbSNP_vcf: "dbSNP VCF for mutation calling"
+    dbSNP_vcf_index: "dbSNP VCF index"
+    known_indels_sites_VCFs: "Known indel site VCF for mutation calling"
+    known_indels_sites_indices: "Known indel site VCF indicies"
+    af_only_gnomad: "gnomAD population allele fraction for mutation calling"
+    af_only_gnomad_index: "gnomAD population allele fraction index"
+
+    annovar_protocols: "annovar protocols: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
+    annovar_operation: "annovar operation: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
   }
 }
 
