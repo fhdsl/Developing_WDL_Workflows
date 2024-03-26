@@ -18,14 +18,15 @@ workflow mutation_calling {
 
     referenceGenome refGenome
     
+    # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    
     File af_only_gnomad
     File af_only_gnomad_index
-    
+
+    # Annovar options
     String annovar_protocols
     String annovar_operation
   }
@@ -96,14 +97,11 @@ workflow mutation_calling {
     annovar_protocols: "annovar protocols: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
     annovar_operation: "annovar operation: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
   }
-
 }
 
-
-
-
-
-# TASK DEFINITIONS
+####################
+# Task definitions #
+####################
 
 # Align fastq file to the reference genome
 task BwaMem {
@@ -249,10 +247,7 @@ task ApplyBaseRecalibrator {
   }
 }
 
-
-
-# Mutect 2 calling
-
+# Variant calling via mutect2 (tumor-only mode)
 task Mutect2TumorOnly {
   input {
     File input_bam
@@ -303,10 +298,7 @@ output {
 
 }
 
-
-
-
-# annotate with annovar
+# Annotate VCF using annovar
 task annovar {
   input {
   File input_vcf

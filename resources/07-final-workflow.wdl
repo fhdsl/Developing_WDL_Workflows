@@ -38,14 +38,15 @@ workflow mutation_calling {
 
     referenceGenome refGenome
     
+    # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    
     File af_only_gnomad
     File af_only_gnomad_index
-    
+
+    # Annovar options
     String annovar_protocols
     String annovar_operation
   }
@@ -151,9 +152,9 @@ workflow mutation_calling {
   }
 }
 
-
-
-# TASK DEFINITIONS
+####################
+# Task definitions #
+####################
 
 # Align fastq file to the reference genome
 task BwaMem {
@@ -201,7 +202,7 @@ task BwaMem {
   }
 }
 
-# Mark duplicates 
+# Mark duplicates on a BAM file
 task MarkDuplicates {
   input {
     File input_bam
@@ -299,8 +300,7 @@ task ApplyBaseRecalibrator {
   }
 }
 
-# Mutect 2 calling tumor-normal
-
+# Variant calling via mutect2 (tumor-and-normal mode)
 task Mutect2Paired {
   input {
     File tumor_bam
@@ -354,7 +354,7 @@ task Mutect2Paired {
   }
 }
 
-# annotate with annovar mutation calling outputs
+# Annotate VCF using annovar
 task annovar {
   input {
     File input_vcf

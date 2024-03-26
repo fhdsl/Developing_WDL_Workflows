@@ -2,9 +2,9 @@ version 1.0
 
 workflow mutation_calling {
   input {
-    # Sample info
     File sampleFastq
-    # Reference Genome information
+
+    # Reference genome
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -15,7 +15,6 @@ workflow mutation_calling {
     File ref_sa
   }
 
-  #  Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
@@ -46,9 +45,13 @@ workflow mutation_calling {
     ref_pac: "Reference genome binary file (created by bwa index)"
     ref_sa: "Reference genome binary file (created by bwa index)"
   }
-# End workflow
 }
 
+####################
+# Task definitions #
+####################
+
+# Align fastq file to the reference genome
 task BwaMem {
   input {
     File input_fastq

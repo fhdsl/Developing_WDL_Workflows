@@ -2,9 +2,9 @@ version 1.0
 
 workflow mutation_calling {
   input {
-    # Sample info
     File sampleFastq
-    # Reference Genome information
+
+    # Reference genome
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -15,19 +15,19 @@ workflow mutation_calling {
     File ref_sa
     String ref_name
 
+    # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-
     File af_only_gnomad
     File af_only_gnomad_index
 
+    # Annovar options
     String annovar_protocols
     String annovar_operation
   }
     
-  # Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
@@ -116,11 +116,9 @@ workflow mutation_calling {
   }
 }
 
-
-
-
-
-# TASK DEFINITIONS
+####################
+# Task definitions #
+####################
 
 # Align fastq file to the reference genome
 task BwaMem {
@@ -174,7 +172,7 @@ task BwaMem {
   }
 }
 
-# Mark duplicates
+# Mark duplicates on a BAM file
 task MarkDuplicates {
   input {
     File input_bam
@@ -258,7 +256,7 @@ task ApplyBaseRecalibrator {
       -R ~{ref_fasta_local} \
       
 
-  #finds the current sort order of this bam file
+  # finds the current sort order of this bam file
   samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > ~{base_file_name}.sortOrder.txt
 >>>
 
@@ -274,10 +272,7 @@ task ApplyBaseRecalibrator {
   }
 }
 
-
-
-# Mutect 2 calling
-
+# Variant calling via mutect2 (tumor-only mode)
 task Mutect2TumorOnly {
   input {
     File input_bam
@@ -329,10 +324,7 @@ output {
 
 }
 
-
-
-
-# annotate with annovar
+# Annotate VCF using annovar
 task annovar {
   input {
   File input_vcf

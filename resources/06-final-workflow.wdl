@@ -63,9 +63,9 @@ workflow mutation_calling {
   }
 }
 
-
-
-# TASK DEFINITIONS
+####################
+# Task definitions #
+####################
 
 # Align fastq file to the reference genome
 task BwaMem {
