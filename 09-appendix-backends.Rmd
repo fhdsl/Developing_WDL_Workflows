@@ -11,7 +11,7 @@ Generally speaking, WDL workflows are quite portable thanks to their usage of Do
 Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.
 
 | Attribute                                       | Fred Hutch HPC                               | Local Cromwell                    | Local miniwdl                     | Terra                                                                                       |
-|------------|------------------|------------|------------|------------------|
+|---------------|---------------|---------------|---------------|---------------|
 | bootDiskSizeGB                                  | n/a                                          | n/a                               | n/a                               | Request a disk of this size to boot the Docker image (useful for very large Docker images)  |
 | cpu                                             | Reserve at most this many cores              | n/a                               | Reserve at most this many cores   | Request a minimum of this many cores (scales with memory)                                   |
 | disks                                           | n/a                                          | n/a                               | n/a                               | Request this much disk size - soft requirement, if not specified, will request 10 GB        |
@@ -92,11 +92,11 @@ It is difficult to provide specific advice on HPCs, as they can vary greatly. So
 
 -   `memory` and `gpu` runtime attributes are ignored, but `cpu` works as expected. Here is [some information](https://sciwiki.fredhutch.org/scicomputing/compute_jobs/#memory) on approximating memory use.
 
--   `walltime` attribute is a string ("HH:MM:SS") that specifies how much time you want to request for the task. Can also specify \>1 day, e.g. "1-12:00:00" is 1 day+12 hours.
+-   `walltime` attribute is a string ("HH:MM:SS") that specifies how much time you want to request for the task. Can also specify \>1 day, e.g. "1-12:00:00" is 1 day+12 hours. The amount of walltime you can request depends on which cluster partition you want to use. More info [here](https://sciwiki.fredhutch.org/scicomputing/compute_jobs/#wall-time).
 
 -   `partition` attribute specifies the [cluster partition](https://sciwiki.fredhutch.org/compdemos/gizmo_partition_index/)to use. The default is "campus-new".
 
--   `modules` attribute is a a space-separated list of the [environment modules](https://sciwiki.fredhutch.org/scicomputing/compute_environments/) you'd like to load (in that order) prior to running the task. For example, "modules: "GATK/4.2.6.1-GCCcore-11.2.0 SAMtools/1.16.1-GCC-11.2.0", the GATK module will be loaded first, followed by the SAMtools module.
+-   `modules` attribute is a a space-separated list of the [environment modules](https://sciwiki.fredhutch.org/scicomputing/compute_environments/) you'd like to load (in that order) prior to running the task. For example, "modules:"GATK/4.2.6.1-GCCcore-11.2.0 SAMtools/1.16.1-GCC-11.2.0", the GATK module will be loaded first, followed by the SAMtools module.
 
 -   `dockerSL` attribute allows users to use Docker and softlinks only to specific locations on the FH HPC Scratch disk. It is helpful when working with very large files. An example is: "ubuntu:latest". Just like the `docker` attribute, you should only specify this if you want the task to run in a container (otherwise the default will be a non-containerized job).
 
