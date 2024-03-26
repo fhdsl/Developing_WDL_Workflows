@@ -57,26 +57,26 @@ workflow mutation_calling {
       ref_dict = ref_dict,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index
-    }
+  }
 
   call Mutect2TumorOnly {
-      input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
-        ref_dict = ref_dict,
-        ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
-        genomeReference = af_only_gnomad,
-        genomeReferenceIndex = af_only_gnomad_index
-    }
+    input:
+      input_bam = ApplyBaseRecalibrator.recalibrated_bam,
+      input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+      ref_dict = ref_dict,
+      ref_fasta = ref_fasta,
+      ref_fasta_index = ref_fasta_index,
+      genomeReference = af_only_gnomad,
+      genomeReferenceIndex = af_only_gnomad_index
+  }
   
   call annovar {
-      input:
-        input_vcf = Mutect2TumorOnly.output_vcf,
-        ref_name = ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols
-    }
+    input:
+      input_vcf = Mutect2TumorOnly.output_vcf,
+      ref_name = ref_name,
+      annovar_operation = annovar_operation,
+      annovar_protocols = annovar_protocols
+  }
   
   # Outputs that will be retained when execution is complete
   output {

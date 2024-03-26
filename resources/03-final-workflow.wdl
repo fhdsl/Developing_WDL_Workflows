@@ -26,7 +26,6 @@ workflow mutation_calling {
       ref_bwt = ref_bwt,
       ref_pac = ref_pac,
       ref_sa = ref_sa
-
   }
    
   # Outputs that will be retained when execution is complete

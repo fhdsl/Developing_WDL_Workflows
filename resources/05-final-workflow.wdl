@@ -52,24 +52,24 @@ workflow mutation_calling {
       known_indels_sites_VCFs = known_indels_sites_VCFs,
       known_indels_sites_indices = known_indels_sites_indices,
       refGenome = refGenome
-    }
+  }
 
   call Mutect2TumorOnly {
-      input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
-        refGenome = refGenome,
-        genomeReference = af_only_gnomad,
-        genomeReferenceIndex = af_only_gnomad_index
-    }
+    input:
+      input_bam = ApplyBaseRecalibrator.recalibrated_bam,
+      input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+      refGenome = refGenome,
+      genomeReference = af_only_gnomad,
+      genomeReferenceIndex = af_only_gnomad_index
+  }
   
   call annovar {
-      input:
-        input_vcf = Mutect2TumorOnly.output_vcf,
-        ref_name = refGenome.ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols
-    }
+    input:
+      input_vcf = Mutect2TumorOnly.output_vcf,
+      ref_name = refGenome.ref_name,
+      annovar_operation = annovar_operation,
+      annovar_protocols = annovar_protocols
+  }
   
   # Outputs that will be retained when execution is complete
   output {
