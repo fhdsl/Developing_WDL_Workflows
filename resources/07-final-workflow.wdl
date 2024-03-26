@@ -33,7 +33,7 @@ struct referenceGenome {
 
 workflow mutation_calling {
   input {
-    Array[File] tumorFastq
+    Array[File] tumorSamples
     File normalFastq
 
     referenceGenome refGenome
@@ -52,10 +52,10 @@ workflow mutation_calling {
   }
  
   # Scatter for "tumor" samples   
-  scatter (tumorSamples in tumorFastq) {
+  scatter (tumorSample in tumorSamples) {
     call BwaMem as tumorBwaMem {
       input:
-        input_fastq = tumorSamples,
+        input_fastq = tumorSample,
         refGenome = refGenome
     }
     
@@ -137,7 +137,7 @@ workflow mutation_calling {
   }
 
   parameter_meta {
-    tumorFastq: "Tumor .fastq, one sample per .fastq file (expects Illumina)"
+    tumorSamples: "Tumor .fastq, one sample per .fastq file (expects Illumina)"
     normalFastq: "Non-tumor .fastq (expects Illumina)"
 
     dbSNP_vcf: "dbSNP VCF for mutation calling"
