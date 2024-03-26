@@ -44,8 +44,6 @@ workflow mutation_calling {
     File ref_bwt
     File ref_pac
     File ref_sa
-    #Optional BwaMem threading variable
-    Int? bwa_mem_threads
   }
     
 
@@ -60,8 +58,7 @@ workflow mutation_calling {
       ref_ann = ref_ann,
       ref_bwt = ref_bwt,
       ref_pac = ref_pac,
-      ref_sa = ref_sa,
-      threads = bwa_mem_threads
+      ref_sa = ref_sa
   }
    
   call MarkDuplicates {
@@ -213,9 +210,6 @@ workflow mutation_calling {
 
     String annovar_protocols
     String annovar_operation
-
-    #Optional BwaMem threading variable
-    Int? bwa_mem_threads
   }
     
   # Map reads to reference
@@ -229,8 +223,7 @@ workflow mutation_calling {
       ref_ann = ref_ann,
       ref_bwt = ref_bwt,
       ref_pac = ref_pac,
-      ref_sa = ref_sa,
-      threads = bwa_mem_threads
+      ref_sa = ref_sa
   }
   
   call MarkDuplicates {
@@ -305,8 +298,6 @@ workflow mutation_calling {
 
     annovar_protocols: "annovar protocols: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
     annovar_operation: "annovar operation: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
-
-    bwa_mem_threads: "Number of threads for bwa threading"
   }
 }
 
@@ -328,7 +319,6 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
-    Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -352,7 +342,7 @@ task BwaMem {
     mv ~{ref_sa} .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
