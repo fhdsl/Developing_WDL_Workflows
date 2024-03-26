@@ -50,6 +50,29 @@ workflow mutation_calling {
     String annovar_protocols
     String annovar_operation
   }
+
+  # First, process the non-tumor normal sample
+  call BwaMem as normalBwaMem {
+    input:
+      input_fastq = normalFastq,
+      refGenome = refGenome
+  }
+  
+  call MarkDuplicates as normalMarkDuplicates {
+    input:
+      input_bam = normalBwaMem.analysisReadySorted
+  }
+
+  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+    input:
+      input_bam = normalMarkDuplicates.markDuplicates_bam,
+      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
+      dbSNP_vcf = dbSNP_vcf,
+      dbSNP_vcf_index = dbSNP_vcf_index,
+      known_indels_sites_VCFs = known_indels_sites_VCFs,
+      known_indels_sites_indices = known_indels_sites_indices,
+      refGenome = refGenome
+  }
  
   # Scatter for "tumor" samples   
   scatter (tumorSample in tumorSamples) {
@@ -94,30 +117,6 @@ workflow mutation_calling {
       annovar_protocols = annovar_protocols
   }
 }
-  
-  # Do for normal sample
-  call BwaMem as normalBwaMem {
-    input:
-      input_fastq = normalFastq,
-      refGenome = refGenome
-  }
-  
-  call MarkDuplicates as normalMarkDuplicates {
-    input:
-      input_bam = normalBwaMem.analysisReadySorted
-  }
-
-  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
-    input:
-      input_bam = normalMarkDuplicates.markDuplicates_bam,
-      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
-  }
-
 
   output {
     Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
