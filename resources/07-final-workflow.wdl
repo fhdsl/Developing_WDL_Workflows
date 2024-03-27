@@ -311,7 +311,6 @@ task Mutect2Paired {
   }
 
   String base_file_name_tumor = basename(tumor_bam, ".recal.bam")
-  String base_file_name_normal = basename(normal_bam, ".recal.bam")
   String ref_fasta_local = basename(refGenome.ref_fasta)
   String genomeReference_local = basename(genomeReference)
 
