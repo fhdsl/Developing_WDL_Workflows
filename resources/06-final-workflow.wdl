@@ -19,10 +19,17 @@ workflow mutation_calling {
 
     referenceGenome refGenome
     
+    # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
+    File af_only_gnomad
+    File af_only_gnomad_index
+
+    # Annovar options
+    String annovar_protocols
+    String annovar_operation
   }
  
   # Scatter for tumor samples   
@@ -38,7 +45,7 @@ workflow mutation_calling {
         input_bam = tumorBwaMem.analysisReadySorted
     }
 
-    call ApplyBaseRecalibrator{
+    call ApplyBaseRecalibrator {
       input:
         input_bam = MarkDuplicates.markDuplicates_bam,
         input_bam_index = MarkDuplicates.markDuplicates_bai,
@@ -48,6 +55,23 @@ workflow mutation_calling {
         known_indels_sites_indices = known_indels_sites_indices,
         refGenome = refGenome
     }
+
+    call Mutect2TumorOnly {
+      input:
+        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
+        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+        refGenome = refGenome,
+        genomeReference = af_only_gnomad,
+        genomeReferenceIndex = af_only_gnomad_index
+    }
+    
+    call annovar {
+      input:
+        input_vcf = Mutect2TumorOnly.output_vcf,
+        ref_name = refGenome.ref_name,
+        annovar_operation = annovar_operation,
+        annovar_protocols = annovar_protocols
+    }
   }
 
   output {
@@ -56,6 +80,10 @@ workflow mutation_calling {
     Array[File] tumorMarkDuplicates_bai = MarkDuplicates.markDuplicates_bai
     Array[File] tumoranalysisReadyBam = ApplyBaseRecalibrator.recalibrated_bam 
     Array[File] tumoranalysisReadyIndex = ApplyBaseRecalibrator.recalibrated_bai
+    Array[File] Mutect_Vcf = Mutect2TumorOnly.output_vcf
+    Array[File] Mutect_VcfIndex = Mutect2TumorOnly.output_vcf_index
+    Array[File] Mutect_AnnotatedVcf = annovar.output_annotated_vcf
+    Array[File] Mutect_AnnotatedTable = annovar.output_annotated_table
   }
 
   parameter_meta {
@@ -218,5 +246,88 @@ task ApplyBaseRecalibrator {
     memory: "36 GB"
     cpu: 2
     docker: "ghcr.io/getwilds/gatk:4.3.0.0"
+  }
+}
+
+# Variant calling via mutect2 (tumor-only mode)
+task Mutect2TumorOnly {
+  input {
+    File input_bam
+    File input_bam_index
+    referenceGenome refGenome
+    File genomeReference
+    File genomeReferenceIndex
+  }
+
+    String base_file_name = basename(input_bam, ".recal.bam")
+    String ref_fasta_local = basename(refGenome.ref_fasta)
+    String genomeReference_local = basename(genomeReference)
+
+command <<<
+    set -eo pipefail
+
+    mv ~{refGenome.ref_fasta} .
+    mv ~{refGenome.ref_fasta_index} .
+    mv ~{refGenome.ref_dict} .
+
+    mv ~{genomeReference} .
+    mv ~{genomeReferenceIndex} .
+
+    gatk --java-options "-Xms16g" Mutect2 \
+      -R ~{ref_fasta_local} \
+      -I ~{input_bam} \
+      -O preliminary.vcf.gz \
+      --germline-resource ~{genomeReference_local} \
+     
+    gatk --java-options "-Xms16g" FilterMutectCalls \
+      -V preliminary.vcf.gz \
+      -O ~{base_file_name}.mutect2.vcf.gz \
+      -R ~{ref_fasta_local} \
+      --stats preliminary.vcf.gz.stats \
+     
+>>>
+
+runtime {
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
+    memory: "24 GB"
+    cpu: 1
+  }
+
+output {
+    File output_vcf = "${base_file_name}.mutect2.vcf.gz"
+    File output_vcf_index = "${base_file_name}.mutect2.vcf.gz.tbi"
+  }
+
+}
+
+# Annotate VCF using annovar
+task annovar {
+  input {
+  File input_vcf
+  String ref_name
+  String annovar_protocols
+  String annovar_operation
+}
+  String base_vcf_name = basename(input_vcf, ".vcf.gz")
+  
+  command <<<
+  set -eo pipefail
+    
+  perl annovar/table_annovar.pl ~{input_vcf} annovar/humandb/ \
+    -buildver ~{ref_name} \
+    -outfile ~{base_vcf_name} \
+    -remove \
+    -protocol ~{annovar_protocols} \
+    -operation ~{annovar_operation} \
+    -nastring . -vcfinput
+>>>
+  runtime {
+    docker: "ghcr.io/getwilds/annovar:${ref_name}"
+    cpu: 1
+    memory: "2GB"
+  }
+  output {
+    File output_annotated_vcf = "${base_vcf_name}.${ref_name}_multianno.vcf"
+    File output_annotated_table = "${base_vcf_name}.${ref_name}_multianno.txt"
   }
 }
