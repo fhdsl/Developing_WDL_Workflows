@@ -1,0 +1,29 @@
+```{r, include = FALSE}
+ottrpal::set_knitr_image_path()
+```
+Container
+: A collection of software and dependencies that can run on nearly any machine with the same hardware architecture.
+
+Docker
+: A technology that allows you to containerize software, and to run said containers.
+
+Docker Image: 
+: The “recipe” for building the software environment. Can be downloaded from a registry using `docker pull` or can be generated using a Dockerfile.
+
+Docker Container
+: An instance of an executable software environment created from a Docker image.
+
+Dockerfile
+: A recipe for installing software and its dependencies so it can be packaged as a Docker image. Dockerfiles typically start by pulling an existing Docker image to act as the base.
+
+Execution Engine
+: A program that executes WDL on files. It may execute them your own laptop, a HPC cluster, or a cloud computing platform. The two most commonly used computing engines are miniwdl and Cromwell.
+
+Registry
+: A collection of repositories that you pull Docker images from, such as Docker Hub, Google Container Registry, etc.
+
+Task
+: The primary unit of a WDL workflow. Contains inputs, bash commands to execute, and the outputs.
+
+Workflow
+: The top level of a WDL workflow. Contains calls to tasks. Has its own inputs and outputs, which can be passed on to tasks.
