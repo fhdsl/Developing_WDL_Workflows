@@ -92,7 +92,7 @@ Heredoc-style syntax for command sections can be clearer than the alternative, a
 </details>
 
 
-To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variabls, like so:
+To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variables, like so:
 
 ```
 task cowsay {
