@@ -46,11 +46,14 @@ WDL has some really helpful advantages compared to other frameworks:
 Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:
 
  - Basics of Docker
+
  - Understanding the WDL framework
+
  - WDLizing your bash scripts into tasks
 
 
 ## Curriculum
+
 
 The course covers the following: 
 
