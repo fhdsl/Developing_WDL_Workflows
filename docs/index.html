@@ -51,6 +51,17 @@
 
 <link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+ 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N5Q1FEXP22');
+</script>
+
 
 
 
@@ -73,14 +84,16 @@
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About this Course</a>
 <ul>
-<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a></li>
+<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a>
+<ul>
+<li class="chapter" data-level="0.1.1" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.1.1</b> Relevant Resources</a></li>
+</ul></li>
 <li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#why-wdl"><i class="fa fa-check"></i><b>0.2</b> Why WDL?</a>
 <ul>
 <li class="chapter" data-level="0.2.1" data-path="index.html"><a href="index.html#wdl-pros"><i class="fa fa-check"></i><b>0.2.1</b> WDL Pros</a></li>
 <li class="chapter" data-level="0.2.2" data-path="index.html"><a href="index.html#wdl-cons"><i class="fa fa-check"></i><b>0.2.2</b> WDL Cons</a></li>
 </ul></li>
 <li class="chapter" data-level="0.3" data-path="index.html"><a href="index.html#curriculum"><i class="fa fa-check"></i><b>0.3</b> Curriculum</a></li>
-<li class="chapter" data-level="0.4" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.4</b> Relevant resources</a></li>
 </ul></li>
 <li class="chapter" data-level="1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html"><i class="fa fa-check"></i><b>1</b> Introduction to WDL</a>
 <ul>
@@ -210,7 +223,7 @@
 </div>
 <div id="header">
 <h1 class="title">Developing WDL Workflows</h1>
-<p class="date"><em>February, 2024</em></p>
+<p class="date"><em>March, 2024</em></p>
 </div>
 <div id="about-this-course" class="section level1 unnumbered">
 <h1>About this Course</h1>
@@ -218,6 +231,10 @@
 <div id="target-audience" class="section level2" number="0.1">
 <h2><span class="header-section-number">0.1</span> Target Audience</h2>
 <p>The course is intended for first time developers of the <a href="https://github.com/openwdl/wdl">WDL workflow language</a>, who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore.</p>
+<div id="relevant-resources" class="section level3" number="0.1.1">
+<h3><span class="header-section-number">0.1.1</span> Relevant Resources</h3>
+<p>If you are new to WDL, <a href="https://docs.openwdl.org/en/stable/">OpenWDL Docs</a> is an excellent WDL companion resource to help you get started and is platform agnostic. OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.</p>
+</div>
 </div>
 <div id="why-wdl" class="section level2" number="0.2">
 <h2><span class="header-section-number">0.2</span> Why WDL?</h2>
@@ -229,24 +246,29 @@
 <li><p><strong>Portability</strong>. WDL can run on nearly any system, whether it be your local computer, or on an HPC cluster, or on the Cloud, with platforms such as DNAnexus. In fact, a lot of developers will prototype a WDL workflow on their own local computer before moving it to the cloud.</p></li>
 <li><p><strong>Reproducibility</strong>. Ever have the headache of having to reproduce the exact package versions to get your workflow to work again? If you use Docker containers to specify your software environment, you do not have to worry about this headache. A workflow will run identically locally, on HPC, or the cloud.</p></li>
 <li><p><strong>Sharing</strong>. A WDL workflow is much easier to share with colleagues and is a good way to get credit for work you do everyday. If you spent time building it, why not share it? WDL is also an open standard and supported by a number of software tools.</p></li>
-<li><p><strong>Running and Making WDL workflows is a transferrable skill.</strong> Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry.</p></li>
+<li><p><strong>Running and Making WDL workflows is a transferable skill.</strong> Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry.</p></li>
 </ul>
 </div>
 <div id="wdl-cons" class="section level3" number="0.2.2">
 <h3><span class="header-section-number">0.2.2</span> WDL Cons</h3>
-<p>Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:
-- Basics of Docker
-- Understanding the WDL framework
-- WDLizing your bash scripts into tasks</p>
+<p>Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:</p>
+<ul>
+<li><p>Basics of Docker</p></li>
+<li><p>Understanding the WDL framework</p></li>
+<li><p>WDLizing your bash scripts into tasks</p></li>
+</ul>
 </div>
 </div>
 <div id="curriculum" class="section level2" number="0.3">
 <h2><span class="header-section-number">0.3</span> Curriculum</h2>
-<p>The course covers the following: how to write an effective WDL task, link multiple WDL tasks together in a workflow, organize variables via structs, scale multiple samples via Arrays, reuse repeated tasks via task aliasing, and configure settings for the execution engine.</p>
-</div>
-<div id="relevant-resources" class="section level2" number="0.4">
-<h2><span class="header-section-number">0.4</span> Relevant resources</h2>
-<p>An excellent WDL companion resource that is not platform dependent is <a href="https://docs.openwdl.org/en/stable/">OpenWDL Docs</a>. OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.</p>
+<p>The course covers the following:</p>
+<ul>
+<li>How to write an effective WDL task</li>
+<li>Link multiple WDL tasks together in a workflow</li>
+<li>Organize variables via structs, scale multiple samples via Arrays</li>
+<li>Reuse repeated tasks via task aliasing</li>
+<li>Configure settings for the execution engine</li>
+</ul>
 
 </div>
 </div>

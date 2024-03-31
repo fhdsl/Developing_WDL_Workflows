@@ -153,7 +153,7 @@ workflow mutation_calling {
     call BwaMem as tumorBwaMem {
       input:
         input_fastq = tumorFastq,
-        refGenome = refGenome
+        refGenome = refGenome             ##pass in our struct
     }
     
     call MarkDuplicates as tumorMarkDuplicates {
@@ -239,12 +239,12 @@ workflow mutation_calling {
 task BwaMem {
   input {
     File input_fastq
-    referenceGenome refGenome
+    referenceGenome refGenome         ## Our struct as input
     Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
-  String ref_fasta_local = basename(refGenome.ref_fasta)
+  String ref_fasta_local = basename(refGenome.ref_fasta)  ##refer to ref_fasta here in struct
 
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
@@ -326,7 +326,7 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    referenceGenome refGenome
+    referenceGenome refGenome         ## Use struct as input for task
   }
   
   String base_file_name = basename(input_bam, ".duplicates_marked.bam")
@@ -392,7 +392,7 @@ task Mutect2Paired {
     File tumor_bam_index
     File normal_bam
     File normal_bam_index
-    referenceGenome refGenome
+    referenceGenome refGenome           # our struct as input
     File genomeReference
     File genomeReferenceIndex
   }
