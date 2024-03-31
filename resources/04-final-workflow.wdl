@@ -136,34 +136,33 @@ task BwaMem {
   
   String base_file_name = basename(input_fastq, ".fastq")
   String ref_fasta_local = basename(ref_fasta)
+
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
   String platform_info = "PL:illumina"
 
-
   command <<<
     set -eo pipefail
 
-    mv ~{ref_fasta} .
-    mv ~{ref_fasta_index} .
-    mv ~{ref_dict} .
-    mv ~{ref_amb} .
-    mv ~{ref_ann} .
-    mv ~{ref_bwt} .
-    mv ~{ref_pac} .
-    mv ~{ref_sa} .
+    mv "~{ref_fasta}" .
+    mv "~{ref_fasta_index}" .
+    mv "~{ref_dict}" .
+    mv "~{ref_amb}" .
+    mv "~{ref_ann}" .
+    mv "~{ref_bwt}" .
+    mv "~{ref_pac}" .
+    mv "~{ref_sa}" .
 
     bwa mem \
       -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
-      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
-  >>>
+      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
+    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
+    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
 
+  >>>
   output {
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
-  
   runtime {
     memory: "48 GB"
     cpu: 16
@@ -181,9 +180,9 @@ task MarkDuplicates {
 
   command <<<
     gatk MarkDuplicates \
-      --INPUT ~{input_bam} \
-      --OUTPUT ~{base_file_name}.duplicates_marked.bam \
-      --METRICS_FILE ~{base_file_name}.duplicate_metrics \
+      --INPUT "~{input_bam}" \
+      --OUTPUT "~{base_file_name}.duplicates_marked.bam" \
+      --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
@@ -226,37 +225,37 @@ task ApplyBaseRecalibrator {
   command <<<
   set -eo pipefail
 
-  mv ~{ref_fasta} .
-  mv ~{ref_fasta_index} .
-  mv ~{ref_dict} .
+  mv "~{ref_fasta}" .
+  mv "~{ref_fasta_index}" .
+  mv "~{ref_dict}" .
 
-  mv ~{dbSNP_vcf} .
-  mv ~{dbSNP_vcf_index} .
+  mv "~{dbSNP_vcf}" .
+  mv "~{dbSNP_vcf_index}" .
 
-  mv ~{known_indels_sites_VCFs} .
-  mv ~{known_indels_sites_indices} .
+  mv "~{known_indels_sites_VCFs}" .
+  mv "~{known_indels_sites_indices}" .
 
   samtools index ~{input_bam}
 
   gatk --java-options "-Xms8g" \
       BaseRecalibrator \
-      -R ~{ref_fasta_local} \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal_data.csv \
-      --known-sites ~{dbSNP_vcf_local} \
-      --known-sites ~{known_indels_sites_VCFs_local} \
+      -R "~{ref_fasta_local}" \
+      -I "~{input_bam}" \
+      -O "~{base_file_name}.recal_data.csv" \
+      --known-sites "~{dbSNP_vcf_local}" \
+      --known-sites "~{known_indels_sites_VCFs_local}" \
       
 
   gatk --java-options "-Xms8g" \
       ApplyBQSR \
-      -bqsr ~{base_file_name}.recal_data.csv \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal.bam \
-      -R ~{ref_fasta_local} \
+      -bqsr "~{base_file_name}.recal_data.csv" \
+      -I "~{input_bam}" \
+      -O "~{base_file_name}.recal.bam" \
+      -R "~{ref_fasta_local}" \
       
 
   # finds the current sort order of this bam file
-  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > ~{base_file_name}.sortOrder.txt
+  samtools view -H "~{base_file_name}.recal.bam" | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > "~{base_file_name}.sortOrder.txt"
 >>>
 
   output {
@@ -290,22 +289,22 @@ task Mutect2TumorOnly {
 command <<<
     set -eo pipefail
 
-    mv ~{ref_fasta} .
-    mv ~{ref_fasta_index} .
-    mv ~{ref_dict} .
-    mv ~{genomeReference} .
-    mv ~{genomeReferenceIndex} .
+    mv "~{ref_fasta}" .
+    mv "~{ref_fasta_index}" .
+    mv "~{ref_dict}" .
+    mv "~{genomeReference}" .
+    mv "~{genomeReferenceIndex}" .
 
     gatk --java-options "-Xms16g" Mutect2 \
-      -R ~{ref_fasta_local} \
-      -I ~{input_bam} \
+      -R "~{ref_fasta_local}" \
+      -I "~{input_bam}" \
       -O preliminary.vcf.gz \
-      --germline-resource ~{genomeReference_local} \
+      --germline-resource "~{genomeReference_local}" \
      
     gatk --java-options "-Xms16g" FilterMutectCalls \
       -V preliminary.vcf.gz \
-      -O ~{base_file_name}.mutect2.vcf.gz \
-      -R ~{ref_fasta_local} \
+      -O "~{base_file_name}.mutect2.vcf.gz" \
+      -R "~{ref_fasta_local}" \
       --stats preliminary.vcf.gz.stats \
      
 >>>
@@ -317,8 +316,8 @@ runtime {
   }
 
 output {
-    File output_vcf = "${base_file_name}.mutect2.vcf.gz"
-    File output_vcf_index = "${base_file_name}.mutect2.vcf.gz.tbi"
+    File output_vcf = "~{base_file_name}.mutect2.vcf.gz"
+    File output_vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
   }
 
 }
@@ -337,21 +336,21 @@ task annovar {
   set -eo pipefail
   
   
-  perl annovar/table_annovar.pl ~{input_vcf} annovar/humandb/ \
-    -buildver ~{ref_name} \
-    -outfile ~{base_vcf_name} \
+  perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
+    -buildver "~{ref_name}" \
+    -outfile "~{base_vcf_name}" \
     -remove \
-    -protocol ~{annovar_protocols} \
-    -operation ~{annovar_operation} \
+    -protocol "~{annovar_protocols}" \
+    -operation "~{annovar_operation}" \
     -nastring . -vcfinput
 >>>
   runtime {
-    docker : "ghcr.io/getwilds/annovar:${ref_name}"
+    docker : "ghcr.io/getwilds/annovar:~{ref_name}"
     cpu: 1
     memory: "2GB"
   }
   output {
-    File output_annotated_vcf = "${base_vcf_name}.${ref_name}_multianno.vcf"
-    File output_annotated_table = "${base_vcf_name}.${ref_name}_multianno.txt"
+    File output_annotated_vcf = "~{base_vcf_name}.${ref_name}_multianno.vcf"
+    File output_annotated_table = "~{base_vcf_name}.${ref_name}_multianno.txt"
   }
 }
