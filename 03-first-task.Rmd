@@ -19,7 +19,7 @@ task some_aligner {
 }
 ```
 
-For some aligners, this would be a sufficient set of inputs, but we have decided to use bwa mem in particular to take us from fastq to sam. bwa mem requires a lot of index files, which we will also need to input. This can be done via an array, but for now we'll list everything separately to make sure nothing is being left out.
+For some aligners, this would be a sufficient set of inputs, but we have decided to use `bwa mem` in particular to take us from `.fastq` to `.sam`. `bwa mem` requires a lot of index files, which we will also need as inputs. These index files can be specified via an array, but for now we'll list everything separately to make sure nothing is being left out.
 
 ```
 task BwaMem {
@@ -43,7 +43,7 @@ task BwaMem {
 
 ### Referencing inputs in the command section
 
-The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
+The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line of code or use only one piece of software. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
 
 A WDL task's input variables are generally referred to in the command section using a tilde (~) and curly braces, using heredoc syntax. 
 
@@ -57,7 +57,7 @@ task do_something_curly_braces {
   input {
     String some_string
   }
-  command {
+  command {                  ## note the brackets
     some_other_string="FOO"
     echo ${some_string}
     echo $some_other_string
@@ -71,11 +71,11 @@ task do_something_carrots {
   input {
     String some_string
   }
-  command <<<
+  command <<<               ## note the '<<<'
     some_other_string="FOO"
     echo ~{some_string}
     echo $some_other_string
-  >>>
+  >>>                       ## closing '>>>'
 }
 ```
 
@@ -151,7 +151,7 @@ When running a WDL, a WDL executor will typically place duplicates of the input 
 
 For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_fasta}` would likely end up turning into `./_miniwdl_inputs/0/ref.fa` at runtime. On the other hand, if you were running the exact same workflow with Cromwell, `~{ref_fasta}` would turn into something like `/cromwell-executions/BwaMem/97c9341e-9322-9a2f-4f54-4114747b8fff/call-test_localization/inputs/-2022115965/ref.fa`. Keep in mind that these are the paths of *copies* of the input files, and that sometimes input files can be in different subfolders. For example, it's possible `~{input_fastq}` would be `./_miniwdl_inputs/0/sample.fastq` while `~{ref_fasta}` may be `./_miniwdl_inputs/1/ref.fa`.
 
-For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential. However, this aspect of WDL can occasionally cause issues. bwa mem is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making an assumption about some of your input files. Specifically, bwa mem assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc), and it does not allow you to specify otherwise.
+For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential. However, this aspect of WDL can occasionally cause issues. `bwa mem` is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making an assumption about some of your input files. Specifically, `bwa mem` assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc), and it does not allow you to specify otherwise.
 
 <details>
 <summary><b>Another example of file localization issue</b></summary>
@@ -232,7 +232,7 @@ task BwaMem {
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
   String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:" + platform   ## Create the platform information
 
   command <<<
     set -eo pipefail
@@ -258,7 +258,7 @@ task BwaMem {
 ```
 
 ## Runtime attributes
-The runtime attributes of a task tell the WDL executor important information about how to run the task. For a bwa mem task, we want to make sure we have plenty of hardware resources available. We also need to include a reference to the docker image we want the task to actually run in.
+The runtime attributes of a task tell the WDL executor important information about how to run the task. For a `bwa mem` task, we want to make sure we have plenty of hardware resources available. We also need to include a reference to the docker image we want the task to actually run in.
 
 ```
   runtime {
@@ -305,12 +305,12 @@ WDL is built to make use of Docker as it makes handling software dependencies mu
 
 * You may not have permission to install software if you are using an institute HPC or other shared resource
 
-When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. This container sandbox is derived from a template called a Docker image, which packages installed software in a special file system. This is one of the main features of a Docker image -- because a Docker image packages the software you need, you can skip much of the installation and dependency issues associated with using new software, and because you take actions within a Docker container sandbox, it's unlikely for you to "mess up" your main system's files. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine, and the official Docker GUI is called Docker Desktop.
+When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. This container sandbox is derived from a template called a *Docker image*, which packages installed software in a special file system. This is one of the main features of a Docker image -- because a Docker image packages the software you need, you can skip much of the installation and dependency issues associated with using new software. Because you take actions within a Docker container sandbox, it's unlikely for you to "mess up" your main system's files. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine/Apptainer, and the official Docker GUI is called Docker Desktop.
 
 <details>
 <summary><b>More information on finding and developing Docker images</b></summary>
 
-Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles -- plaintext files which compile Docker images when run via `docker build` -- to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
+Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles -- plaintext files which compile Docker images when run via `docker build` -- to write your own WDLs. Most popular bioinformatics software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
 
 </details>
 
@@ -319,7 +319,7 @@ Although you will generally need to be able to run Docker in order to run WDLs, 
 
 ## Outputs
 
-The outputs of a task are defined in the `output` section of your task. Typically, this will take the form of directly outputting a file that was created in the command section. When these file outputs are referenced in the `output` section, you can refer to their path in the Docker container directly. You can also make outputs a function of input variables, including private input variables. This can be helpful if you intend on running this WDL on many different files -- each one will get a unique filename based on the input fastq, instead of every sample ending up being named something generic like "converted.sam". For our bwa mem task, one way to write the output section would be as follows:
+The outputs of a task are defined in the `output` section of your task. Typically, this will take the form of directly outputting a file that was created in the command section. When these file outputs are referenced in the `output` section, you can refer to their path in the Docker container directly. You can also make outputs a function of input variables, including private input variables. This can be helpful if you intend on running this WDL on many different files -- each one will get a unique filename based on the input fastq, instead of every sample ending up being named something generic like "converted.sam". For our `bwa mem` task, one way to write the output section would be as follows:
 
 ```
   output {
@@ -400,8 +400,8 @@ task one_word_per_file {
 
 ## The whole task
 
-We've now designed a bwa mem task that can run on almost any backend that supports WDL and can handle the hardware requirements.  Issues involving bwa mem expecting reference files to be in the same folder and/or putting output files into input folders have been sidestepped thanks to careful design and consideration. The runtime section clearly defines the expected hardware requirements, and the outputs section defines what we expect the task to give us when all is said and done. We're now ready to continue with the rest of our workflow.
-
+We've now designed a `bwa mem` task that can run on almost any backend that supports WDL and can handle the hardware requirements. Issues involving `bwa mem` expecting reference files to be in the same folder and/or putting output files into input folders have been sidestepped thanks to careful design and consideration. The runtime section clearly defines the expected hardware requirements, and the outputs section defines what we expect the task to give us when all is said and done. We're now ready to continue with the rest of our workflow.
+  
 ```         
 task BwaMem {
   input {

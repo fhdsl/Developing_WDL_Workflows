@@ -51,6 +51,17 @@
 
 <link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+ 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N5Q1FEXP22');
+</script>
+
 
 
 
@@ -73,14 +84,16 @@
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About this Course</a>
 <ul>
-<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a></li>
+<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a>
+<ul>
+<li class="chapter" data-level="0.1.1" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.1.1</b> Relevant Resources</a></li>
+</ul></li>
 <li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#why-wdl"><i class="fa fa-check"></i><b>0.2</b> Why WDL?</a>
 <ul>
 <li class="chapter" data-level="0.2.1" data-path="index.html"><a href="index.html#wdl-pros"><i class="fa fa-check"></i><b>0.2.1</b> WDL Pros</a></li>
 <li class="chapter" data-level="0.2.2" data-path="index.html"><a href="index.html#wdl-cons"><i class="fa fa-check"></i><b>0.2.2</b> WDL Cons</a></li>
 </ul></li>
 <li class="chapter" data-level="0.3" data-path="index.html"><a href="index.html#curriculum"><i class="fa fa-check"></i><b>0.3</b> Curriculum</a></li>
-<li class="chapter" data-level="0.4" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.4</b> Relevant resources</a></li>
 </ul></li>
 <li class="chapter" data-level="1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html"><i class="fa fa-check"></i><b>1</b> Introduction to WDL</a>
 <ul>
@@ -475,7 +488,7 @@ task BwaMem {
   String read_group_id = &quot;ID:&quot; + base_file_name
   String sample_name = &quot;SM:&quot; + base_file_name
   String platform = &quot;illumina&quot;
-  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
+  String platform_info = &quot;PL:&quot; + platform   ## Create the platform information
 
 
   command &lt;&lt;&lt;
@@ -508,7 +521,7 @@ task BwaMem {
   }
 }
 
-# Mark duplicates
+## Mark duplicates
 task MarkDuplicates {
   input {
     File input_bam
@@ -592,7 +605,7 @@ task ApplyBaseRecalibrator {
       -R ~{ref_fasta_local} \
       
 
-  #finds the current sort order of this bam file
+  ## finds the current sort order of this bam file
   samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; ~{base_file_name}.sortOrder.txt
 &gt;&gt;&gt;
 

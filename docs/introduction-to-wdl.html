@@ -51,6 +51,17 @@
 
 <link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+ 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N5Q1FEXP22');
+</script>
+
 
 
 
@@ -73,14 +84,16 @@
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>About this Course</a>
 <ul>
-<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a></li>
+<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#target-audience"><i class="fa fa-check"></i><b>0.1</b> Target Audience</a>
+<ul>
+<li class="chapter" data-level="0.1.1" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.1.1</b> Relevant Resources</a></li>
+</ul></li>
 <li class="chapter" data-level="0.2" data-path="index.html"><a href="index.html#why-wdl"><i class="fa fa-check"></i><b>0.2</b> Why WDL?</a>
 <ul>
 <li class="chapter" data-level="0.2.1" data-path="index.html"><a href="index.html#wdl-pros"><i class="fa fa-check"></i><b>0.2.1</b> WDL Pros</a></li>
 <li class="chapter" data-level="0.2.2" data-path="index.html"><a href="index.html#wdl-cons"><i class="fa fa-check"></i><b>0.2.2</b> WDL Cons</a></li>
 </ul></li>
 <li class="chapter" data-level="0.3" data-path="index.html"><a href="index.html#curriculum"><i class="fa fa-check"></i><b>0.3</b> Curriculum</a></li>
-<li class="chapter" data-level="0.4" data-path="index.html"><a href="index.html#relevant-resources"><i class="fa fa-check"></i><b>0.4</b> Relevant resources</a></li>
 </ul></li>
 <li class="chapter" data-level="1" data-path="introduction-to-wdl.html"><a href="introduction-to-wdl.html"><i class="fa fa-check"></i><b>1</b> Introduction to WDL</a>
 <ul>
@@ -253,7 +266,7 @@ workflow my_workflow {
     }
 }</code></pre>
 <p>The input <code>fq</code> is defined to be a File variable type. WDL supports various variable types, such as String, Integer, Float, and Boolean. For more information on types in WDL, we recommend <a href="https://docs.openwdl.org/en/stable/WDL/variable_types/">OpenWDL’s documentation on variable types</a>.</p>
-<p>To access a task-level input variable in a task’s command section, it is usually referenced using ~{this} notation. To access a workflow-level variable in a workflow, it is referenced just by its name without any special notation. To access a workflow-level variable in a task, it must be passed into the task as an input.</p>
+<p>To access a task-level input variable in a task’s command section, it is usually referenced using ~{<em>input_name</em>} notation, such as (<code>~{fastq}</code>) in the example below. To access a workflow-level variable in a workflow, it is referenced just by its name without any special notation, such as <code>fq</code> in the example below. To access a workflow-level variable in a task, it must be passed into the task as an input.</p>
 <!-- resources/basic_03.wdl -->
 <pre><code>version 1.0
 
@@ -264,7 +277,7 @@ task do_something {
     }
     command &lt;&lt;&lt;
         echo &quot;First ten lines of ~{basename_of_fq}: &quot;
-        head ~{fastq}
+        head ~{fastq}  ## example of referring to task-level input
     &gt;&gt;&gt;
 }
 
@@ -277,7 +290,7 @@ workflow my_workflow {
     
     call do_something {
         input:
-            fastq = fq,
+            fastq = fq,  ## example of referring to workflow-level input
             basename_of_fq = basename_of_fq
     }
 }</code></pre>
@@ -295,7 +308,7 @@ task do_something {
         head ~{fastq} &gt;&gt; output.txt
     &gt;&gt;&gt;
     output {
-        File first_ten_lines = &quot;output.txt&quot;
+        File first_ten_lines = &quot;output.txt&quot;  ## output variable for task
     }
 }
 
@@ -313,19 +326,19 @@ workflow my_workflow {
     }
     
     output {
-        File ten_lines = do_something.first_ten_lines
+        File ten_lines = do_something.first_ten_lines ## referring to task output here
     }
 }</code></pre>
 </div>
 <div id="using-jsons-to-control-workflow-inputs" class="section level2" number="1.3">
 <h2><span class="header-section-number">1.3</span> Using JSONs to control workflow inputs</h2>
-<p>Running a WDL workflow generally requires two files: A .wdl file, which contains the actual workflow, and a .json file, which provides the inputs for the workflow.</p>
-<p>In the example we showed earlier, the workflow takes in a file referred to by the variable <code>fq</code>. This needs to be provided by the user. Typically, this is done with a JSON file. Here’s what a JSON file for this workflow might look like:</p>
+<p>Running a WDL workflow generally requires two files: A <code>.wdl</code> file, which contains the actual workflow, and a <code>.json</code> file, which provides the inputs for the workflow.</p>
+<p>In the example we showed earlier, the workflow takes in a file referred to by the input variable <code>fq</code>. This needs to be provided by the user. Typically, this is done with a JSON file. Here’s what a JSON file for this workflow might look like:</p>
 <!-- resources/basic_04.json -->
 <pre><code>{
     &quot;my_workflow.fq&quot;: &quot;./data/example.fq&quot;
 }</code></pre>
-<p>JSON files consist of key-value pairs. In this case, the key is <code>"my_workflow.fq"</code> and the value is the path <code>"./data/example.fq"</code>. The first part of the key is the name of the workflow as written in the WDL file, in this case <code>my_workflow</code>. The variable being represented is referred to its name, in this case, <code>fq</code>. So, the file located at the path <code>./data/example.fq</code> is being input as a variable called <code>fq</code> into the workflow named <code>my_workflow</code>.</p>
+<p>JSON files consist of key-value pairs. In this case, the key is <code>"my_workflow.fq"</code> and the value is the path <code>"./data/example.fq"</code>. The first part of the key is the name of the workflow as written in the WDL file, in this case <code>my_workflow</code>. The variable being represented is referred to its name, in this case, <code>fq</code>. So, in the above example, the file located at the path <code>./data/example.fq</code> is being input as a variable called <code>fq</code> into the workflow named <code>my_workflow</code>.</p>
 <p>Files aren’t the only type of variable you can refer to when using JSONs. Here’s an example JSON for every common WDL variable type.</p>
 <!-- resources/variables.json -->
 <pre><code>{
@@ -353,7 +366,13 @@ If you are having difficulty writing valid JSON files, considering using <a href
 </div>
 <div id="running-wdl-via-a-computing-engine" class="section level2" number="1.4">
 <h2><span class="header-section-number">1.4</span> Running WDL via a computing engine</h2>
-<p>In order to run a WDL workflow, we need a computing engine to execute it. The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs on a local machine, High Performance Computing (HPC), or cloud computing backend. If you are trying to run WDL at Fred Hutch Cancer Center’s HPC system, you should use the PROOF executor.</p>
+<p>In order to run a WDL workflow, we need a <em>computing engine</em> to execute it. The two most popular WDL executors are <a href="https://miniwdl.readthedocs.io/en/latest/index.html">miniwdl</a> and <a href="https://cromwell.readthedocs.io/en/stable/">Cromwell</a>. Both computing engines can run WDLs on multiple configurations:</p>
+<ul>
+<li>A local machine</li>
+<li>A High Performance Computing (HPC) Cluster</li>
+<li>A Cloud Computing backend (such as AWS/Terra/DNAnexus).</li>
+</ul>
+<p>If you are trying to run WDL at Fred Hutch Cancer Center’s HPC system, you should use the PROOF executor.</p>
 <p>If you are computing on a HPC or the Cloud, you should find the best practice of running a WDL computing engine based on your institution’s information technology system.</p>
 <p>If you are computing locally on your computer, below is a short guide on how to set that up.</p>
 <details>
