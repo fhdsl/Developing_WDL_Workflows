@@ -71,7 +71,8 @@ workflow mutation_calling {
   call BwaMem as normalBwaMem {
     input:
       input_fastq = normalFastq,
-      refGenome = refGenome
+      refGenome = refGenome,
+      threads = bwa_mem_threads
   }
 [...]
 }
@@ -105,7 +106,12 @@ task BwaMem {
 }
 ```
 
-There are times you would not want optional inputs to have a fallback value, especially when working with optional File? inputs. In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we're using (`ashedpotatoes/usher-plus:0.0.2`) already contains the H37Rv reference genome, which is the standard reference genome for *Mycobacterium tuberculosis*. If we are working with tuberuclosis samples, there is no reason to provide a reference genome -- we might as well use the one that's already in the Docker image.
+<details>
+
+<summary><b>Here's another way of providing a fallback value for optional inputs within a task.</b></summary>
+
+
+In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we're using (`ashedpotatoes/usher-plus:0.0.2`) already contains the H37Rv reference genome, which is the standard reference genome for *Mycobacterium tuberculosis*. If we are working with tuberuclosis samples, there is no reason to provide a reference genome -- we might as well use the one that's already in the Docker image.
 
 ```
 task usher_sampled_diff {
@@ -141,9 +147,10 @@ task usher_sampled_diff {
 }
 ```
 
+</details>
 
 ## Optional outputs
-Optional outputs are usually created by explictly declaring a task or workflow's output variable to be optional. They can also be created by enclosing a task within an if-block, which will cause all outputs of that task to be considered optional.
+Optional outputs are usually created by explicitly declaring a task or workflow's output variable to be optional. They can also be created by enclosing a task within an if-block, which will cause all outputs of that task to be considered optional.
 
 ### Declaring a task's output to be optional
 Most backends will save the task-level outputs of a task, even if those outputs are not workflow-level outputs. This can be very useful if you want to be able to check intermediate files, or perhaps log files for certain bioinformatic tools. However, if you're not actively debugging, those files may take up a lot of space on your backend if you're running on many samples over time.
@@ -275,7 +282,11 @@ workflow do_x_or_y {
 }
 ```
 
-## Checking if a variable is defined
+<details>
+
+<summary><b>Checking if a variable is defined</b></summary>
+
+
 You can check if a variable is defined at runtime using the WDL built-in `defined()`, which returns a Boolean value. However, `defined()` can give unexpected output, as we will go over later. For the time being, let's use a simple example where we set a Boolean variable via `defined()`. This will work as expected -- if task_x ran and created the output `task_x.something`, then `did_x_run` will be true, and so on.
 
 ```
@@ -358,11 +369,15 @@ workflow do_x_or_y {
 
 Instead of using `defined()` on an array, consider simply checking its length. An empty array has a length of 0, so if the length of an array is greater than 1, you know that there is at least one item existing in that array.
 
+</details>
+
+
 <details>
 
 <summary><b>Working with optional arrays and advanced usage of `select_first()`</b></summary>
 
 ## Coercing arrays with optional components
+
 Optional arrays can be difficult to work with. One of the reasons for this is that they sometimes give unexpected values for `defined()`. As mentioned earlier, this can be somewhat allievated by checking the length of an array rather than whether or not it is defined, but the problems do not end there: Attempting to scatter on an optional array can cause issues that are difficult to debug.
 
 It's generally best to coerce optional arrays into not-optional arrays as much as possible. Thankfully, we can use `select_all()` to select only the defined elements of an array. For our example above, we can go even further by creating an array that will always have a defined value, whether or not `do_x` is true. We combine the power of `select_all()` and `flatten()` to create the following:
@@ -381,9 +396,11 @@ if defined(some_integer) { # needed to define real_some_integer, beware of chang
     Int real_some_integer = select_first([some_integer, 1975])
 }
 ```
+
 </details>
 
 ## The final workflow
+
 At this point, we've completeled our workflow. Here's what it looks like now:
 
 ```
@@ -447,7 +464,8 @@ workflow mutation_calling {
   call BwaMem as normalBwaMem {
     input:
       input_fastq = normalFastq,
-      refGenome = refGenome
+      refGenome = refGenome,
+      threads = bwa_mem_threads
   }
   
   call MarkDuplicates as normalMarkDuplicates {
