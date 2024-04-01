@@ -29,7 +29,7 @@ You can only alias a task that is already defined, so we will start with the Bwa
 
 > Note: In the real world, typically two samples would be processed from a patient: One tumor and one normal. However, we are writing a workflow that only takes in one normal sample and multiple tumor samples. This implies that we have taken multiple tumor samples from the same patient, and we're comparing all of them against a single normal sample.
 
-Here we are creating an alias for the task BwaMem. We want to do this so it can run this task on the "normal" samples and store them seperately. 
+Here we are creating an alias for the task BwaMem. We want to do this so it can run this task on the "normal" samples and store them separately. 
 
 First, make sure that in your workflow input, you reference to the normal samples as input.
 
@@ -472,3 +472,4 @@ task annovar {
 }
 ```
 
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>

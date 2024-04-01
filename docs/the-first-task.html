@@ -301,7 +301,7 @@
 }</code></pre>
 <p>Heredoc-style syntax for command sections can be clearer than the alternative, as it makes a clearer distinction between bash variables and WDL variables. This is especially helpful for complicated bash scripts. Heredoc-style syntax is also what the WDL 1.1 spec recommends using in most cases. However, the older non-heredoc style is still perfectly functional for a lot of use cases.</p>
 </details>
-<p>To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variabls, like so:</p>
+<p>To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variables, like so:</p>
 <pre><code>task cowsay {
   input {
     String some_string
@@ -729,6 +729,9 @@ task BwaMem {
   &quot;mutation_calling.ref_name&quot;: &quot;hg19&quot;
 }</code></pre>
 <p>If you are not running on the Fred Hutch HPC, you’ll need to modify your JSON file to point to wherever you have the data files stored. You can download the same fastq we’re using from <a href="https://github.com/fhdsl/WDL-sandbox/tree/main/data">our sandbox repo</a>, and the reference files can be generated via <code>samtools index</code> or <a href="https://data.broadinstitute.org/snowman/hg19/">downloaded from the Broad Institute’s mirror</a>.</p>
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
+Loading…
+</iframe>
 
 </div>
 </div>
