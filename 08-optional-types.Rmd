@@ -376,7 +376,7 @@ Instead of using `defined()` on an array, consider simply checking its length. A
 
 <summary><b>Working with optional arrays and advanced usage of `select_first()`</b></summary>
 
-## Coercing arrays with optional components
+Coercing arrays with optional components
 
 Optional arrays can be difficult to work with. One of the reasons for this is that they sometimes give unexpected values for `defined()`. As mentioned earlier, this can be somewhat allievated by checking the length of an array rather than whether or not it is defined, but the problems do not end there: Attempting to scatter on an optional array can cause issues that are difficult to debug.
 
@@ -388,7 +388,6 @@ Array[File] x_or_y_outfiles = flatten(select_all(x.outfile), select_all(y.outfil
 
 Make sure not to use `flatten(select_all(x.outfile, y.outfile))`! That would result in an Array[File] that has a null value, which can cause hard-to-diagnose issues later on in your pipeline.
 
-## Coercing optional variables with "bogus" fallbacks
 If you're absolutely certain your variable, in this particular scope, is defined, you can make the second member of the `select_first()` array a random bogus fallback value. You may want to add a comment to prevent you or other programmers accidentally breaking things should they edit the code later.
 
 ```
