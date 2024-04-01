@@ -319,7 +319,7 @@ task annovar {
     -nastring . -vcfinput
 >>>
   runtime {
-    docker : "ghcr.io/getwilds/annovar:~{ref_name}"
+    docker: "ghcr.io/getwilds/annovar:~{ref_name}"
     cpu: 1
     memory: "2GB"
   }

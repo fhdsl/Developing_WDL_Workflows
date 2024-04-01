@@ -163,7 +163,7 @@ task BwaMem {
   output {
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
-  
+
   runtime {
     memory: "48 GB"
     cpu: 16
@@ -346,7 +346,7 @@ task annovar {
     -nastring . -vcfinput
 >>>
   runtime {
-    docker : "ghcr.io/getwilds/annovar:~{ref_name}"
+    docker: "ghcr.io/getwilds/annovar:~{ref_name}"
     cpu: 1
     memory: "2GB"
   }
