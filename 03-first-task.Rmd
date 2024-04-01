@@ -84,7 +84,7 @@ Heredoc-style syntax for command sections can be clearer than the alternative, a
 </details>
 
 
-To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variabls, like so:
+To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variables, like so:
 
 ```
 task cowsay {
@@ -576,3 +576,5 @@ Here is an example JSON with the test data needed to run this single-task workfl
 ```
 
 If you are not running on the Fred Hutch HPC, you'll need to modify your JSON file to point to wherever you have the data files stored. You can download the same fastq we're using from [our sandbox repo](https://github.com/fhdsl/WDL-sandbox/tree/main/data), and the reference files can be generated via `samtools index` or [downloaded from the Broad Institute's mirror](https://data.broadinstitute.org/snowman/hg19/).
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>

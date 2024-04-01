@@ -5,7 +5,8 @@
 5-Organizing-variables-via-Structs.md
 6-Using-Arrays-For-Parallelization-and-Other-Use-Cases.md
 7-Task-Aliasing.md
-8-Appendix:-Backends-and-Executors.md
-9-References.md
+8-Optional-types.md
+9-Appendix:-Backends-and-Executors.md
+10-References.md
 About-this-Course.md
 About-the-Authors.md

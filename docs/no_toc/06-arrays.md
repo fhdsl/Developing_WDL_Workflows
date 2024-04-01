@@ -17,16 +17,23 @@ In this chapter, we'll be going over:
 ## The array type
 Arrays are essentially lists of another [primitive type](https://en.wikipedia.org/wiki/Primitive_data_type). It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primitive type. For example, an Array[String] could contain the strings "cat" and "dog" but not the integer 1965 (however, it could have "1965" as a string).
 
-In chapter 4, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.
+In chapter 5, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.
 
 In WDL, arrays are 0 indexed, so the "first" value in an array is referenced by `[0]`. As per the WDL spec, arrays retain their order and are [immutable](https://en.wikipedia.org/wiki/Immutable_object) -- if you explicitly define an Array[String] with the members ["foo", "bar", "bizz"], you can be confident that "foo" will always be at index 0.
 
 ```
 Array[String] foobarbizz = ["foo", "bar", "bizz"]
-String foo = foobarbizz[0] # will always be "foo"
+String foo = foobarbizz[0]  # will always be "foo"
 ```
 
-Because arrays are [immutable](https://en.wikipedia.org/wiki/Immutable_object), if you wish to add values to an array, you will need to define a new array.
+Because arrays are immutable in WDL, if you wish to add values to an array, you will need to define a new array. You can combine an existing array and new values using `flatten()`, a WDL built-in function that will turned a nested array into a "flat" array, like so:
+
+```
+Array[String] foobarbizz = ["foo", "bar", "bizz"]
+String foo = foobarbizz[0]  # will always be "foo"
+Array[Array[String]] foobarbizz_but_with_bonus_foo = [foobarbizz, foo, foo, foo]  # [["foo", "bar", "bizz"], "foo", "foo", "foo"]
+Array[String] foobarbizzfoofoofoo = flatten(foobarbizz_but_with_bonus_foo)        # ["foo", "bar", "bizz", "foo", "foo", "foo"]
+```
 
 ## Scattered tasks
 Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample's chromosomes in parallel, or similar situations where breaking up data into discrete "chunks" makes sense.
@@ -104,7 +111,9 @@ Next, we will want to look at our chain of tasks. Each of these tasks are design
   }
 ```
 
-A scatter is essentially the WDL version of a [for loop](https://en.wikipedia.org/wiki/For_loop). Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. They can only "see" one file at a time. However, outside the scatter, every task is considered in the context of every sample, so every output of those scattered tasks become arrays. As a result, our outputs are now Array[File] instead of just File.
+A scatter is essentially the WDL version of a [for loop](https://en.wikipedia.org/wiki/For_loop). Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. So, the first tumor fastq file will go through BwaMem, then the resulting bam will go through MarkDuplicates, and the marked bam will undergo base recalibration. Since all three of these tasks are within the same scatter, each task only "sees" one sample at a time.
+
+However, outside the scatter, every task is considered in the context of all samples, so every output of those scattered tasks becomes arrays. As a result, our workflow-level outputs are now Array[File] instead of just File.
 
 ```
   output {
@@ -121,7 +130,7 @@ You can reference a full copy of this workflow at the end of this chapter.
 
 ## Referencing an array in a task
 
-Because each task only takes in one sample, we are not directly inputting arrays into a file. However, it's important to know how to do this. If a task's input variable is an array, we must include an array separator. In WDL 1.0, this is done using the `sep=` expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via `sep`. In this example, that is a simple space, as that is one way how to construct a bash variable.
+In our example, each task only takes in one sample, so we are not directly inputting arrays into a file. However, it's important to know how to input arrays in a task's command section. If a task's input variable is an array, we must include an array separator. In WDL 1.0, this is done using the `sep=` expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via `sep`. In this example, that is a simple space, as that is one way how to construct a bash variable.
 
 ```
 task count_words {
@@ -163,6 +172,7 @@ task count_words_python {
 ```
 
 ## The workflow so far
+Let's take another look at our workflow.
 ```
 version 1.0
 
@@ -378,3 +388,5 @@ task ApplyBaseRecalibrator {
   }
 }
 ```
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>

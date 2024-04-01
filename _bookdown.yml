@@ -9,6 +9,7 @@ rmd_files: ["index.Rmd",
             "05-structs.Rmd",
             "06-arrays.Rmd",
             "07-task-aliasing.Rmd",
+            "08-optional-types.Rmd",
             "09-appendix-backends.Rmd",
             "About.Rmd",
             "References.Rmd"]
