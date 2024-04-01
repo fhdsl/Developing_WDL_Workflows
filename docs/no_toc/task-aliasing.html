@@ -298,10 +298,7 @@ File normalalignedBamSorted = normalBwaMem.analysisReadySorted
       refGenome = refGenome
   }</code></pre>
 <p>Now adding these steps to the workflow we will have our tumor and normal sample aligned and recalibrated and suitable for ingestion into the mutation calling step for a paired mutation calling using MuTect2.</p>
-<pre><code>
-# The full workflow with task alias
-
-version 1.0
+<pre><code>version 1.0
 ## WDL 101 example workflow
 ## 
 ## This WDL workflow is intended to be used along with the WDL 101 docs. 
@@ -337,28 +334,52 @@ struct referenceGenome {
 workflow mutation_calling {
   input {
     Array[File] tumorSamples
-    File normalSamples
+    File normalFastq
 
     referenceGenome refGenome
     
+    # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    
     File af_only_gnomad
     File af_only_gnomad_index
-    
+
+    # Annovar options
     String annovar_protocols
     String annovar_operation
   }
+
+  # First, process the non-tumor normal sample
+  call BwaMem as normalBwaMem {
+    input:
+      input_fastq = normalFastq,
+      refGenome = refGenome
+  }
+  
+  call MarkDuplicates as normalMarkDuplicates {
+    input:
+      input_bam = normalBwaMem.analysisReadySorted
+  }
+
+  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+    input:
+      input_bam = normalMarkDuplicates.markDuplicates_bam,
+      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
+      dbSNP_vcf = dbSNP_vcf,
+      dbSNP_vcf_index = dbSNP_vcf_index,
+      known_indels_sites_VCFs = known_indels_sites_VCFs,
+      known_indels_sites_indices = known_indels_sites_indices,
+      refGenome = refGenome
+  }
  
   # Scatter for &quot;tumor&quot; samples   
-  scatter (tumorFastq in tumorSamples) {
+  scatter (tumorSample in tumorSamples) {
     call BwaMem as tumorBwaMem {
       input:
-        input_fastq = tumorFastq,
-        refGenome = refGenome             ##pass in our struct
+        input_fastq = tumorSample,
+        refGenome = refGenome
     }
     
     call MarkDuplicates as tumorMarkDuplicates {
@@ -378,15 +399,15 @@ workflow mutation_calling {
       }
 
     call Mutect2Paired {
-    input:
-      tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
-      tumor_bam_index = tumorApplyBaseRecalibrator.recalibrated_bai,
-      normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
-      normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
-      refGenome = refGenome,
-      genomeReference = af_only_gnomad,
-      genomeReferenceIndex = af_only_gnomad_index
-  }
+      input:
+        tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
+        tumor_bam_index = tumorApplyBaseRecalibrator.recalibrated_bai,
+        normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
+        normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
+        refGenome = refGenome,
+        genomeReference = af_only_gnomad,
+        genomeReferenceIndex = af_only_gnomad_index
+    }
 
   call annovar {
     input:
@@ -396,30 +417,6 @@ workflow mutation_calling {
       annovar_protocols = annovar_protocols
   }
 }
-  
-  # Do for normal sample
-  call BwaMem as normalBwaMem {
-    input:
-      input_fastq = normalSamples,
-      refGenome = refGenome
-  }
-  
-  call MarkDuplicates as normalMarkDuplicates {
-    input:
-      input_bam = normalBwaMem.analysisReadySorted
-  }
-
-  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
-    input:
-      input_bam = normalMarkDuplicates.markDuplicates_bam,
-      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
-  }
-
 
   output {
     Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
@@ -437,44 +434,59 @@ workflow mutation_calling {
     Array[File] Mutect2Paired_AnnotatedVcf = annovar.output_annotated_vcf
     Array[File] Mutect2Paired_AnnotatedTable = annovar.output_annotated_table
   }
+
+  parameter_meta {
+    tumorSamples: &quot;Tumor .fastq, one sample per .fastq file (expects Illumina)&quot;
+    normalFastq: &quot;Non-tumor .fastq (expects Illumina)&quot;
+
+    dbSNP_vcf: &quot;dbSNP VCF for mutation calling&quot;
+    dbSNP_vcf_index: &quot;dbSNP VCF index&quot;
+    known_indels_sites_VCFs: &quot;Known indel site VCF for mutation calling&quot;
+    known_indels_sites_indices: &quot;Known indel site VCF indicies&quot;
+    af_only_gnomad: &quot;gnomAD population allele fraction for mutation calling&quot;
+    af_only_gnomad_index: &quot;gnomAD population allele fraction index&quot;
+
+    annovar_protocols: &quot;annovar protocols: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup&quot;
+    annovar_operation: &quot;annovar operation: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup&quot;
+  }
 }
-# TASK DEFINITIONS
+
+####################
+# Task definitions #
+####################
 
 # Align fastq file to the reference genome
 task BwaMem {
   input {
     File input_fastq
-    referenceGenome refGenome         ## Our struct as input
-    Int threads = 16
+    referenceGenome refGenome
   }
   
   String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(refGenome.ref_fasta)  ##refer to ref_fasta here in struct
+  String ref_fasta_local = basename(refGenome.ref_fasta)
 
   String read_group_id = &quot;ID:&quot; + base_file_name
   String sample_name = &quot;SM:&quot; + base_file_name
-  String platform = &quot;illumina&quot;
-  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
+  String platform_info = &quot;PL:illumina&quot;
 
 
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    #can we iterate through a struct??
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-    mv ~{refGenome.ref_amb} .
-    mv ~{refGenome.ref_ann} .
-    mv ~{refGenome.ref_bwt} .
-    mv ~{refGenome.ref_pac} .
-    mv ~{refGenome.ref_sa} .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
+    mv &quot;~{refGenome.ref_amb}&quot; .
+    mv &quot;~{refGenome.ref_ann}&quot; .
+    mv &quot;~{refGenome.ref_bwt}&quot; .
+    mv &quot;~{refGenome.ref_pac}&quot; .
+    mv &quot;~{refGenome.ref_sa}&quot; .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
-      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
+      &quot;~{ref_fasta_local}&quot; &quot;~{input_fastq}&quot; &gt; &quot;~{base_file_name}.sam&quot; 
+    samtools view -1bS -@ 15 -o &quot;~{base_file_name}.aligned.bam&quot; &quot;~{base_file_name}.sam&quot;
+    samtools sort -@ 15 -o &quot;~{base_file_name}.sorted_query_aligned.bam&quot; &quot;~{base_file_name}.aligned.bam&quot;
   &gt;&gt;&gt;
 
   output {
@@ -488,22 +500,19 @@ task BwaMem {
   }
 }
 
-# Mark duplicates (not SPARK, for some reason that does something weird)
+# Mark duplicates on a BAM file
 task MarkDuplicates {
   input {
     File input_bam
   }
 
   String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-  String output_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
-  String output_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
-  String metrics_file = &quot;~{base_file_name}.duplicate_metrics&quot;
 
   command &lt;&lt;&lt;
     gatk MarkDuplicates \
-      --INPUT ~{input_bam} \
-      --OUTPUT ~{output_bam} \
-      --METRICS_FILE ~{metrics_file} \
+      --INPUT &quot;~{input_bam}&quot; \
+      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
+      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
@@ -516,9 +525,9 @@ task MarkDuplicates {
   }
 
   output {
-    File markDuplicates_bam = &quot;~{output_bam}&quot;
-    File markDuplicates_bai = &quot;~{output_bai}&quot;
-    File duplicate_metrics = &quot;~{metrics_file}&quot;
+    File markDuplicates_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
+    File markDuplicates_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
+    File duplicate_metrics = &quot;~{base_file_name}.duplicates_marked.bai&quot;
   }
 }
 
@@ -531,7 +540,7 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    referenceGenome refGenome         ## Use struct as input for task
+    referenceGenome refGenome
   }
   
   String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
@@ -544,38 +553,38 @@ task ApplyBaseRecalibrator {
   command &lt;&lt;&lt;
   set -eo pipefail
 
-  mv ~{refGenome.ref_fasta} .
-  mv ~{refGenome.ref_fasta_index} .
-  mv ~{refGenome.ref_dict} .
+  mv &quot;~{refGenome.ref_fasta}&quot; .
+  mv &quot;~{refGenome.ref_fasta_index}&quot; .
+  mv &quot;~{refGenome.ref_dict}&quot; .
 
-  mv ~{dbSNP_vcf} .
-  mv ~{dbSNP_vcf_index} .
+  mv &quot;~{dbSNP_vcf}&quot; .
+  mv &quot;~{dbSNP_vcf_index}&quot; .
 
-  mv ~{known_indels_sites_VCFs} .
-  mv ~{known_indels_sites_indices} .
+  mv &quot;~{known_indels_sites_VCFs}&quot; .
+  mv &quot;~{known_indels_sites_indices}&quot; .
 
-  samtools index ~{input_bam} #redundant? markduplicates already does this?
+  samtools index &quot;~{input_bam}&quot;
 
   gatk --java-options &quot;-Xms8g&quot; \
       BaseRecalibrator \
-      -R ~{ref_fasta_local} \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal_data.csv \
-      --known-sites ~{dbSNP_vcf_local} \
-      --known-sites ~{known_indels_sites_VCFs_local} \
+      -R &quot;~{ref_fasta_local}&quot; \
+      -I &quot;~{input_bam}&quot; \
+      -O &quot;~{base_file_name}.recal_data.csv&quot; \
+      --known-sites &quot;~{dbSNP_vcf_local}&quot; \
+      --known-sites &quot;~{known_indels_sites_VCFs_local}&quot; \
       
 
   gatk --java-options &quot;-Xms8g&quot; \
       ApplyBQSR \
-      -bqsr ~{base_file_name}.recal_data.csv \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal.bam \
-      -R ~{ref_fasta_local} \
+      -bqsr &quot;~{base_file_name}.recal_data.csv&quot; \
+      -I &quot;~{input_bam}&quot; \
+      -O &quot;~{base_file_name}.recal.bam&quot; \
+      -R &quot;~{ref_fasta_local}&quot; \
       
 
-  #finds the current sort order of this bam file
-  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; ~{base_file_name}.sortOrder.txt
-&gt;&gt;&gt;
+  # finds the current sort order of this bam file
+  samtools view -H &quot;~{base_file_name}.recal.bam&quot; | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; &quot;~{base_file_name}.sortOrder.txt&quot;
+  &gt;&gt;&gt;
 
   output {
     File recalibrated_bam = &quot;~{base_file_name}.recal.bam&quot;
@@ -589,48 +598,45 @@ task ApplyBaseRecalibrator {
   }
 }
 
-# Mutect 2 calling tumor-normal
-
+# Variant calling via mutect2 (tumor-and-normal mode)
 task Mutect2Paired {
   input {
     File tumor_bam
     File tumor_bam_index
     File normal_bam
     File normal_bam_index
-    referenceGenome refGenome           # our struct as input
+    referenceGenome refGenome
     File genomeReference
     File genomeReferenceIndex
   }
 
   String base_file_name_tumor = basename(tumor_bam, &quot;.recal.bam&quot;)
-  String base_file_name_normal = basename(normal_bam, &quot;.recal.bam&quot;)
   String ref_fasta_local = basename(refGenome.ref_fasta)
   String genomeReference_local = basename(genomeReference)
 
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
 
-    mv ~{genomeReference} .
-    mv ~{genomeReferenceIndex} .
+    mv &quot;~{genomeReference}&quot; .
+    mv &quot;~{genomeReferenceIndex}&quot; .
 
     gatk --java-options &quot;-Xms16g&quot; Mutect2 \
-      -R ~{ref_fasta_local} \
-      -I ~{tumor_bam} \
-      -I ~{normal_bam} \
+      -R &quot;~{ref_fasta_local}&quot; \
+      -I &quot;~{tumor_bam}&quot; \
+      -I &quot;~{normal_bam}&quot; \
       -O preliminary.vcf.gz \
-      --germline-resource ~{genomeReference_local} \
+      --germline-resource &quot;~{genomeReference_local}&quot; \
 
     gatk --java-options &quot;-Xms16g&quot; FilterMutectCalls \
       -V preliminary.vcf.gz \
-      -O ~{base_file_name_tumor}.mutect2.vcf.gz \
-      -R ~{ref_fasta_local} \
+      -O &quot;~{base_file_name_tumor}.mutect2.vcf.gz&quot; \
+      -R &quot;~{ref_fasta_local}&quot; \
       --stats preliminary.vcf.gz.stats \
-
-&gt;&gt;&gt;
+  &gt;&gt;&gt;
 
   runtime {
     docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
@@ -644,7 +650,7 @@ task Mutect2Paired {
   }
 }
 
-# annotate with annovar mutation calling outputs
+# Annotate VCF using annovar
 task annovar {
   input {
     File input_vcf
@@ -657,24 +663,25 @@ task annovar {
   command &lt;&lt;&lt;
     set -eo pipefail
   
-    perl /annovar/table_annovar.pl ~{input_vcf} /annovar/humandb/ \
-      -buildver ~{ref_name} \
-      -outfile ~{base_vcf_name} \
+    perl annovar/table_annovar.pl &quot;~{input_vcf}&quot; annovar/humandb/ \
+      -buildver &quot;~{ref_name}&quot; \
+      -outfile &quot;~{base_vcf_name}&quot; \
       -remove \
-      -protocol ~{annovar_protocols} \
-      -operation ~{annovar_operation} \
+      -protocol &quot;~{annovar_protocols}&quot; \
+      -operation &quot;~{annovar_operation}&quot; \
       -nastring . -vcfinput
-&gt;&gt;&gt;
+  &gt;&gt;&gt;
   runtime {
-    docker : &quot;ghcr.io/getwilds/annovar:${ref_name}&quot;
+    docker: &quot;ghcr.io/getwilds/annovar:~{ref_name}&quot;
     cpu: 1
     memory: &quot;2GB&quot;
   }
   output {
-    File output_annotated_vcf = &quot;${base_vcf_name}.${ref_name}_multianno.vcf&quot;
-    File output_annotated_table = &quot;${base_vcf_name}.${ref_name}_multianno.txt&quot;
+    File output_annotated_vcf = &quot;~{base_vcf_name}.${ref_name}_multianno.vcf&quot;
+    File output_annotated_table = &quot;~{base_vcf_name}.${ref_name}_multianno.txt&quot;
   }
-}</code></pre>
+}
+</code></pre>
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
 Loading…
 </iframe>
