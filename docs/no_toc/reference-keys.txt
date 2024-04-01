@@ -65,9 +65,9 @@ executor-specific-notes
 cromwell
 miniwdl
 backend-specific-notes
-gcp
-disk-space
-preemptibles
 hpcs
 fred-hutch-hpc
+gcpterra
+preemptibles
+disk-space
 references
