@@ -58,6 +58,12 @@ start-to-add-a-task-alias
 add-the-task-alias
 modify-your-output
 alias-for-other-tasks
+optional-types
+optional-inputs
+optional-outputs
+declaring-a-tasks-output-to-be-optional
+making-an-entire-task-optional
+the-final-workflow
 appendix-backends-and-executors
 commonly-used-runtime-attributes
 general-advice
@@ -65,9 +71,9 @@ executor-specific-notes
 cromwell
 miniwdl
 backend-specific-notes
-gcp
-disk-space
-preemptibles
 hpcs
 fred-hutch-hpc
+gcpterra
+preemptibles
+disk-space
 references

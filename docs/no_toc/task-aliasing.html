@@ -30,7 +30,7 @@
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="using-arrays-for-parallelization-and-other-use-cases.html"/>
-<link rel="next" href="appendix-backends-and-executors.html"/>
+<link rel="next" href="optional-types.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -170,23 +170,33 @@
 <li class="chapter" data-level="7.4" data-path="task-aliasing.html"><a href="task-aliasing.html#modify-your-output"><i class="fa fa-check"></i><b>7.4</b> Modify your output</a></li>
 <li class="chapter" data-level="7.5" data-path="task-aliasing.html"><a href="task-aliasing.html#alias-for-other-tasks"><i class="fa fa-check"></i><b>7.5</b> Alias for other tasks</a></li>
 </ul></li>
-<li class="chapter" data-level="8" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>8</b> Appendix: Backends and Executors</a>
+<li class="chapter" data-level="8" data-path="optional-types.html"><a href="optional-types.html"><i class="fa fa-check"></i><b>8</b> Optional types</a>
 <ul>
-<li class="chapter" data-level="8.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>8.1</b> Commonly used runtime attributes</a></li>
-<li class="chapter" data-level="8.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>8.2</b> General advice</a></li>
-<li class="chapter" data-level="8.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>8.3</b> Executor-specific notes</a>
+<li class="chapter" data-level="8.1" data-path="optional-types.html"><a href="optional-types.html#optional-inputs"><i class="fa fa-check"></i><b>8.1</b> Optional inputs</a></li>
+<li class="chapter" data-level="8.2" data-path="optional-types.html"><a href="optional-types.html#optional-outputs"><i class="fa fa-check"></i><b>8.2</b> Optional outputs</a>
 <ul>
-<li class="chapter" data-level="8.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>8.3.1</b> Cromwell</a></li>
-<li class="chapter" data-level="8.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>8.3.2</b> miniwdl</a></li>
+<li class="chapter" data-level="8.2.1" data-path="optional-types.html"><a href="optional-types.html#declaring-a-tasks-output-to-be-optional"><i class="fa fa-check"></i><b>8.2.1</b> Declaring a task’s output to be optional</a></li>
+<li class="chapter" data-level="8.2.2" data-path="optional-types.html"><a href="optional-types.html#making-an-entire-task-optional"><i class="fa fa-check"></i><b>8.2.2</b> Making an entire task optional</a></li>
 </ul></li>
-<li class="chapter" data-level="8.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>8.4</b> Backend-specific notes</a>
+<li class="chapter" data-level="8.3" data-path="optional-types.html"><a href="optional-types.html#the-final-workflow"><i class="fa fa-check"></i><b>8.3</b> The final workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>9</b> Appendix: Backends and Executors</a>
 <ul>
-<li class="chapter" data-level="8.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcp"><i class="fa fa-check"></i><b>8.4.1</b> GCP</a></li>
-<li class="chapter" data-level="8.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>8.4.2</b> HPCs</a></li>
+<li class="chapter" data-level="9.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>9.1</b> Commonly used runtime attributes</a></li>
+<li class="chapter" data-level="9.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>9.2</b> General advice</a></li>
+<li class="chapter" data-level="9.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>9.3</b> Executor-specific notes</a>
+<ul>
+<li class="chapter" data-level="9.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>9.3.1</b> Cromwell</a></li>
+<li class="chapter" data-level="9.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>9.3.2</b> miniwdl</a></li>
+</ul></li>
+<li class="chapter" data-level="9.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>9.4</b> Backend-specific notes</a>
+<ul>
+<li class="chapter" data-level="9.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>9.4.1</b> HPCs</a></li>
+<li class="chapter" data-level="9.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcpterra"><i class="fa fa-check"></i><b>9.4.2</b> GCP/Terra</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="about-the-authors.html"><a href="about-the-authors.html"><i class="fa fa-check"></i>About the Authors</a></li>
-<li class="chapter" data-level="9" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>9</b> References</a></li>
+<li class="chapter" data-level="10" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>10</b> References</a></li>
 <li class="divider"></li>
 <p style="text-align:center;"> <a href="https://github.com/jhudsl/OTTR_Template" target="blank" > This content was published with</a> <a href="https://bookdown.org/" target="blank"> bookdown by: </a> </p>
 <p style="text-align:center;"> <a href="https://hutchdatascience.org/"> The Fred Hutch Data Science Lab </a></p>
@@ -348,7 +358,7 @@ workflow mutation_calling {
     call BwaMem as tumorBwaMem {
       input:
         input_fastq = tumorFastq,
-        refGenome = refGenome
+        refGenome = refGenome             ##pass in our struct
     }
     
     call MarkDuplicates as tumorMarkDuplicates {
@@ -434,12 +444,12 @@ workflow mutation_calling {
 task BwaMem {
   input {
     File input_fastq
-    referenceGenome refGenome
+    referenceGenome refGenome         ## Our struct as input
     Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(refGenome.ref_fasta)
+  String ref_fasta_local = basename(refGenome.ref_fasta)  ##refer to ref_fasta here in struct
 
   String read_group_id = &quot;ID:&quot; + base_file_name
   String sample_name = &quot;SM:&quot; + base_file_name
@@ -521,7 +531,7 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    referenceGenome refGenome
+    referenceGenome refGenome         ## Use struct as input for task
   }
   
   String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
@@ -587,7 +597,7 @@ task Mutect2Paired {
     File tumor_bam_index
     File normal_bam
     File normal_bam_index
-    referenceGenome refGenome
+    referenceGenome refGenome           # our struct as input
     File genomeReference
     File genomeReferenceIndex
   }
@@ -683,7 +693,7 @@ task annovar {
         </div>
       </div>
 <a href="using-arrays-for-parallelization-and-other-use-cases.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="appendix-backends-and-executors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="optional-types.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

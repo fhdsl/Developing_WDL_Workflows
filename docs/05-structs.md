@@ -24,14 +24,14 @@ struct referenceGenome {
 workflow minidata_mutation_calling_v1 {
   input {
     File sampleFastq
-    referenceGenome refGenome
+    referenceGenome refGenome           ## our struct
     ...
   }
-  # Map reads to reference
+  ## Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
-      refGenome = refGenome
+      refGenome = refGenome             ## our struct 
   }
 }
 ```
@@ -79,13 +79,13 @@ task BwaMem {
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
   String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:" + platform   ## Create the platform information
 
 
   command <<<
     set -eo pipefail
 
-    #can we iterate through a struct??
+    ## can we iterate through a struct??
     mv ~{refGenome.ref_fasta} .
     mv ~{refGenome.ref_fasta_index} .
     mv ~{refGenome.ref_dict} .
@@ -165,7 +165,7 @@ workflow minidata_mutation_calling_v1 {
   call BwaMem {
     input:
       input_fastq = sampleFastq,
-      refGenome = refGenome
+      refGenome = refGenome       ## our struct
   }
   
   call MarkDuplicates {
@@ -181,7 +181,7 @@ workflow minidata_mutation_calling_v1 {
       dbSNP_vcf_index = dbSNP_vcf_index,
       known_indels_sites_VCFs = known_indels_sites_VCFs,
       known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
+      refGenome = refGenome           ## our struct
     }
 
   call Mutect2TumorOnly {
@@ -227,7 +227,7 @@ workflow minidata_mutation_calling_v1 {
 task BwaMem {
   input {
     File input_fastq
-    referenceGenome refGenome
+    referenceGenome refGenome           ## our struct
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -236,7 +236,7 @@ task BwaMem {
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
   String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:" + platform   ## Create the platform information
 
 
   command <<<
@@ -313,7 +313,7 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    referenceGenome refGenome
+    referenceGenome refGenome         ## our struct
   }
   
   String base_file_name = basename(input_bam, ".duplicates_marked.bam")
@@ -355,7 +355,7 @@ task ApplyBaseRecalibrator {
       -R ~{ref_fasta_local} \
       
 
-  #finds the current sort order of this bam file
+  # finds the current sort order of this bam file
   samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > ~{base_file_name}.sortOrder.txt
 >>>
 

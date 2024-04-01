@@ -61,7 +61,7 @@ workflow my_workflow {
 
 The input `fq` is defined to be a File variable type. WDL supports various variable types, such as String, Integer, Float, and Boolean. For more information on types in WDL, we recommend [OpenWDL's documentation on variable types](https://docs.openwdl.org/en/stable/WDL/variable_types/).
 
-To access a task-level input variable in a task's command section, it is usually referenced using \~{this} notation. To access a workflow-level variable in a workflow, it is referenced just by its name without any special notation. To access a workflow-level variable in a task, it must be passed into the task as an input.
+To access a task-level input variable in a task's command section, it is usually referenced using \~{*input_name*} notation, such as (`~{fastq}`) in the example below. To access a workflow-level variable in a workflow, it is referenced just by its name without any special notation, such as `fq` in the example below. To access a workflow-level variable in a task, it must be passed into the task as an input.
 
 <!-- resources/basic_03.wdl -->
 
@@ -75,7 +75,7 @@ task do_something {
     }
     command <<<
         echo "First ten lines of ~{basename_of_fq}: "
-        head ~{fastq}
+        head ~{fastq}  ## example of referring to task-level input
     >>>
 }
 
@@ -88,7 +88,7 @@ workflow my_workflow {
     
     call do_something {
         input:
-            fastq = fq,
+            fastq = fq,  ## example of referring to workflow-level input
             basename_of_fq = basename_of_fq
     }
 }
@@ -111,7 +111,7 @@ task do_something {
         head ~{fastq} >> output.txt
     >>>
     output {
-        File first_ten_lines = "output.txt"
+        File first_ten_lines = "output.txt"  ## output variable for task
     }
 }
 
@@ -129,16 +129,16 @@ workflow my_workflow {
     }
     
     output {
-        File ten_lines = do_something.first_ten_lines
+        File ten_lines = do_something.first_ten_lines ## referring to task output here
     }
 }
 ```
 
 ## Using JSONs to control workflow inputs
 
-Running a WDL workflow generally requires two files: A .wdl file, which contains the actual workflow, and a .json file, which provides the inputs for the workflow.
+Running a WDL workflow generally requires two files: A `.wdl` file, which contains the actual workflow, and a `.json` file, which provides the inputs for the workflow.
 
-In the example we showed earlier, the workflow takes in a file referred to by the variable `fq`. This needs to be provided by the user. Typically, this is done with a JSON file. Here's what a JSON file for this workflow might look like:
+In the example we showed earlier, the workflow takes in a file referred to by the input variable `fq`. This needs to be provided by the user. Typically, this is done with a JSON file. Here's what a JSON file for this workflow might look like:
 
 <!-- resources/basic_04.json -->
 
@@ -148,7 +148,7 @@ In the example we showed earlier, the workflow takes in a file referred to by th
 }
 ```
 
-JSON files consist of key-value pairs. In this case, the key is `"my_workflow.fq"` and the value is the path `"./data/example.fq"`. The first part of the key is the name of the workflow as written in the WDL file, in this case `my_workflow`. The variable being represented is referred to its name, in this case, `fq`. So, the file located at the path `./data/example.fq` is being input as a variable called `fq` into the workflow named `my_workflow`.
+JSON files consist of key-value pairs. In this case, the key is `"my_workflow.fq"` and the value is the path `"./data/example.fq"`. The first part of the key is the name of the workflow as written in the WDL file, in this case `my_workflow`. The variable being represented is referred to its name, in this case, `fq`. So, in the above example, the file located at the path `./data/example.fq` is being input as a variable called `fq` into the workflow named `my_workflow`.
 
 Files aren't the only type of variable you can refer to when using JSONs. Here's an example JSON for every common WDL variable type.
 
@@ -182,7 +182,13 @@ Resources:
 
 ## Running WDL via a computing engine
 
-In order to run a WDL workflow, we need a computing engine to execute it. The two most popular WDL executors are miniwdl and Cromwell. Both can run WDLs on a local machine, High Performance Computing (HPC), or cloud computing backend. If you are trying to run WDL at Fred Hutch Cancer Center's HPC system, you should use the PROOF executor. 
+In order to run a WDL workflow, we need a *computing engine* to execute it. The two most popular WDL executors are [miniwdl](https://miniwdl.readthedocs.io/en/latest/index.html) and [Cromwell](https://cromwell.readthedocs.io/en/stable/). Both computing engines can run WDLs on multiple configurations:  
+
+- A local machine
+- A High Performance Computing (HPC) Cluster
+- A Cloud Computing backend (such as AWS/Terra/DNAnexus). 
+
+If you are trying to run WDL at Fred Hutch Cancer Center's HPC system, you should use the PROOF executor. 
 
 If you are computing on a HPC or the Cloud, you should find the best practice of running a WDL computing engine based on your institution's information technology system. 
 
