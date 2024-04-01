@@ -210,7 +210,7 @@ With our files now all in the working directory, we can turn our attention to th
 We recommend using the last option, as it works for essentially any input and may be more intuitive than the bash basename function. [OpenWDL explains](https://docs.openwdl.org/en/stable/WDL/basename/) how `basename()` works. The next section will provide an example of using it alongside private variables.
 
 ### Private variables
-Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables. In our case, we create `String ref_fasta_local` as `ref_fasta`'s file base name to refer to the files we have moved to the working directory. We also create `String base_file_name` as `input_fastq`'s file base name and use it to name our output files, such as `"~{base_file_name}.sorted_query_aligned.bam"`. The variables `read_group_id`, `sample_name`, `platform`, `platform_info` are created similarly. 
+Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables. In our case, we create `String ref_fasta_local` as `ref_fasta`'s file base name to refer to the files we have moved to the working directory. We also create `String base_file_name` as `input_fastq`'s file base name and use it to name our output files, such as `"~{base_file_name}.sorted_query_aligned.bam"`. The variables `read_group_id`, `sample_name`, and `platform_info` are created similarly. 
 
 ```
 task BwaMem {
@@ -229,10 +229,10 @@ task BwaMem {
   # basename() is a built-in WDL function that acts like bash's basename
   String base_file_name = basename(input_fastq, ".fastq")
   String ref_fasta_local = basename(ref_fasta)
+  
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   ## Create the platform information
+  String platform_info = "PL:illumina"
 
   command <<<
     set -eo pipefail
@@ -414,9 +414,7 @@ task BwaMem {
 
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
-
+  String platform_info = "PL:illumina"
 
   command <<<
     set -eo pipefail

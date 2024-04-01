@@ -158,11 +158,12 @@ task BwaMem {
       "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
     samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
     samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
-
   >>>
+
   output {
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
+  
   runtime {
     memory: "48 GB"
     cpu: 16
