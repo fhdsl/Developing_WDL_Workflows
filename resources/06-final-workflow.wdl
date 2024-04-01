@@ -213,7 +213,7 @@ task ApplyBaseRecalibrator {
   mv "~{known_indels_sites_VCFs}" .
   mv "~{known_indels_sites_indices}" .
 
-  samtools index ~{input_bam}
+  samtools index "~{input_bam}"
 
   gatk --java-options "-Xms8g" \
       BaseRecalibrator \
@@ -309,17 +309,17 @@ task annovar {
   String base_vcf_name = basename(input_vcf, ".vcf.gz")
   
   command <<<
-  set -eo pipefail
+    set -eo pipefail
   
   
-  perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
-    -buildver "~{ref_name}" \
-    -outfile "~{base_vcf_name}" \
-    -remove \
-    -protocol "~{annovar_protocols}" \
-    -operation "~{annovar_operation}" \
-    -nastring . -vcfinput
->>>
+    perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
+      -buildver "~{ref_name}" \
+      -outfile "~{base_vcf_name}" \
+      -remove \
+      -protocol "~{annovar_protocols}" \
+      -operation "~{annovar_operation}" \
+      -nastring . -vcfinput
+  >>>
   runtime {
     docker: "ghcr.io/getwilds/annovar:~{ref_name}"
     cpu: 1
