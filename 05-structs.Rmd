@@ -433,25 +433,24 @@ output {
 # Annotate VCF using annovar
 task annovar {
   input {
-  File input_vcf
-  String ref_name
-  String annovar_protocols
-  String annovar_operation
-}
+    File input_vcf
+    String ref_name
+    String annovar_protocols
+    String annovar_operation
+  }
   String base_vcf_name = basename(input_vcf, ".vcf.gz")
   
   command <<<
-  set -eo pipefail
+    set -eo pipefail
   
-  
-  perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
-    -buildver "~{ref_name}" \
-    -outfile "~{base_vcf_name}" \
-    -remove \
-    -protocol "~{annovar_protocols}" \
-    -operation "~{annovar_operation}" \
-    -nastring . -vcfinput
->>>
+    perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
+      -buildver "~{ref_name}" \
+      -outfile "~{base_vcf_name}" \
+      -remove \
+      -protocol "~{annovar_protocols}" \
+      -operation "~{annovar_operation}" \
+      -nastring . -vcfinput
+  >>>
   runtime {
     docker: "ghcr.io/getwilds/annovar:~{ref_name}"
     cpu: 1
