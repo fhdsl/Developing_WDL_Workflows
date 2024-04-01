@@ -371,6 +371,7 @@ Instead of using `defined()` on an array, consider simply checking its length. A
 
 </details>
 
+<br>
 
 <details>
 
