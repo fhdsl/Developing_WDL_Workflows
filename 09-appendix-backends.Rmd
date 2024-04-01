@@ -98,8 +98,6 @@ It is difficult to provide specific advice on HPCs, as they can vary greatly. So
 
 -   `modules` attribute is a a space-separated list of the [environment modules](https://sciwiki.fredhutch.org/scicomputing/compute_environments/) you'd like to load (in that order) prior to running the task. For example, "modules:"GATK/4.2.6.1-GCCcore-11.2.0 SAMtools/1.16.1-GCC-11.2.0", the GATK module will be loaded first, followed by the SAMtools module.
 
--   `dockerSL` attribute allows users to use Docker and softlinks only to specific locations on the FH HPC Scratch disk. It is helpful when working with very large files. An example is: "ubuntu:latest". Just like the `docker` attribute, you should only specify this if you want the task to run in a container (otherwise the default will be a non-containerized job).
-
 -   `account` attribute allows users connected to multiple PI accounts to specify which account to use for each task, to manage cluster allocations. An example of the value for this variable is "paguirigan_a", following the PI's "lastname_firstNameInitital" pattern.
 
 ### GCP/Terra
