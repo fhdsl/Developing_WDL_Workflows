@@ -299,16 +299,15 @@ output {
 # Annotate VCF using annovar
 task annovar {
   input {
-  File input_vcf
-  String ref_name
-  String annovar_protocols
-  String annovar_operation
-}
+    File input_vcf
+    String ref_name
+    String annovar_protocols
+    String annovar_operation
+  }
   String base_vcf_name = basename(input_vcf, ".vcf.gz")
   
   command <<<
     set -eo pipefail
-  
   
     perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
       -buildver "~{ref_name}" \

@@ -234,7 +234,7 @@ task ApplyBaseRecalibrator {
 
   # finds the current sort order of this bam file
   samtools view -H "~{base_file_name}.recal.bam" | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > "~{base_file_name}.sortOrder.txt"
->>>
+  >>>
 
   output {
     File recalibrated_bam = "~{base_file_name}.recal.bam"
@@ -282,8 +282,7 @@ command <<<
       -O "~{base_file_name}.mutect2.vcf.gz" \
       -R "~{ref_fasta_local}" \
       --stats preliminary.vcf.gz.stats \
-     
->>>
+  >>>
 
 runtime {
     docker: "ghcr.io/getwilds/gatk:4.3.0.0"
@@ -301,16 +300,15 @@ output {
 # Annotate VCF using annovar
 task annovar {
   input {
-  File input_vcf
-  String ref_name
-  String annovar_protocols
-  String annovar_operation
-}
+    File input_vcf
+    String ref_name
+    String annovar_protocols
+    String annovar_operation
+  }
   String base_vcf_name = basename(input_vcf, ".vcf.gz")
   
   command <<<
     set -eo pipefail
-  
   
     perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
       -buildver "~{ref_name}" \

@@ -284,7 +284,7 @@ task ApplyBaseRecalibrator {
 
   # finds the current sort order of this bam file
   samtools view -H "~{base_file_name}.recal.bam" | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > "~{base_file_name}.sortOrder.txt"
->>>
+  >>>
 
   output {
     File recalibrated_bam = "~{base_file_name}.recal.bam"
@@ -317,27 +317,26 @@ task Mutect2Paired {
   command <<<
     set -eo pipefail
 
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
+    mv "~{refGenome.ref_fasta}" .
+    mv "~{refGenome.ref_fasta_index}" .
+    mv "~{refGenome.ref_dict}" .
 
-    mv ~{genomeReference} .
-    mv ~{genomeReferenceIndex} .
+    mv "~{genomeReference}" .
+    mv "~{genomeReferenceIndex}" .
 
     gatk --java-options "-Xms16g" Mutect2 \
-      -R ~{ref_fasta_local} \
-      -I ~{tumor_bam} \
-      -I ~{normal_bam} \
+      -R "~{ref_fasta_local}" \
+      -I "~{tumor_bam}" \
+      -I "~{normal_bam}" \
       -O preliminary.vcf.gz \
-      --germline-resource ~{genomeReference_local} \
+      --germline-resource "~{genomeReference_local}" \
 
     gatk --java-options "-Xms16g" FilterMutectCalls \
       -V preliminary.vcf.gz \
-      -O ~{base_file_name_tumor}.mutect2.vcf.gz \
-      -R ~{ref_fasta_local} \
+      -O "~{base_file_name_tumor}.mutect2.vcf.gz" \
+      -R "~{ref_fasta_local}" \
       --stats preliminary.vcf.gz.stats \
-
->>>
+  >>>
 
   runtime {
     docker: "ghcr.io/getwilds/gatk:4.3.0.0"
@@ -354,16 +353,15 @@ task Mutect2Paired {
 # Annotate VCF using annovar
 task annovar {
   input {
-  File input_vcf
-  String ref_name
-  String annovar_protocols
-  String annovar_operation
-}
+    File input_vcf
+    String ref_name
+    String annovar_protocols
+    String annovar_operation
+  }
   String base_vcf_name = basename(input_vcf, ".vcf.gz")
   
   command <<<
     set -eo pipefail
-  
   
     perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
       -buildver "~{ref_name}" \
@@ -372,7 +370,7 @@ task annovar {
       -protocol "~{annovar_protocols}" \
       -operation "~{annovar_operation}" \
       -nastring . -vcfinput
->>>
+  >>>
   runtime {
     docker: "ghcr.io/getwilds/annovar:~{ref_name}"
     cpu: 1
