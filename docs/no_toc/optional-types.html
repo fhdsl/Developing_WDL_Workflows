@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 7 Task Aliasing | Developing WDL Workflows</title>
+  <title>Chapter 8 Optional types | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 7 Task Aliasing | Developing WDL Workflows" />
+  <meta property="og:title" content="Chapter 8 Optional types | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 7 Task Aliasing | Developing WDL Workflows" />
+  <meta name="twitter:title" content="Chapter 8 Optional types | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="using-arrays-for-parallelization-and-other-use-cases.html"/>
-<link rel="next" href="optional-types.html"/>
+<link rel="prev" href="task-aliasing.html"/>
+<link rel="next" href="appendix-backends-and-executors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -231,77 +231,339 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="task-aliasing" class="section level1" number="7">
-<h1><span class="header-section-number">Chapter 7</span> Task Aliasing</h1>
-<p>We’ve already gone over running a task multiple times in the context of scattered tasks. However, you may also want a task to run more than one time if that task is to run on multiple sets of inputs. In our case, we want to run a similar analysis on tumor samples and samples taken from normal tissue.</p>
-<p>WDL has a sophisticated feature that allows one to reuse the same task repeatedly through your workflow: <strong>task aliasing</strong>
-Simply put <strong>task aliasing</strong> allows for the re-use of task definitions within the same workflow under different names, or “aliases”.</p>
-<div id="advantages-of-aliasing" class="section level2" number="7.1">
-<h2><span class="header-section-number">7.1</span> Advantages of aliasing</h2>
-<p>The major advantages of using task aliasing are:</p>
-<p><strong>1. Reduces Redundancy</strong>: You don’t need to copy and paste the same task definition multiple times and your workflows will be more concise and organized.</p>
-<p><strong>2. Simplifies Maintenance</strong> : If you decide to change/update/fix a task, using task aliasing will make life easy as you need to update only once in your workflow.</p>
-<p><strong>3. Enhances Readability and Clarity</strong>: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow ( for example are you doing this task for Sample set A or Sample set B)</p>
-<p><strong>4. Facilitates Modular Workflow Design</strong>: Task aliasing help to make your workflow modular. This is easier to adopt by</p>
-<p><strong>5. Improves Workflow Scalability</strong>: Using task aliasing it is much easier to scale the workflow across different inputs. For example you want to run a task on different sample groups (Sample set A and B) will allow the same task to be run parallely and if you choose with different modifications.</p>
-<p><strong>6. Ensures Consistency</strong>: Task aliasing assures that there is consistency in replicated tasks and helps the reader easily identify where changes are expected in a task.</p>
-</div>
-<div id="start-to-add-a-task-alias" class="section level2" number="7.2">
-<h2><span class="header-section-number">7.2</span> Start to add a task alias</h2>
-<p>You can only alias a task that is already defined, so we will start with the BwaMem task rather than writing a new one.</p>
-<blockquote>
-<p>Note: In the real world, typically two samples would be processed from a patient: One tumor and one normal. However, we are writing a workflow that only takes in one normal sample and multiple tumor samples. This implies that we have taken multiple tumor samples from the same patient, and we’re comparing all of them against a single normal sample.</p>
-</blockquote>
-<p>Here we are creating an alias for the task BwaMem. We want to do this so it can run this task on the “normal” samples and store them seperately.</p>
-<p>First, make sure that in your workflow input, you reference to the normal samples as input.</p>
+<div id="optional-types" class="section level1" number="8">
+<h1><span class="header-section-number">Chapter 8</span> Optional types</h1>
+<p>WDL supports defining optional variables, which are denoted with a question mark next to the type declaration. These variables may or may not defined. Optional types are powerful, but they can quickly cause problems in complicated workflows. This is especially the case when working with scattered tasks. In this section, we’ll go over how optional variables can be used, and where they can cause problems.</p>
+<div id="optional-inputs" class="section level2" number="8.1">
+<h2><span class="header-section-number">8.1</span> Optional inputs</h2>
+<p>The most common use case for optional variables are optional inputs for the user to provide some sort of file, for example, a reference genome or a metadata file. Sometimes, you will want optional inputs to fall back on a known file or value.</p>
+<p>A good place to use optional types in our workflow would be in the <code>bwa mem</code> task. <code>bwa mem</code> on default settings may attempt to use too many threads, which could cause this task to fail if it ran on weaker hardware such as a laptop. In order to allow the user to adjust how many threads <code>bwa mem</code> uses, and by extension make our WDL run on a wider variety of machines, we can edit the task to add a new variable. This new variable will replace <code>-t 16</code> in our call to <code>bwa mem</code>.</p>
+<pre><code>task BwaMem {
+  input {
+    File input_fastq
+    referenceGenome refGenome
+
+    # Number of threads to use - must be defined
+    Int threads
+  }
+  command &lt;&lt;&lt;
+    set -eo pipefail
+
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
+    mv &quot;~{refGenome.ref_amb}&quot; .
+    mv &quot;~{refGenome.ref_ann}&quot; .
+    mv &quot;~{refGenome.ref_bwt}&quot; .
+    mv &quot;~{refGenome.ref_pac}&quot; .
+    mv &quot;~{refGenome.ref_sa}&quot; .
+
+    bwa mem \
+      -p -v 3 -t ~{threads} -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
+      &quot;~{ref_fasta_local}&quot; &quot;~{input_fastq}&quot; &gt; &quot;~{base_file_name}.sam&quot; 
+    samtools view -1bS -@ 15 -o &quot;~{base_file_name}.aligned.bam&quot; &quot;~{base_file_name}.sam&quot;
+    samtools sort -@ 15 -o &quot;~{base_file_name}.sorted_query_aligned.bam&quot; &quot;~{base_file_name}.aligned.bam&quot;
+[...]
+}</code></pre>
+<p>Because <code>~{threads}</code> is an integer variable, it cannot have a space in it, so we don’t need to surround <code>~{threads}</code> with quotation marks like we should String or File variables.</p>
+<p>Now we can set <code>Int? bwa_mem_threads</code> as a workflow-level optional input. Making it optional means that users who do not want to think about threads – perhaps they’re using an HPC or other powerful backend – do not have to worry about filling in that value. In the workflow body, when we call <code>bwa mem</code>, the value of <code>bwa_mem_threads</code> is passed to the <code>BwaMem</code> task.</p>
 <pre><code>workflow mutation_calling {
   input {
-    ...
-    File normalSamples
-...
-  }</code></pre>
-<p>Next all that you need to do is <code>call</code> the <code>task</code> you want to alias and use <code>as</code> to the <code>alias_of_your_choice</code>.</p>
-<p>But don’t forget to make sure that all the inputs reflect actually different things we want to run this task on.</p>
-<p>In this case we will be using a different sample and therefore the input_fastq is directed to the appropriate file source.</p>
-</div>
-<div id="add-the-task-alias" class="section level2" number="7.3">
-<h2><span class="header-section-number">7.3</span> Add the task alias</h2>
+    Array[File] tumorSamples
+    File normalFastq
+
+    referenceGenome refGenome
+
+    # Optional variable for bwa mem
+    Int? bwa_mem_threads
+    
+    # Files for specific tools
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+    File af_only_gnomad
+    File af_only_gnomad_index
+
+    # Annovar options
+    String annovar_protocols
+    String annovar_operation
+  }
+  call BwaMem as normalBwaMem {
+    input:
+      input_fastq = normalFastq,
+      refGenome = refGenome,
+      threads = bwa_mem_threads
+  }
+[...]
+}</code></pre>
+<p>But what happens if the workflow-level variable <code>bwa_mem_threads</code> isn’t defined? The task <code>BwaMem</code> will then get no value for the task-level variable <code>threads</code>. This will cause an error at runtime. We can’t solve this merely by making the task level variable optional too – otherwise, if <code>threads</code> isn’t defined, our <code>bwa mem</code> call will provide <code>-t</code> without a number after it, which is invalid.</p>
+<p>One way to address this is with the WDL built-in function <code>select_first()</code>, which takes in an array of values. In the workflow body, we can use this plus a fallback value (or another variable) to ensure that the <code>BwaMem</code> task always gets a valid integer for the <code>threads</code> argument.</p>
 <pre><code>  call BwaMem as normalBwaMem {
     input:
-      input_fastq = normalSamples,
-      refGenome = refGenome
+      input_fastq = normalFastq,
+      refGenome = refGenome,
+      threads = select_first([bwa_mem_threads, 16])
   }</code></pre>
-</div>
-<div id="modify-your-output" class="section level2" number="7.4">
-<h2><span class="header-section-number">7.4</span> Modify your output</h2>
-<p>And finally you will also want to make sure that in your outputs section you are saving the appropriate outputs to reflect the task alias.</p>
-<pre><code>output {
-File normalalignedBamSorted = normalBwaMem.analysisReadySorted
-}</code></pre>
-</div>
-<div id="alias-for-other-tasks" class="section level2" number="7.5">
-<h2><span class="header-section-number">7.5</span> Alias for other tasks</h2>
-<p>We can do this for the other two tasks in our workflow as well</p>
-<pre><code>call MarkDuplicates as normalMarkDuplicates {
-    input:
-      input_bam = normalBwaMem.analysisReadySorted
+<p>This is a perfectly valid way of doing things, but the task itself still relies on that variable being defined. In the context of our workflow, that doesn’t matter. However, keep in mind it is a common practice to reuse code for multiple scripts – whether that is directly importing other WDL tasks using WDL’s importing feature, or simply copy-pasting boilerplate code. With that in mind, it’s a good idea to make tasks as “stand-alone” as possible, and not reliant on the workflow calling them to use <code>select_first()</code>.</p>
+<p>As such, it’s more common to make the task itself handle this by providing a fallback value, like so:</p>
+<pre><code>task BwaMem {
+  input {
+    File input_fastq
+    referenceGenome refGenome
+    Int threads = 16  # if a workflow passes an optional variable with no value, fall back to 16
   }
+  [...]
+}</code></pre>
+<details>
+<summary>
+<b>Here’s another way of providing a fallback value for optional inputs within a task.</b>
+</summary>
+<p>In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we’re using (<code>ashedpotatoes/usher-plus:0.0.2</code>) already contains the H37Rv reference genome, which is the standard reference genome for <em>Mycobacterium tuberculosis</em>. If we are working with tuberuclosis samples, there is no reason to provide a reference genome – we might as well use the one that’s already in the Docker image.</p>
+<pre><code>task usher_sampled_diff {
+    input {
+        File diff
+        File input_tree  # in MAT format, extension should be .pb
+        String output_file_name
+        File? ref_genome
+    }
 
-  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
-    input:
-      input_bam = normalMarkDuplicates.markDuplicates_bam,
-      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
-  }</code></pre>
-<p>Now adding these steps to the workflow we will have our tumor and normal sample aligned and recalibrated and suitable for ingestion into the mutation calling step for a paired mutation calling using MuTect2.</p>
-<pre><code>
-# The full workflow with task alias
+    command &lt;&lt;&lt;
+        if [[ &quot;~{ref_genome}&quot; = &quot;&quot; ]]
+        then
+            # if not defined, fall back to H37Rv in the Docker image
+            ref=&quot;/HOME/usher/ref/Ref.H37Rv/ref.fa&quot;
+        else
+            ref=&quot;~{ref_genome}&quot;
+        fi
 
-version 1.0
+        usher-sampled --diff &quot;~{diff}&quot; \
+            -i &quot;${input_tree}&quot; \
+            --ref &quot;$ref&quot; \
+            -o &quot;~{output_file_name}&quot;
+    &gt;&gt;&gt;
+
+    runtime {
+        docker: &quot;ashedpotatoes/usher-plus:0.0.2&quot;
+    }
+
+    output {
+        File usher_tree = output_file_name
+    }
+}</code></pre>
+</details>
+</div>
+<div id="optional-outputs" class="section level2" number="8.2">
+<h2><span class="header-section-number">8.2</span> Optional outputs</h2>
+<p>Optional outputs are usually created by explicitly declaring a task or workflow’s output variable to be optional. They can also be created by enclosing a task within an if-block, which will cause all outputs of that task to be considered optional.</p>
+<div id="declaring-a-tasks-output-to-be-optional" class="section level3" number="8.2.1">
+<h3><span class="header-section-number">8.2.1</span> Declaring a task’s output to be optional</h3>
+<p>Most backends will save the task-level outputs of a task, even if those outputs are not workflow-level outputs. This can be very useful if you want to be able to check intermediate files, or perhaps log files for certain bioinformatic tools. However, if you’re not actively debugging, those files may take up a lot of space on your backend if you’re running on many samples over time.</p>
+<p>You could change the workflow every time you wish to keep those intermediate inputs, but it would be easier to make the output optional.</p>
+<pre><code>task usher_sampled_diff {
+    input {
+        File diff
+        File input_tree  # in MAT format, extension should be .pb
+        String output_file_name
+        File? ref_genome
+        Boolean detailed_clades
+    }
+    # UShER will output clade information if you pass the -D flag to it, but
+    # we don&#39;t want users to have to type in flags as a String variable. Instead,
+    # we just make a Boolean variable called detailed_clades, and outside the inputs
+    # section, we write the string &quot;-D&quot; if detailed_clades is true, or an empty string
+    # if detailed_clades is false.
+    String detailed_clades_flag = if !(detailed_clades) then &quot;&quot; else &quot;-D &quot;
+
+    command &lt;&lt;&lt;
+        if [[ &quot;~{ref_genome}&quot; = &quot;&quot; ]]
+        then
+            ref=&quot;/HOME/usher/ref/Ref.H37Rv/ref.fa&quot;
+        else
+            ref=&quot;~{ref_genome}&quot;
+        fi
+
+        usher-sampled ~{detailed_clades_flag} \ 
+            --diff &quot;~{diff}&quot; \
+            -i &quot;${input_tree}&quot; \
+            --ref &quot;$ref&quot; \
+            -o &quot;~{output_file_name}&quot;
+    &gt;&gt;&gt;
+
+    runtime {
+        docker: &quot;ashedpotatoes/usher-plus:0.0.2&quot;
+    }
+
+    output {
+        File usher_tree = output_file_name
+        File? clades = &quot;clades.txt&quot; # only if detailed_clades = true
+    }
+}</code></pre>
+<p>If we want, we can make this task-level output a workflow-level output – perhaps we use a backend that does not save task-level outputs, or it is simply easier to access workflow-level outputs on this particular backend. Provided that the task is not scattered, this is very easy to do. (We’ll talk about scattered tasks later, as they complicate matters.) In the workflow output sections, we simply define the output as optional like we did in the task itself.</p>
+</div>
+<div id="making-an-entire-task-optional" class="section level3" number="8.2.2">
+<h3><span class="header-section-number">8.2.2</span> Making an entire task optional</h3>
+<p>Let’s say we want to make an entire task optional. Perhaps it provides additional QC information, or isn’t relevent to certain data types.</p>
+<p>Although WDL has a concept of <code>if</code>, it does not have any concept of <code>else</code>, so to make mutually exclusive tasks, you essentially need use two mutually exclusive if-statements. In the example below, we use two mutually exclusive if-statements to decide whether to run task_x or task_y. This is a valid way of doing things, and will work as expected:</p>
+<pre><code>workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        File some_input
+    }
+    if (do_x = true) {
+        call task_x {
+            input:
+                some_input = some_input
+        }
+    }
+    if (do_x = false) {
+        call task_y {
+         input:
+                some_input = some_input
+        }
+    }
+}</code></pre>
+<p>However, we need to keep in mind that WDL is not “aware” that these two tasks are mutually exclusive. You and I both know that if task_x has run, then task_y must not have run, but your WDL executor does not know this. So, as a consequence, you cannot use mutually exclusive if-blocks to set a variable to a particular value.</p>
+<pre><code># this workflow will fail miniwdl check or womtool
+workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        File some_input
+    }
+    if (do_x = true) {
+        Int some_variable = 10  # this is problematic, even though only one of these if blocks will execute!
+        call task_x {
+            input:
+                some_input = some_input
+        }
+    }
+    if (do_x = false) {
+        Int some_variable = 5  # this is problematic, even though only one of these if blocks will execute!
+        call task_y {
+         input:
+                some_input = some_input
+        }
+    }
+}</code></pre>
+<p>Another consequence is that both of your mutually exclusive tasks’ outputs will be considered optional types, even though you can be certain that set of outputs absolutely do exist and one set of outputs absolutely do not exist.</p>
+<pre><code>workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        File some_input
+    }
+    if (do_x = true) {
+        call task_x {
+            input:
+                some_input = some_input
+        }
+    }
+    if (do_x = false) {
+        call task_y {
+         input:
+                some_input = some_input
+        }
+    }
+
+    outputs {
+        # these both MUST be optional
+        File? task_x_output = task_x.something
+        File? task_y_output = task_y.something
+    }
+}</code></pre>
+<details>
+<summary>
+<b>Checking if a variable is defined</b>
+</summary>
+<p>You can check if a variable is defined at runtime using the WDL built-in <code>defined()</code>, which returns a Boolean value. However, <code>defined()</code> can give unexpected output, as we will go over later. For the time being, let’s use a simple example where we set a Boolean variable via <code>defined()</code>. This will work as expected – if task_x ran and created the output <code>task_x.something</code>, then <code>did_x_run</code> will be true, and so on.</p>
+<pre><code>workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        File some_input
+    }
+    if (do_x = true) {
+        call task_x {
+            input:
+                some_input = some_input
+        }
+    }
+    if (do_x = false) {
+        call task_y {
+         input:
+                some_input = some_input
+        }
+    }
+
+    # these work as you would expect
+    Boolean did_x_run = defined(task_x.something)
+    Boolean did_y_run = defined(task_y.something)
+
+    outputs {
+        File? task_x_output = task_x.something
+        File? task_y_output = task_y.something
+        Boolean did_x_run = did_x_run
+        Boolean did_y_run = did_y_run
+    }
+}</code></pre>
+<p>Note that although you could decide whether or not to execute a task by wrapping that task in a <code>defined()</code> if-block, you cannot use <code>defined()</code> to coerce a variable. It’s generally best to use <code>select_first()</code> for type coercion, although we will mention some exceptions when it comes to arrays.</p>
+<pre><code>  # if some_integer has type Int?, we cannot coerce it like this:
+  if defined(some_integer) {
+      Int real_some_integer = some_integer
+  }
+  # because outside of the if-block, real_some_integer is considered optional</code></pre>
+<p>You should not use <code>defined()</code> with optional arrays, as it often acts in unexpected ways. It is very easy to accidentally create a <code>defined()</code> check that always returns true, as WDL executors may define “optional” arrays even if they have no values. For example, let’s consider task_x and task_y again. To recap, these are mutually exclusive tasks which each output a single File. If these tasks are scattered from outside their respective if-blocks, the their outputs are no longer File?, instead, they are arrays. But are they arrays of optional File?s, or are the arrays themselves optional? Let’s try to find out:</p>
+<pre><code>workflow do_x_or_y {
+    input {
+        Boolean do_x = true # if true do task_x, if false do task_y
+        Array[File] some_inputs
+    }
+    scatter(some_input in some_inputs) {
+        if (do_x = true) {
+            call task_x {
+                input:
+                    some_input = some_input
+            }
+        }
+        if (do_x = false) {
+            call task_y {
+            input:
+                    some_input = some_input
+            }
+        }
+    }
+
+    # these both always return true!
+    Boolean did_x_run = defined(task_x.something)
+    Boolean did_y_run = defined(task_y.something)
+
+    outputs {
+        File? task_x_output = task_x.something
+        File? task_y_output = task_y.something
+        Boolean did_x_run = did_x_run
+        Boolean did_y_run = did_y_run
+    }
+}</code></pre>
+<p>Instead of using <code>defined()</code> on an array, consider simply checking its length. An empty array has a length of 0, so if the length of an array is greater than 1, you know that there is at least one item existing in that array.</p>
+</details>
+<details>
+<summary>
+<b>Working with optional arrays and advanced usage of <code>select_first()</code></b>
+</summary>
+<p>Coercing arrays with optional components</p>
+<p>Optional arrays can be difficult to work with. One of the reasons for this is that they sometimes give unexpected values for <code>defined()</code>. As mentioned earlier, this can be somewhat allievated by checking the length of an array rather than whether or not it is defined, but the problems do not end there: Attempting to scatter on an optional array can cause issues that are difficult to debug.</p>
+<p>It’s generally best to coerce optional arrays into not-optional arrays as much as possible. Thankfully, we can use <code>select_all()</code> to select only the defined elements of an array. For our example above, we can go even further by creating an array that will always have a defined value, whether or not <code>do_x</code> is true. We combine the power of <code>select_all()</code> and <code>flatten()</code> to create the following:</p>
+<pre><code>Array[File] x_or_y_outfiles = flatten(select_all(x.outfile), select_all(y.outfile))</code></pre>
+<p>Make sure not to use <code>flatten(select_all(x.outfile, y.outfile))</code>! That would result in an Array[File] that has a null value, which can cause hard-to-diagnose issues later on in your pipeline.</p>
+<p>If you’re absolutely certain your variable, in this particular scope, is defined, you can make the second member of the <code>select_first()</code> array a random bogus fallback value. You may want to add a comment to prevent you or other programmers accidentally breaking things should they edit the code later.</p>
+<pre><code>if defined(some_integer) { # needed to define real_some_integer, beware of changing this!
+    Int real_some_integer = select_first([some_integer, 1975])
+}</code></pre>
+</details>
+</div>
+</div>
+<div id="the-final-workflow" class="section level2" number="8.3">
+<h2><span class="header-section-number">8.3</span> The final workflow</h2>
+<p>At this point, we’ve completeled our workflow. Here’s what it looks like now:</p>
+<pre><code>version 1.0
 ## WDL 101 example workflow
 ## 
 ## This WDL workflow is intended to be used along with the WDL 101 docs. 
@@ -337,28 +599,57 @@ struct referenceGenome {
 workflow mutation_calling {
   input {
     Array[File] tumorSamples
-    File normalSamples
+    File normalFastq
 
     referenceGenome refGenome
+
+    # Optional variable for bwa mem
+    Int? bwa_mem_threads
     
+    # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    
     File af_only_gnomad
     File af_only_gnomad_index
-    
+
+    # Annovar options
     String annovar_protocols
     String annovar_operation
   }
+
+  # First, process the non-tumor normal sample
+  call BwaMem as normalBwaMem {
+    input:
+      input_fastq = normalFastq,
+      refGenome = refGenome,
+      threads = bwa_mem_threads
+  }
+  
+  call MarkDuplicates as normalMarkDuplicates {
+    input:
+      input_bam = normalBwaMem.analysisReadySorted
+  }
+
+  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+    input:
+      input_bam = normalMarkDuplicates.markDuplicates_bam,
+      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
+      dbSNP_vcf = dbSNP_vcf,
+      dbSNP_vcf_index = dbSNP_vcf_index,
+      known_indels_sites_VCFs = known_indels_sites_VCFs,
+      known_indels_sites_indices = known_indels_sites_indices,
+      refGenome = refGenome
+  }
  
   # Scatter for &quot;tumor&quot; samples   
-  scatter (tumorFastq in tumorSamples) {
+  scatter (tumorSample in tumorSamples) {
     call BwaMem as tumorBwaMem {
       input:
-        input_fastq = tumorFastq,
-        refGenome = refGenome             ##pass in our struct
+        input_fastq = tumorSample,
+        refGenome = refGenome,
+        threads = bwa_mem_threads
     }
     
     call MarkDuplicates as tumorMarkDuplicates {
@@ -378,15 +669,15 @@ workflow mutation_calling {
       }
 
     call Mutect2Paired {
-    input:
-      tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
-      tumor_bam_index = tumorApplyBaseRecalibrator.recalibrated_bai,
-      normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
-      normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
-      refGenome = refGenome,
-      genomeReference = af_only_gnomad,
-      genomeReferenceIndex = af_only_gnomad_index
-  }
+      input:
+        tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
+        tumor_bam_index = tumorApplyBaseRecalibrator.recalibrated_bai,
+        normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
+        normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
+        refGenome = refGenome,
+        genomeReference = af_only_gnomad,
+        genomeReferenceIndex = af_only_gnomad_index
+    }
 
   call annovar {
     input:
@@ -396,30 +687,6 @@ workflow mutation_calling {
       annovar_protocols = annovar_protocols
   }
 }
-  
-  # Do for normal sample
-  call BwaMem as normalBwaMem {
-    input:
-      input_fastq = normalSamples,
-      refGenome = refGenome
-  }
-  
-  call MarkDuplicates as normalMarkDuplicates {
-    input:
-      input_bam = normalBwaMem.analysisReadySorted
-  }
-
-  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
-    input:
-      input_bam = normalMarkDuplicates.markDuplicates_bam,
-      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
-  }
-
 
   output {
     Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
@@ -437,44 +704,60 @@ workflow mutation_calling {
     Array[File] Mutect2Paired_AnnotatedVcf = annovar.output_annotated_vcf
     Array[File] Mutect2Paired_AnnotatedTable = annovar.output_annotated_table
   }
+
+  parameter_meta {
+    tumorSamples: &quot;Tumor .fastq, one sample per .fastq file (expects Illumina)&quot;
+    normalFastq: &quot;Non-tumor .fastq (expects Illumina)&quot;
+
+    dbSNP_vcf: &quot;dbSNP VCF for mutation calling&quot;
+    dbSNP_vcf_index: &quot;dbSNP VCF index&quot;
+    known_indels_sites_VCFs: &quot;Known indel site VCF for mutation calling&quot;
+    known_indels_sites_indices: &quot;Known indel site VCF indicies&quot;
+    af_only_gnomad: &quot;gnomAD population allele fraction for mutation calling&quot;
+    af_only_gnomad_index: &quot;gnomAD population allele fraction index&quot;
+
+    annovar_protocols: &quot;annovar protocols: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup&quot;
+    annovar_operation: &quot;annovar operation: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup&quot;
+  }
 }
-# TASK DEFINITIONS
+
+####################
+# Task definitions #
+####################
 
 # Align fastq file to the reference genome
 task BwaMem {
   input {
     File input_fastq
-    referenceGenome refGenome         ## Our struct as input
-    Int threads = 16
+    referenceGenome refGenome
+    Int threads = 16  # if a workflow passes an optional variable with no value, fall back to 16
   }
   
   String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(refGenome.ref_fasta)  ##refer to ref_fasta here in struct
+  String ref_fasta_local = basename(refGenome.ref_fasta)
 
   String read_group_id = &quot;ID:&quot; + base_file_name
   String sample_name = &quot;SM:&quot; + base_file_name
-  String platform = &quot;illumina&quot;
-  String platform_info = &quot;PL:&quot; + platform   # Create the platform information
+  String platform_info = &quot;PL:illumina&quot;
 
 
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    #can we iterate through a struct??
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-    mv ~{refGenome.ref_amb} .
-    mv ~{refGenome.ref_ann} .
-    mv ~{refGenome.ref_bwt} .
-    mv ~{refGenome.ref_pac} .
-    mv ~{refGenome.ref_sa} .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
+    mv &quot;~{refGenome.ref_amb}&quot; .
+    mv &quot;~{refGenome.ref_ann}&quot; .
+    mv &quot;~{refGenome.ref_bwt}&quot; .
+    mv &quot;~{refGenome.ref_pac}&quot; .
+    mv &quot;~{refGenome.ref_sa}&quot; .
 
     bwa mem \
       -p -v 3 -t ~{threads} -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
-      ~{ref_fasta_local} ~{input_fastq} &gt; ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+      &quot;~{ref_fasta_local}&quot; &quot;~{input_fastq}&quot; &gt; &quot;~{base_file_name}.sam&quot; 
+    samtools view -1bS -@ 15 -o &quot;~{base_file_name}.aligned.bam&quot; &quot;~{base_file_name}.sam&quot;
+    samtools sort -@ 15 -o &quot;~{base_file_name}.sorted_query_aligned.bam&quot; &quot;~{base_file_name}.aligned.bam&quot;
   &gt;&gt;&gt;
 
   output {
@@ -488,22 +771,19 @@ task BwaMem {
   }
 }
 
-# Mark duplicates (not SPARK, for some reason that does something weird)
+# Mark duplicates on a BAM file
 task MarkDuplicates {
   input {
     File input_bam
   }
 
   String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-  String output_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
-  String output_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
-  String metrics_file = &quot;~{base_file_name}.duplicate_metrics&quot;
 
   command &lt;&lt;&lt;
     gatk MarkDuplicates \
-      --INPUT ~{input_bam} \
-      --OUTPUT ~{output_bam} \
-      --METRICS_FILE ~{metrics_file} \
+      --INPUT &quot;~{input_bam}&quot; \
+      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
+      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
@@ -516,9 +796,9 @@ task MarkDuplicates {
   }
 
   output {
-    File markDuplicates_bam = &quot;~{output_bam}&quot;
-    File markDuplicates_bai = &quot;~{output_bai}&quot;
-    File duplicate_metrics = &quot;~{metrics_file}&quot;
+    File markDuplicates_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
+    File markDuplicates_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
+    File duplicate_metrics = &quot;~{base_file_name}.duplicates_marked.bai&quot;
   }
 }
 
@@ -531,7 +811,7 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    referenceGenome refGenome         ## Use struct as input for task
+    referenceGenome refGenome
   }
   
   String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
@@ -544,38 +824,38 @@ task ApplyBaseRecalibrator {
   command &lt;&lt;&lt;
   set -eo pipefail
 
-  mv ~{refGenome.ref_fasta} .
-  mv ~{refGenome.ref_fasta_index} .
-  mv ~{refGenome.ref_dict} .
+  mv &quot;~{refGenome.ref_fasta}&quot; .
+  mv &quot;~{refGenome.ref_fasta_index}&quot; .
+  mv &quot;~{refGenome.ref_dict}&quot; .
 
-  mv ~{dbSNP_vcf} .
-  mv ~{dbSNP_vcf_index} .
+  mv &quot;~{dbSNP_vcf}&quot; .
+  mv &quot;~{dbSNP_vcf_index}&quot; .
 
-  mv ~{known_indels_sites_VCFs} .
-  mv ~{known_indels_sites_indices} .
+  mv &quot;~{known_indels_sites_VCFs}&quot; .
+  mv &quot;~{known_indels_sites_indices}&quot; .
 
-  samtools index ~{input_bam} #redundant? markduplicates already does this?
+  samtools index &quot;~{input_bam}&quot;
 
   gatk --java-options &quot;-Xms8g&quot; \
       BaseRecalibrator \
-      -R ~{ref_fasta_local} \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal_data.csv \
-      --known-sites ~{dbSNP_vcf_local} \
-      --known-sites ~{known_indels_sites_VCFs_local} \
+      -R &quot;~{ref_fasta_local}&quot; \
+      -I &quot;~{input_bam}&quot; \
+      -O &quot;~{base_file_name}.recal_data.csv&quot; \
+      --known-sites &quot;~{dbSNP_vcf_local}&quot; \
+      --known-sites &quot;~{known_indels_sites_VCFs_local}&quot; \
       
 
   gatk --java-options &quot;-Xms8g&quot; \
       ApplyBQSR \
-      -bqsr ~{base_file_name}.recal_data.csv \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal.bam \
-      -R ~{ref_fasta_local} \
+      -bqsr &quot;~{base_file_name}.recal_data.csv&quot; \
+      -I &quot;~{input_bam}&quot; \
+      -O &quot;~{base_file_name}.recal.bam&quot; \
+      -R &quot;~{ref_fasta_local}&quot; \
       
 
-  #finds the current sort order of this bam file
-  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; ~{base_file_name}.sortOrder.txt
-&gt;&gt;&gt;
+  # finds the current sort order of this bam file
+  samtools view -H &quot;~{base_file_name}.recal.bam&quot; | grep @SQ | sed &#39;s/@SQ\tSN:\|LN://g&#39; &gt; &quot;~{base_file_name}.sortOrder.txt&quot;
+  &gt;&gt;&gt;
 
   output {
     File recalibrated_bam = &quot;~{base_file_name}.recal.bam&quot;
@@ -589,48 +869,45 @@ task ApplyBaseRecalibrator {
   }
 }
 
-# Mutect 2 calling tumor-normal
-
+# Variant calling via mutect2 (tumor-and-normal mode)
 task Mutect2Paired {
   input {
     File tumor_bam
     File tumor_bam_index
     File normal_bam
     File normal_bam_index
-    referenceGenome refGenome           # our struct as input
+    referenceGenome refGenome
     File genomeReference
     File genomeReferenceIndex
   }
 
   String base_file_name_tumor = basename(tumor_bam, &quot;.recal.bam&quot;)
-  String base_file_name_normal = basename(normal_bam, &quot;.recal.bam&quot;)
   String ref_fasta_local = basename(refGenome.ref_fasta)
   String genomeReference_local = basename(genomeReference)
 
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
 
-    mv ~{genomeReference} .
-    mv ~{genomeReferenceIndex} .
+    mv &quot;~{genomeReference}&quot; .
+    mv &quot;~{genomeReferenceIndex}&quot; .
 
     gatk --java-options &quot;-Xms16g&quot; Mutect2 \
-      -R ~{ref_fasta_local} \
-      -I ~{tumor_bam} \
-      -I ~{normal_bam} \
+      -R &quot;~{ref_fasta_local}&quot; \
+      -I &quot;~{tumor_bam}&quot; \
+      -I &quot;~{normal_bam}&quot; \
       -O preliminary.vcf.gz \
-      --germline-resource ~{genomeReference_local} \
+      --germline-resource &quot;~{genomeReference_local}&quot; \
 
     gatk --java-options &quot;-Xms16g&quot; FilterMutectCalls \
       -V preliminary.vcf.gz \
-      -O ~{base_file_name_tumor}.mutect2.vcf.gz \
-      -R ~{ref_fasta_local} \
+      -O &quot;~{base_file_name_tumor}.mutect2.vcf.gz&quot; \
+      -R &quot;~{ref_fasta_local}&quot; \
       --stats preliminary.vcf.gz.stats \
-
-&gt;&gt;&gt;
+  &gt;&gt;&gt;
 
   runtime {
     docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
@@ -644,7 +921,7 @@ task Mutect2Paired {
   }
 }
 
-# annotate with annovar mutation calling outputs
+# Annotate VCF using annovar
 task annovar {
   input {
     File input_vcf
@@ -657,22 +934,22 @@ task annovar {
   command &lt;&lt;&lt;
     set -eo pipefail
   
-    perl /annovar/table_annovar.pl ~{input_vcf} /annovar/humandb/ \
-      -buildver ~{ref_name} \
-      -outfile ~{base_vcf_name} \
+    perl annovar/table_annovar.pl &quot;~{input_vcf}&quot; annovar/humandb/ \
+      -buildver &quot;~{ref_name}&quot; \
+      -outfile &quot;~{base_vcf_name}&quot; \
       -remove \
-      -protocol ~{annovar_protocols} \
-      -operation ~{annovar_operation} \
+      -protocol &quot;~{annovar_protocols}&quot; \
+      -operation &quot;~{annovar_operation}&quot; \
       -nastring . -vcfinput
-&gt;&gt;&gt;
+  &gt;&gt;&gt;
   runtime {
-    docker : &quot;ghcr.io/getwilds/annovar:${ref_name}&quot;
+    docker: &quot;ghcr.io/getwilds/annovar:~{ref_name}&quot;
     cpu: 1
     memory: &quot;2GB&quot;
   }
   output {
-    File output_annotated_vcf = &quot;${base_vcf_name}.${ref_name}_multianno.vcf&quot;
-    File output_annotated_table = &quot;${base_vcf_name}.${ref_name}_multianno.txt&quot;
+    File output_annotated_vcf = &quot;~{base_vcf_name}.${ref_name}_multianno.vcf&quot;
+    File output_annotated_table = &quot;~{base_vcf_name}.${ref_name}_multianno.txt&quot;
   }
 }</code></pre>
 
@@ -692,8 +969,8 @@ task annovar {
           </div>
         </div>
       </div>
-<a href="using-arrays-for-parallelization-and-other-use-cases.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="optional-types.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="task-aliasing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="appendix-backends-and-executors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
