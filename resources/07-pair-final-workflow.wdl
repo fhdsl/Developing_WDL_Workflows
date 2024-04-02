@@ -56,7 +56,7 @@ workflow mutation_calling {
   }
 
  
-  # Scatter for samples
+  # Scatter for each sample in samples
   scatter (sample in samples) {
 
     #Tumors
@@ -85,7 +85,7 @@ workflow mutation_calling {
     #Normals
     call BwaMem as normalBwaMem {
       input:
-        input_fastq = sample.normalFastq,
+        input_fastq = sample.normalSample,
         refGenome = refGenome
     }
     
