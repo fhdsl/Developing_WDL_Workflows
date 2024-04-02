@@ -934,7 +934,7 @@ task annovar {
   command &lt;&lt;&lt;
     set -eo pipefail
   
-    perl annovar/table_annovar.pl &quot;~{input_vcf}&quot; annovar/humandb/ \
+    perl /annovar/table_annovar.pl &quot;~{input_vcf}&quot; /annovar/humandb/ \
       -buildver &quot;~{ref_name}&quot; \
       -outfile &quot;~{base_vcf_name}&quot; \
       -remove \
@@ -943,7 +943,7 @@ task annovar {
       -nastring . -vcfinput
   &gt;&gt;&gt;
   runtime {
-    docker: &quot;ghcr.io/getwilds/annovar:~{ref_name}&quot;
+    docker : &quot;ghcr.io/getwilds/annovar:${ref_name}&quot;
     cpu: 1
     memory: &quot;2GB&quot;
   }
