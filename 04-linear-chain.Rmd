@@ -342,7 +342,7 @@ task BwaMem {
       -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
     samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
-    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
+    samtools sort -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
   >>>
 
   output {
@@ -520,7 +520,7 @@ task annovar {
   command <<<
     set -eo pipefail
   
-    perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
+    perl /annovar/table_annovar.pl "~{input_vcf}" /annovar/humandb/ \
       -buildver "~{ref_name}" \
       -outfile "~{base_vcf_name}" \
       -remove \
@@ -529,7 +529,7 @@ task annovar {
       -nastring . -vcfinput
   >>>
   runtime {
-    docker: "ghcr.io/getwilds/annovar:~{ref_name}"
+    docker : "ghcr.io/getwilds/annovar:${ref_name}"
     cpu: 1
     memory: "2GB"
   }

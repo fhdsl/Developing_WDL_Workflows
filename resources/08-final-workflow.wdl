@@ -37,6 +37,9 @@ workflow mutation_calling {
     File normalFastq
 
     referenceGenome refGenome
+
+    # Optional variable for bwa mem
+    Int? bwa_mem_threads
     
     # Files for specific tools
     File dbSNP_vcf
@@ -79,7 +82,8 @@ workflow mutation_calling {
     call BwaMem as tumorBwaMem {
       input:
         input_fastq = tumorSample,
-        refGenome = refGenome
+        refGenome = refGenome,
+        threads = bwa_mem_threads
     }
     
     call MarkDuplicates as tumorMarkDuplicates {
@@ -160,6 +164,7 @@ task BwaMem {
   input {
     File input_fastq
     referenceGenome refGenome
+    Int threads = 16  # if a workflow passes an optional variable with no value, fall back to 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -183,7 +188,7 @@ task BwaMem {
     mv "~{refGenome.ref_sa}" .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam" 
     samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
     samtools sort -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
@@ -372,7 +377,7 @@ task annovar {
       -nastring . -vcfinput
   >>>
   runtime {
-     docker : "ghcr.io/getwilds/annovar:${ref_name}"
+    docker : "ghcr.io/getwilds/annovar:${ref_name}"
     cpu: 1
     memory: "2GB"
   }
