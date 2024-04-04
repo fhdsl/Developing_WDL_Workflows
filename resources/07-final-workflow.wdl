@@ -30,11 +30,15 @@ struct referenceGenome {
     String ref_name
 }
 
+struct pairedSample {
+  File tumorSample
+  File normalSample
+}
+
 
 workflow mutation_calling {
   input {
-    Array[File] tumorSamples
-    File normalFastq
+    Array[pairedSample] samples
 
     referenceGenome refGenome
     
@@ -51,34 +55,14 @@ workflow mutation_calling {
     String annovar_operation
   }
 
-  # First, process the non-tumor normal sample
-  call BwaMem as normalBwaMem {
-    input:
-      input_fastq = normalFastq,
-      refGenome = refGenome
-  }
-  
-  call MarkDuplicates as normalMarkDuplicates {
-    input:
-      input_bam = normalBwaMem.analysisReadySorted
-  }
-
-  call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
-    input:
-      input_bam = normalMarkDuplicates.markDuplicates_bam,
-      input_bam_index = normalMarkDuplicates.markDuplicates_bai,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      refGenome = refGenome
-  }
  
-  # Scatter for "tumor" samples   
-  scatter (tumorSample in tumorSamples) {
+  # Scatter for each sample in samples
+  scatter (sample in samples) {
+
+    #Tumors
     call BwaMem as tumorBwaMem {
       input:
-        input_fastq = tumorSample,
+        input_fastq = sample.tumorSample,
         refGenome = refGenome
     }
     
@@ -96,8 +80,32 @@ workflow mutation_calling {
         known_indels_sites_VCFs = known_indels_sites_VCFs,
         known_indels_sites_indices = known_indels_sites_indices,
         refGenome = refGenome
-      }
+    }
 
+    #Normals
+    call BwaMem as normalBwaMem {
+      input:
+        input_fastq = sample.normalSample,
+        refGenome = refGenome
+    }
+    
+    call MarkDuplicates as normalMarkDuplicates {
+      input:
+        input_bam = normalBwaMem.analysisReadySorted
+    }
+  
+    call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+      input:
+        input_bam = normalMarkDuplicates.markDuplicates_bam,
+        input_bam_index = normalMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+    }
+
+    #Paired Tumor-Normal calling
     call Mutect2Paired {
       input:
         tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
@@ -109,13 +117,13 @@ workflow mutation_calling {
         genomeReferenceIndex = af_only_gnomad_index
     }
 
-  call annovar {
-    input:
-      input_vcf = Mutect2Paired.output_vcf,
-      ref_name = refGenome.ref_name,
-      annovar_operation = annovar_operation,
-      annovar_protocols = annovar_protocols
-  }
+    call annovar {
+      input:
+        input_vcf = Mutect2Paired.output_vcf,
+        ref_name = refGenome.ref_name,
+        annovar_operation = annovar_operation,
+        annovar_protocols = annovar_protocols
+    }
 }
 
   output {
@@ -124,11 +132,11 @@ workflow mutation_calling {
     Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
     Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
     Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
-    File normalalignedBamSorted = normalBwaMem.analysisReadySorted
-    File normalmarkDuplicates_bam = normalMarkDuplicates.markDuplicates_bam
-    File normalmarkDuplicates_bai = normalMarkDuplicates.markDuplicates_bai
-    File normalanalysisReadyBam = normalApplyBaseRecalibrator.recalibrated_bam 
-    File normalanalysisReadyIndex = normalApplyBaseRecalibrator.recalibrated_bai
+    Array[File] normalalignedBamSorted = normalBwaMem.analysisReadySorted
+    Array[File] normalmarkDuplicates_bam = normalMarkDuplicates.markDuplicates_bam
+    Array[File] normalmarkDuplicates_bai = normalMarkDuplicates.markDuplicates_bai
+    Array[File] normalanalysisReadyBam = normalApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] normalanalysisReadyIndex = normalApplyBaseRecalibrator.recalibrated_bai
     Array[File] Mutect2Paired_Vcf = Mutect2Paired.output_vcf
     Array[File] Mutect2Paired_VcfIndex = Mutect2Paired.output_vcf_index
     Array[File] Mutect2Paired_AnnotatedVcf = annovar.output_annotated_vcf
@@ -363,7 +371,7 @@ task annovar {
   command <<<
     set -eo pipefail
   
-    perl /annovar/table_annovar.pl "~{input_vcf}" /annovar/humandb/ \
+    perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
       -buildver "~{ref_name}" \
       -outfile "~{base_vcf_name}" \
       -remove \
@@ -372,7 +380,7 @@ task annovar {
       -nastring . -vcfinput
   >>>
   runtime {
-     docker : "ghcr.io/getwilds/annovar:${ref_name}"
+    docker: "ghcr.io/getwilds/annovar:~{ref_name}"
     cpu: 1
     memory: "2GB"
   }
