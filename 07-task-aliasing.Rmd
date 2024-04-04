@@ -6,7 +6,7 @@ ottrpal::set_knitr_image_path()
 
 We've already gone over running a task multiple times in the context of scattered tasks. However, you may also want a task to run more than one time if that task is to run on multiple sets of inputs. In our case, we have developed our workflow for only tumor samples of a patient. However, our mutation caller Mutect2 is performs best when each tumor is matched with a normal sample. Therefore, in order to make best use of Mutect2, we want to run a similar analysis on the normal tissue tissue as well. 
 
-WDL has a sophisticated feature that allows one to reuse the same task repeatedly through your workflow: **task aliasing**
+WDL has a sophisticated feature that allows one to reuse the same task repeatedly through your workflow: **task aliasing**.
 Simply put **task aliasing**  allows for the re-use of task definitions within the same workflow under different names, or "aliases". For example, our task for alignment, "BwaMem", can be aliased for both tumor and normal samples.
 
 ## Advantages of aliasing
@@ -17,14 +17,14 @@ The major advantages of using task aliasing are:
 
 **2. Simplifies Maintenance** : If you decide to change/update/fix a task, using task aliasing will make life easy as you need to update only once in your workflow. 
 
-**3. Enhances Readability and Clarity**: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow (for example are you doing this task for Sample set A or Sample set B)
+**3. Enhances Readability and Clarity**: A shorter workflow is easier to read but task aliasing also helps to contextualize the workflow (for example are you doing this task for Sample set A or Sample set B).
 
-**4. Improves Workflow Scalability**: Using task aliasing it is much easier to scale the workflow across different inputs. For example you want to run a task on different sample groups (Sample set A and B) will allow the same task to be run parallely and if you choose with different modifications. 
+**4. Improves Workflow Scalability**: With task aliasing, it is much easier to scale the workflow across different inputs. For example, if you want to run a task on different sample groups (Sample set A and B), you can allow the same task to be run in parallel on each of these groups with their own parameters. 
 
 
 ## Aliasing your first task
 
-We first demonstrate task aliasing for tumor-normal matched somatic mutation calling in which we use the same normal samples for both tumor samples. This implies that we have taken multiple tumor samples from the same patient, and we're comparing all of them against a single normal sample. This is easy to write, but not a very common analysis. We follow up with a more sophisticated tumor-normal matched somatic mutation calling in which each patient has unique paired tumor-normal samples. This requires creating additional structs, but is a very common analysis.  
+We first demonstrate task aliasing for tumor-normal matched somatic mutation calling in which we use the same normal sample for both tumor samples. This implies that we have taken multiple tumor samples from the same patient, and we're comparing all of them against a single normal sample. This is easy to write, but not a very common analysis. After this example, we follow up with a more sophisticated tumor-normal matched somatic mutation calling in which each patient has unique paired tumor-normal samples. This is the popular way of calling somatic mutation. 
 
 You can only alias a task that is already defined, so we will start with aliasing the BwaMem task for normals rather than writing a new BwaMem task specifically for normals. We want to do this so it can run this task on the "normal" samples and store them separately. 
 
