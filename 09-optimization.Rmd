@@ -4,7 +4,7 @@ ottrpal::set_knitr_image_path()
 
 # Optimization
 
-In our last chapter, we explore ways to optimize our completed workflow.
+In our last chapter, we will explore ways to optimize our completed workflow.
 
 Generally, in computing, we are working with the following finite resources:
 
@@ -22,15 +22,15 @@ Changing usage of any of these resources often affect other resources. For insta
 
 ### Memory optimization
 
-To optimizie the amount of memory used for a task, one can profile the task to understand how much memory is being used and where the bottlenecks are. Most programming languages have a large selection of memory profilers to analyze the performance of your code, and they can be starting points to consider how to use less memory. When a bottleneck is found, one might consider to use a more efficient algoirthm to reduce memory usage. Or, perhaps one might use more optimal data structures, such as databases or sparse data structures, that better fit the data type of your problem.
+To optimizie the amount of memory used for a task, one can profile the task to understand how much memory is being used and where the bottlenecks are. Most programming languages have a large selection of memory profilers to analyze the performance of your code, and they can be starting points to consider how to use less memory. When a bottleneck is found, one might consider to use a more efficient algorithm to reduce memory usage. Or, perhaps one might use more optimal data structures, such as databases or sparse data structures, that better fit the data type of your problem.
 
 Another common memory analysis is to understand how memory usage scales relative to the input for the task. For example, as you increase the VCF file size for a task, how much does the memory usage scale? Is there something you can do so that it scales with a smaller magnitude?
 
-A technique you may want to consider if it scales is that you could break down the input into smaller parts, and run your task on these smaller parts, each requesting smaller amount of memory. This wouldn't reduce the total amount of memory you use, but many computing backends prefer many tasks using small amounts of a memory instead of a single job requiring a large amount of memory. This would also help optimizing computing time. Below, we look at different ways of parallelization.
+A technique you may want to consider if your memory usage scales with your input data size is that you could break down the input into smaller parts, and run your task on these smaller parts, each requesting smaller amount of memory. This wouldn't reduce the total amount of memory you use, but many computing backends prefer many tasks using small amounts of a memory instead of a single job requiring a large amount of memory. This would also help optimizing computing time. Below, we look at different ways of parallelization.
 
 ### Embarrassingly Parallel Scatter-Gather
 
-A sub-task is called "Embarrassingly Parallel" if the sub-task can be run completely independent of other sub-tasks to finish the task. When we run multiple samples in our workflow, it is a form of "Embarrassingly Parallel", because processing each tumor-normal pair through the workflow is done independently of other samples on separate computers (nodes). Each computer (node) has its independent CPU and memory resources. This technique reduces the computing time and breaks down CPU and memory usage into smaller, often more afforadable resource requests. Later in this chapter we will show an detailed example of using this technique to split a BAM into individual chromosomes and run a resource demanding task on each of these chromosomes before merging back to the complete BAM file with all chromosomes.
+A sub-task is called "Embarrassingly Parallel" if the sub-task can be run completely independent of other sub-tasks to finish the task. When we run multiple samples in our workflow, it is a form of "Embarrassingly Parallel", because processing each tumor-normal pair through the workflow is done independently of other samples on separate computers (also known in high performance computing as "nodes"). Each computer ("node") has its independent CPU and memory resources. This technique reduces the computing time and breaks down CPU and memory usage into smaller, often more afforadable resource requests. Later in this chapter we will show an detailed example of using this technique to split a BAM into individual chromosomes to run a resource demanding task.
 
 ### Multithreading (Shared-Memory Parallelism)
 
@@ -116,7 +116,7 @@ task gatherBams {
 }
 ```
 
-In our workflow, after `MarkDuplicates` task, we use `splitBamByChr` to divvy up our BAM file, and then use a scatter over the output array of scatted BAMs to run `ApplyBaseRecalibrator` on each of the scatted BAMs, before merging the results with `gatherBams`:
+In our workflow, after `MarkDuplicates` task, we first use `splitBamByChr` to divvy up our BAM file, and then use a scatter over the output array of scatted BAMs to run `ApplyBaseRecalibrator` on each of the scatted BAMs. Finally, we take the output of `ApplyBaseRecalibrator` as an array to be merged together via `gatherBams`:
 
 ```         
 #Split by chromosomes
