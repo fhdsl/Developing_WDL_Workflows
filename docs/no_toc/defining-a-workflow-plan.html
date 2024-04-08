@@ -242,10 +242,10 @@
 <p>The tasks involved:</p>
 <table>
 <colgroup>
-<col width="16%" />
-<col width="32%" />
-<col width="24%" />
+<col width="22%" />
 <col width="28%" />
+<col width="22%" />
+<col width="25%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -259,14 +259,32 @@
 <tr class="odd">
 <td><code>BwaMem</code></td>
 <td>aligns the samples to the reference genome (hg19)</td>
-<td>FASTA (<code>.fa</code>) file</td>
-<td><code>.bam</code> file</td>
+<td>FASTA (<code>.fasta</code>) file</td>
+<td><code>BAM (.bam)</code> file</td>
 </tr>
 <tr class="even">
-<td><code>MarkDuplicates|marks PCR duplicates|</code>.bam<code>file|marked</code>.bam<code>file| |</code>ApplyBaseRecalibrator<code>|performs base quality recalibration|marked</code>.bam<code>file|</code>.bam<code>file| |</code>Mutect2<code>|performs paired somatic mutation calling|</code>.bam<code>file|</code>.vcf<code>file| |</code>annovar<code>|annotates the called somatic mutations|</code>.vcf<code>file with somatic mutations|annotated</code>.vcf` file</td>
-<td></td>
-<td></td>
-<td></td>
+<td><code>MarkDuplicates</code></td>
+<td>marks PCR duplicates</td>
+<td>BAM (<code>.bam)</code> file</td>
+<td>BAM (<code>.bam)</code> file</td>
+</tr>
+<tr class="odd">
+<td><code>ApplyBaseRecalibrator</code></td>
+<td>performs base quality recalibration</td>
+<td>BAM (<code>.bam)</code> file</td>
+<td>BAM (<code>.bam)</code> file</td>
+</tr>
+<tr class="even">
+<td><code>Mutect2</code></td>
+<td>performs paired somatic mutation calling</td>
+<td>BAM (<code>.bam)</code> file</td>
+<td>VCF (<code>.vcf)</code> file</td>
+</tr>
+<tr class="odd">
+<td><code>annovar</code></td>
+<td>annotates the called somatic mutations</td>
+<td>VCF (<code>.vcf)</code> file</td>
+<td>VCF (<code>.vcf)</code> file</td>
 </tr>
 </tbody>
 </table>
@@ -305,7 +323,7 @@
 <h3><span class="header-section-number">2.3.4</span> Test data details</h3>
 <p>Fastq files for all these three samples were derived from their respective whole exome sequencing. However, for the purpose of this guide we have limited the sequencing reads to span +/- 200 bp around the mutation sites for both genes. In doing so we are able to shrink the data files for quick testing.</p>
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
-Loading…
+<p>Loading…</p>
 </iframe>
 
 </div>
