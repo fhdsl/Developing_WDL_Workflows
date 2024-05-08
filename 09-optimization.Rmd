@@ -50,6 +50,8 @@ Graphical processing units are an additional processing tool to CPUs, in which a
 
 Suppose that one our tasks, `ApplyBaseRecalibrator`, is taking too long to run and taking on too much memory. We might first look into the [tool's documentation](https://gatk.broadinstitute.org/hc/en-us/articles/360036898312-BaseRecalibrator) to see if there are ways use it more optimally, such as provide more CPUs, but we don't see it. We turn to Embarrassingly Parallel Scatter-Gather, in which we split a BAM file by its chromosomes to create 23 BAM files, run `ApplyBaseRecalibrator` on each of these BAMs, and merge all of these calibrated BAM files together. This is called "Scatter-Gather" because we have to scatter our BAMs into smaller parts to run, and then gather them together in the end.
 
+![Split By Chromosome](assets/split_by_chr.png)
+
 We first write a new task to split our BAM file, which takes the original BAM, an array of chromosomes to scatter, and outputs an array of Files of the smaller BAM files.
 
 ```         
@@ -86,6 +88,7 @@ task splitBamByChr {
     cpu: 4
   }
 ```
+![GatherBams](assets/gather_bams.png)
 
 We also need a task to gather all the BAMs together, which takes in an array of Files, and ouputs a merged BAM.
 
@@ -118,7 +121,13 @@ task gatherBams {
 }
 ```
 
+![Apply Base Recalibrator](assets/apply_base_recalibrator.png)
+
+
 In our workflow, after `MarkDuplicates` task, we first use `splitBamByChr` to divvy up our BAM file, and then use a scatter over the output array of scatted BAMs to run `ApplyBaseRecalibrator` on each of the scatted BAMs. Finally, we take the output of `ApplyBaseRecalibrator` as an array to be merged together via `gatherBams`:
+
+![Scatter Gather Full Workflow](assets/scatter_by_chr_full.png)
+
 
 ```         
 #Split by chromosomes
