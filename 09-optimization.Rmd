@@ -46,7 +46,7 @@ Graphical processing units are an additional processing tool to CPUs, in which a
 
 ## Scatter-Gather on chromosomes
 
-![Scatter-Gather By Chromosome](assets/scatter_by_chr.png)
+![Scatter-Gather By Chromosome](assets/scatter_by_chr_full.png)
 
 Suppose that one our tasks, `ApplyBaseRecalibrator`, is taking too long to run and taking on too much memory. We might first look into the [tool's documentation](https://gatk.broadinstitute.org/hc/en-us/articles/360036898312-BaseRecalibrator) to see if there are ways use it more optimally, such as provide more CPUs, but we don't see it. We turn to Embarrassingly Parallel Scatter-Gather, in which we split a BAM file by its chromosomes to create 23 BAM files, run `ApplyBaseRecalibrator` on each of these BAMs, and merge all of these calibrated BAM files together. This is called "Scatter-Gather" because we have to scatter our BAMs into smaller parts to run, and then gather them together in the end.
 
