@@ -28,7 +28,7 @@ flowchart LR
 I([sample_array]) --> D[ApplyBaseRecalibrator]
     I --> E[ApplyBaseRecalibrator]
     I --> F[ApplyBaseRecalibrator]
-    D --'chr1-dupes.bam'--> K([sample_array])
+    D --'chr1-dupes.bam'--> K([chr_array])
     E --'chr2-dupes.bam'--> K
     F --'chr3-dupes.bam'--> K
 ```
