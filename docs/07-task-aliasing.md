@@ -950,8 +950,6 @@ The JSON metadata:
 }
 ```
 
-Now we have a complete workflow that reflects our original plan in [Defining a workflow plan](https://hutchdatascience.org/WDL_Workflows_Guide/defining-a-workflow-plan.html)!
-
 
 <details>
 <summary><b>The JSON using the Fred Hutch HPC</b></summary>
@@ -981,5 +979,7 @@ Now we have a complete workflow that reflects our original plan in [Defining a w
 
 </details>
 
+
+Now we have a complete workflow that reflects our original plan in [Defining a workflow plan](https://hutchdatascience.org/WDL_Workflows_Guide/defining-a-workflow-plan.html)!
 
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
