@@ -24,6 +24,7 @@ tumor-1-hcc4006
 tumor-2-calu1
 normal-molm13
 test-data-details
+access-to-files
 the-first-task
 inputs
 referencing-inputs-in-the-command-section
@@ -45,7 +46,7 @@ runtime-and-output
 testing-the-workflow
 the-rest-of-the-linear-chain-workflow
 organizing-variables-via-structs
-using-arrays-for-parallelization-and-other-use-cases
+parallelization-via-arrays
 the-array-type
 scattered-tasks
 troubleshooting-1

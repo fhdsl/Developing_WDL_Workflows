@@ -558,7 +558,26 @@ task BwaMem {
 
 To test your first task and your workflow, you should have expectation of output is. For this first `BwaMem` task, we just care that the BAM file is created with aligned reads. You can use `samtools view output.sorted_query_aligned.bam` to examine the reads and pipe it to wordcount `wc` to get the number of total reads. This number should be almost identical as the number of reads from your input FASTQ file if you run `wc input.fastq`. In other tasks, we might have a more precise expectation of what the output file should be, such as containing the specific somatic mutation call that we have curated.
 
-Here is an example JSON with the test data needed to run this single-task workflow:
+Here is an example JSON with the [test data](https://figshare.com/articles/dataset/WDL_101_Dataset/25447528) needed to run this single-task workflow:
+
+```
+{
+  "mutation_calling.sampleFastq": "/path/to/Tumor_2_EGFR_HCC4006_combined.fastq",
+  "mutation_calling.ref_fasta": "/path/to/Homo_sapiens_assembly19.fasta",
+  "mutation_calling.ref_fasta_index": "/path/to/Homo_sapiens_assembly19.fasta.fai",
+  "mutation_calling.ref_dict": "/path/to/Homo_sapiens_assembly19.dict",
+  "mutation_calling.ref_pac": "/path/to/Homo_sapiens_assembly19.fasta.pac",
+  "mutation_calling.ref_sa": "/path/to/Homo_sapiens_assembly19.fasta.sa",
+  "mutation_calling.ref_amb": "/path/to/Homo_sapiens_assembly19.fasta.amb",
+  "mutation_calling.ref_ann": "/path/to/Homo_sapiens_assembly19.fasta.ann",
+  "mutation_calling.ref_bwt": "/path/to/Homo_sapiens_assembly19.fasta.bwt"
+}
+```
+
+<details>
+<summary><b>The example JSON using the Fred Hutch HPC</b></summary>
+
+
 ```
 {
   "mutation_calling.sampleFastq": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq",
@@ -573,6 +592,8 @@ Here is an example JSON with the test data needed to run this single-task workfl
 }
 ```
 
-If you are not running on the Fred Hutch HPC, you'll need to modify your JSON file to point to wherever you have the data files stored. You can download the same fastq we're using from [our sandbox repo](https://github.com/fhdsl/WDL-sandbox/tree/main/data), and the reference files can be generated via `samtools index` or [downloaded from the Broad Institute's mirror](https://data.broadinstitute.org/snowman/hg19/).
+</details>
+
+
 
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
