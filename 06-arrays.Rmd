@@ -2,7 +2,7 @@
 ottrpal::set_knitr_image_path()
 ```
 
-# Using Arrays For Parallelization and Other Use Cases
+# Parallelization via Arrays
 
 We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let's look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.
 
