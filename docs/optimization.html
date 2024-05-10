@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows</title>
+  <title>Chapter 9 Optimization | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows" />
+  <meta property="og:title" content="Chapter 9 Optimization | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows" />
+  <meta name="twitter:title" content="Chapter 9 Optimization | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="the-first-task.html"/>
-<link rel="next" href="organizing-variables-via-structs.html"/>
+<link rel="prev" href="optional-types.html"/>
+<link rel="next" href="appendix-backends-and-executors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -243,165 +243,175 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="connecting-multiple-tasks-together-in-a-linear-chain" class="section level1" number="4">
-<h1><span class="header-section-number">Chapter 4</span> Connecting multiple tasks together in a linear chain</h1>
-<p>Now that you have a first task in a workflow up and running, the next step is to continue building out the workflow as described in our Workflow Plan:</p>
-<ol style="list-style-type: decimal">
-<li><code>BwaMem</code> aligns the samples to the reference genome.</li>
-<li><code>MarkDuplicates</code> marks PCR duplicates.</li>
-<li><code>ApplyBaseRecalibrator</code> applies base recalibration.</li>
-<li><code>Mutect2</code> performs somatic mutation calling. For this current iteration, we start with <code>Mutect2TumorOnly</code> which only uses the tumor sample. Later on, we will switch to a version of mutect that will allow for comparing tumor samples against a non-tumor normal sample.</li>
-<li><code>annovar</code> annotates the called somatic mutations.</li>
-</ol>
-<p>We do this via a <strong>linear chain</strong>, in which we feed the output of one task to the input of the next task. Let’s see how to build a linear chain in a workflow.</p>
-<div id="how-to-connect-tasks-together-in-a-workflow" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> How to connect tasks together in a workflow</h2>
-<p>We can easily connect tasks together because of the following: <em>The output variables of a task can be accessed at the workflow level as inputs for the subsequent task.</em></p>
-<p>For instance, let’s see the output of our <code>BwaMem</code> task.</p>
-<pre><code>output {
-    File analysisReadyBam = &quot;~{base_file_name}.aligned.bam&quot;
-    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
-  }</code></pre>
-<p>The File variables <code>analysisReadyBam</code> and <code>analysisReadySorted</code> can now be accessed anywhere in the workflow block after the <code>BwaMem</code> task as <code>BwaMem.analysisReadyBam</code> and <code>BwaMem.analysisReadySorted</code>, respectively. Therefore, when we call the <code>MarkDuplicates</code> task, we can pass it the input <code>BwaMem.analysisReadySorted</code> from the <code>BwaMem</code> task:</p>
-<pre><code>workflow mutation_calling {
-  input {
-    File sampleFastq
-
-    # Reference genome
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-  }
-    
-
-  #  Map reads to reference
-  call BwaMem {
-    input:
-      input_fastq = sampleFastq,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict,
-      ref_amb = ref_amb,
-      ref_ann = ref_ann,
-      ref_bwt = ref_bwt,
-      ref_pac = ref_pac,
-      ref_sa = ref_sa
-  }
-   
-  call MarkDuplicates {
-    input:
-      input_bam = BwaMem.analysisReadySorted
-  }
-}</code></pre>
-<div class="notice">
-<p>Resources:</p>
+<div id="optimization" class="section level1" number="9">
+<h1><span class="header-section-number">Chapter 9</span> Optimization</h1>
+<p>In our last chapter, we will explore ways to optimize our completed workflow.</p>
+<p>Generally, in computing, we are working with the following finite resources:</p>
 <ul>
-<li>
-For a basic introduction to linear chain, see <a href="https://docs.openwdl.org/en/latest/WDL/Linear_chaining/">OpenWDL Docs</a>’ introduction.
-</li>
-<li>
-To see other examples of linear chain and variations, see <a href="https://docs.openwdl.org/en/latest/WDL/add_plumbing/">OpenWDL Docs</a>’s section on workflow plumbing.
-</li>
+<li><p><strong>Computing time</strong>: a task can take milliseconds to days to complete. We find ways to reduce our computing time so that we have results sooner.</p></li>
+<li><p><strong>Central Processing Unit (CPU) usage</strong>: a task requires at least one CPU to be the “brain” of the computer to run computation, move data around, and access the memory. Tasks can make use of multiple CPUs to process in parallel.</p></li>
+<li><p><strong>Memory usage (RAM)</strong>: a task needs a place to store data while computing on the job. Reducing the memory usage can allow the task to be more efficient.</p></li>
+<li><p><strong>Disk usage</strong>: A task usually requires some input data and have an output, and needs disk storage to store the information when the task isn’t running.</p></li>
 </ul>
+<p>Changing usage of any of these resources often affect other resources. For instance, there’s often a tradeoff between computing time and memory usage. In order to be efficient with these finite resources, we will introduce some optimization methods that are common in building an efficient workflow, and provide an example on a simple optimization method, “Embarrassingly Parallel Scatter-Gather”.</p>
+<div id="common-optimizingparallelizing-methods" class="section level2" number="9.1">
+<h2><span class="header-section-number">9.1</span> Common optimizing/parallelizing methods</h2>
+<div id="memory-optimization" class="section level3" number="9.1.1">
+<h3><span class="header-section-number">9.1.1</span> Memory optimization</h3>
+<p>To optimizie the amount of memory used for a task, you can profile the task to understand how much memory is being used and where the bottlenecks are. Most programming languages have a large selection of memory profilers to analyze the performance of your code, and they can be starting points to consider how to use less memory. When a bottleneck is found, you might consider to use a more efficient algorithm to reduce memory usage. Or, perhaps you might use more optimal data structures, such as databases or sparse data structures, that better fit the data type of your problem.</p>
+<p>Another common memory analysis is to understand how memory usage scales relative to the input for the task. For example, as you increase the VCF file size for a task, how much does the memory usage scale? Is there something you can do so that it scales with a smaller magnitude?</p>
+<p>A technique you may want to consider if your memory usage scales with your input data size is that you could break down the input into smaller parts, and run your task on these smaller parts, each requesting smaller amount of memory. This wouldn’t reduce the total amount of memory you use, but many computing backends prefer many tasks using small amounts of a memory instead of a single job requiring a large amount of memory. This would also help optimizing computing time. Below, we look at different ways of parallelization.</p>
+</div>
+<div id="embarrassingly-parallel-scatter-gather" class="section level3" number="9.1.2">
+<h3><span class="header-section-number">9.1.2</span> Embarrassingly Parallel Scatter-Gather</h3>
+<p>A sub-task is called “Embarrassingly Parallel” if the sub-task can be run completely independent of other sub-tasks to finish the task. When we run multiple samples in our workflow, it is a form of “Embarrassingly Parallel”, because processing each tumor-normal pair through the workflow is done independently of other samples on separate computers (also known in high performance computing as “nodes”). This technique reduces the computing time and breaks down CPU and memory usage into smaller, more affordable resource requests. Later in this chapter we will show an detailed example of using this technique to split a BAM into individual chromosomes to run a resource demanding task.</p>
+</div>
+<div id="multithreading-shared-memory-parallelism" class="section level3" number="9.1.3">
+<h3><span class="header-section-number">9.1.3</span> Multithreading (Shared-Memory Parallelism)</h3>
+<p>Sometimes, you want to use multiple CPUs on a single computer to run sub-components of your task in parallel. This is called “multithreading”. Here, a single task accesses multiple CPUs on a computer to split up the task, and these CPUs share the same memory. Due to shared memory, each of these CPUs are not quite independent, and some communication is needed between CPUs to make this efficient. Well-documented and optimized bioinformatics software will often have usage options to use multiple cores to speed up the task. In our previous chapters, we used BWA MEM with an optional default of 16 CPUs. If you are developing your own task, then there are many built in operations that can make use of multiple CPUs, as well as low-level threading methods to help you develop a multi-threaded program.</p>
+</div>
+<div id="multiprocessing-distributed-memory-parallelism" class="section level3" number="9.1.4">
+<h3><span class="header-section-number">9.1.4</span> Multiprocessing (Distributed-Memory Parallelism)</h3>
+<p>Sometimes, the scale of the work requires coordination of multiple computers working dependently of each other. This is called “multiprocessing”. This is common in working with large scale data, using tools such as Spark or Hadoop. We will not be talking about multiprocessing extensively in this guide.</p>
+</div>
+<div id="graphical-processing-units-gpus" class="section level3" number="9.1.5">
+<h3><span class="header-section-number">9.1.5</span> Graphical Processing Units (GPUs)</h3>
+<p>Graphical processing units are an additional processing tool to CPUs, in which a different computer hardware is used. There are usually a few handful of CPUs on a computer, but there can be thousands of GPUs, each capable of doing a small and simple task quickly. GPUs are used for graphical displays, and scientific computing problems such as training neutral networks and solving differential equations. We will not be talking about GPUs extensively in this guide.</p>
 </div>
 </div>
-<div id="writing-markduplicates-task" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Writing <code>MarkDuplicates</code> task</h2>
-<p>Of course, the task <code>MarkDuplicates</code> hasn’t been written yet! Let’s go through it together:</p>
-<div id="input" class="section level3" number="4.2.1">
-<h3><span class="header-section-number">4.2.1</span> Input</h3>
-<p>The task takes an input bam file that has been aligned to the reference genome. It needs to be a File <code>input_bam</code> based on how we introduced it in the workflow above. That is easy to write up:</p>
-<pre><code>task MarkDuplicates {
+<div id="scatter-gather-on-chromosomes" class="section level2" number="9.2">
+<h2><span class="header-section-number">9.2</span> Scatter-Gather on chromosomes</h2>
+<div class="figure">
+<img src="assets/scatter_by_chr_full.png" alt="" />
+<p class="caption">Scatter-Gather By Chromosome</p>
+</div>
+<p>Suppose that one our tasks, <code>ApplyBaseRecalibrator</code>, is taking too long to run and taking on too much memory. We might first look into the <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360036898312-BaseRecalibrator">tool’s documentation</a> to see if there are ways use it more optimally, such as provide more CPUs, but we don’t see it. We turn to Embarrassingly Parallel Scatter-Gather, in which we split a BAM file by its chromosomes to create 23 BAM files, run <code>ApplyBaseRecalibrator</code> on each of these BAMs, and merge all of these calibrated BAM files together. This is called “Scatter-Gather” because we have to scatter our BAMs into smaller parts to run, and then gather them together in the end.</p>
+<div class="figure">
+<img src="assets/split_by_chr.png" alt="" />
+<p class="caption">Split By Chromosome</p>
+</div>
+<p>We first write a new task to split our BAM file, which takes the original BAM, an array of chromosomes to scatter, and outputs an array of Files of the smaller BAM files. The output array of Files is stored as <code>bams</code> and <code>indexFiles</code>, and illustrated in the diagram as “chr_array”.</p>
+<pre><code># Split a BAM file by chromosomes
+task splitBamByChr {
   input {
-    File input_bam
-  }
-}</code></pre>
-</div>
-<div id="private-variables-in-the-task" class="section level3" number="4.2.2">
-<h3><span class="header-section-number">4.2.2</span> Private variables in the task</h3>
-<p>Similar to the <code>BwaMem</code> task, we will name our output files based on the base name of the original input file in the workflow. Therefore, it makes sense to create a private String variable <code>base_file_name</code> that contains this base name of <code>input_bam</code>. We will use <code>base_file_name</code> in the Command section to specify the output bam and metrics files.</p>
-<pre><code>task MarkDuplicates {
-  input {
-    File input_bam
-  }
-  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-}</code></pre>
-</div>
-<div id="command" class="section level3" number="4.2.3">
-<h3><span class="header-section-number">4.2.3</span> Command</h3>
-<p>As we have been doing all along, we refer to any defined variables from the input or private variables using ~{this} syntax.</p>
-<pre><code>task MarkDuplicates {
-  input {
-    File input_bam
-  }
-
-  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-
-  command &lt;&lt;&lt;
-    gatk MarkDuplicates \
-      --INPUT &quot;~{input_bam}&quot; \
-      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
-      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
-      --CREATE_INDEX true \
-      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
-      --VALIDATION_STRINGENCY SILENT
-  &gt;&gt;&gt;
-}</code></pre>
-</div>
-<div id="runtime-and-output" class="section level3" number="4.2.4">
-<h3><span class="header-section-number">4.2.4</span> Runtime and Output</h3>
-<p>We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a bam index file that is automatically created by the command section.</p>
-<p>Below is the task all together. It has a form very similar to our first task <code>BwaMem</code>.</p>
-<pre><code> task MarkDuplicates {
-  input {
-    File input_bam
+    File bamToSplit
+    File baiToSplit
+    Array[String] chromosomes
   }
 
-  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
+  String baseFileName = basename(bamToSplit, &quot;.bam&quot;)
 
   command &lt;&lt;&lt;
-    gatk MarkDuplicates \
-      --INPUT &quot;~{input_bam}&quot; \
-      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
-      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
-      --CREATE_INDEX true \
-      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
-      --VALIDATION_STRINGENCY SILENT
+    set -eo pipefail
+    #For each chromosome...
+    for x in ~{sep=&#39; &#39; chromosomes}; do
+      outputFile=&quot;~{baseFileName}_${x}.bam&quot;
+      samtools view -b -@ 3 &quot;~{bamToSplit}&quot; $x &gt; $outputFile
+      samtools index $outputFile
+    done
+    # List all bam and bai files created
+    ls *.bam &gt; bam_list.txt
+    ls *.bam.bai &gt; bai_list.txt
   &gt;&gt;&gt;
-  
+    
+  output {
+    Array[File] bams = read_lines(&quot;bam_list.txt&quot;)
+    Array[File] indexFiles = read_lines(&quot;bai_list.txt&quot;)
+  }
+
   runtime {
-    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
-    memory: &quot;48 GB&quot;
+    docker: &quot;fredhutch/bwa:0.7.17&quot;
     cpu: 4
+  }</code></pre>
+<div class="figure">
+<img src="assets/gather_bams.png" alt="" />
+<p class="caption">GatherBams</p>
+</div>
+<p>We also need a task to gather all the BAMs together, which takes in an array of Files, and ouputs a merged BAM. The input array of Files is referred as <code>bams</code>, and illustrated in the diagram as <code>chr_array</code>.</p>
+<pre><code>#Gather an array of BAMs
+task gatherBams {
+  input {
+    Array[File] bams
+    String clean_baseName_regex
+  }
+
+  String temp = basename(bams[0], &quot;.bam&quot;)
+  String baseFileName = sub(temp, clean_baseName_regex, &quot;&quot;)
+
+  command &lt;&lt;&lt;
+    set -eo pipefail
+    samtools merge -c -@3 &quot;~{baseFileName}&quot;.merged.bam ~{sep=&#39; &#39; bams}
+    samtools index &quot;~{baseFileName}&quot;.merged.bam
+  &gt;&gt;&gt;
+    
+  runtime {
+      cpu: 4
+      docker: &quot;fredhutch/bwa:0.7.17&quot;
   }
   
   output {
-    File markDuplicates_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
-    File markDuplicates_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
-    File duplicate_metrics = &quot;~{base_file_name}.duplicate_metrics&quot;
+    File merged_bam = &quot;~{baseFileName}.merged.bam&quot;
+    File merged_bai = &quot;~{baseFileName}.merged.bam.bai&quot;
   }
 }</code></pre>
+<p>In our workflow, after <code>MarkDuplicates</code> task, we first use <code>splitBamByChr</code> to divvy up our BAM file, and then use a scatter over the output array of scattered BAMs to run <code>ApplyBaseRecalibrator</code> on each of the scatted BAMs. Finally, we take the output of <code>ApplyBaseRecalibrator</code> as an array to be merged together via <code>gatherBams</code>:</p>
+<div class="figure">
+<img src="assets/scatter_by_chr_full.png" alt="" />
+<p class="caption">Scatter Gather Full Workflow</p>
 </div>
-<div id="testing-the-workflow" class="section level3" number="4.2.5">
-<h3><span class="header-section-number">4.2.5</span> Testing the workflow</h3>
-<p>As before, when you add a new task to the workflow, you should always test that it works on your test sample. To check that <code>MarkDuplicates</code> is indeed marking PCR duplicates, you could check for the presence of the <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360051306171-MarkDuplicates-Picard">PCR duplicate flag in reads</a>, which has a decimal value of 1024 in the SAM Flags Field.</p>
-</div>
-</div>
-<div id="the-rest-of-the-linear-chain-workflow" class="section level2" number="4.3">
-<h2><span class="header-section-number">4.3</span> The rest of the linear chain workflow</h2>
-<p>We build out the rest of the tasks in a very similar fashion. Tasks <code>ApplyBaseRecalibrator</code> and <code>Mutect2TumorOnly</code> both have files that need to be localized, but otherwise all the tasks have a very similar form as <code>BwaMem</code> and <code>MarkDuplicates</code>. For this current iteration, we use only the tumor sample for mutation calling. In the following chapters, we will use additional WDL features to make use of tumor and normal samples for mutation calling.</p>
+<pre><code>#Split by chromosomes
+  call splitBamByChr as tumorSplitBamByChr {
+    input:
+      bamToSplit = tumorMarkDuplicates.markDuplicates_bam,
+      baiToSplit = tumorMarkDuplicates.markDuplicates_bai,
+      chromosomes = chrs_to_split
+  }
+
+#Scatter by chromosomes
+scatter(i in range(length(tumorSplitBamByChr.indexFiles))) {
+  File tumorSubBam = tumorSplitBamByChr.bams[i]
+  File tumorSubBamIndex = tumorSplitBamByChr.indexFiles[i]
+
+  call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator {
+    input:
+      input_bam = tumorSubBam,
+      input_bam_index = tumorSubBamIndex,
+      dbSNP_vcf = dbSNP_vcf,
+      dbSNP_vcf_index = dbSNP_vcf_index,
+      known_indels_sites_VCFs = known_indels_sites_VCFs,
+      known_indels_sites_indices = known_indels_sites_indices,
+      refGenome = refGenome
+  }
+}
+
+#Gather all chromosomes together      
+call gatherBams as tumorGatherBams {
+  input:
+    bams = tumorApplyBaseRecalibrator.recalibrated_bam,
+    clean_baseName_regex = &quot;.duplicates_marked_12.recal&quot;
+}</code></pre>
+<p>Our final workflow:</p>
 <pre><code>version 1.0
+## WDL 101 example workflow
+## 
+## This WDL workflow is intended to be used along with the WDL 101 docs. 
+## This workflow should be used for inspiration purposes only. 
+##
+## We use three samples 
+## Samples:
+## MOLM13: Normal sample
+## CALU1: KRAS G12C mutant
+## HCC4006: EGFR Ex19 deletion mutant 
+##
+## Input requirements:
+## - combined fastq files for chromosome 12 and 7 +/- 200bp around the sites of mutation only
+##
+## Output Files:
+## - An aligned bam for all 3 samples (with duplicates marked and base quality recalibrated)
+## 
+## Workflow developed by Sitapriya Moorthi, Chris Lo and Taylor Firman @ Fred Hutch and Ash (Aisling) O&#39;Farrell @ UCSC LMD: 02/28/24 for use @ Fred Hutch.
 
-workflow mutation_calling {
-  input {
-    File sampleFastq
-
-    # Reference genome
+struct referenceGenome {
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -411,7 +421,23 @@ workflow mutation_calling {
     File ref_pac
     File ref_sa
     String ref_name
+}
 
+struct pairedSample {
+  File tumorSample
+  File normalSample
+}
+
+
+workflow mutation_calling {
+  input {
+    Array[pairedSample] samples
+
+    referenceGenome refGenome
+
+    # Optional variable for bwa mem
+    Int? bwa_mem_threads
+    
     # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
@@ -423,83 +449,147 @@ workflow mutation_calling {
     # Annovar options
     String annovar_protocols
     String annovar_operation
+
+    #Chromosomes to scatter over
+    Array[String] chrs_to_split = [&quot;12&quot;, &quot;7&quot;]
   }
+
+ 
+  # Scatter for each sample in samples
+  scatter (sample in samples) {
+
+    #Tumors
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = sample.tumorSample,
+        refGenome = refGenome,
+        threads = bwa_mem_threads
+    }
     
-  call BwaMem {
-    input:
-      input_fastq = sampleFastq,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict,
-      ref_amb = ref_amb,
-      ref_ann = ref_ann,
-      ref_bwt = ref_bwt,
-      ref_pac = ref_pac,
-      ref_sa = ref_sa
-  }
-  
-  call MarkDuplicates {
-    input:
-      input_bam = BwaMem.analysisReadySorted
-  }
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
 
-  call ApplyBaseRecalibrator {
-    input:
-      input_bam = MarkDuplicates.markDuplicates_bam,
-      input_bam_index = MarkDuplicates.markDuplicates_bai,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index
-  }
+    #Split by chromosomes
+    call splitBamByChr as tumorSplitBamByChr {
+      input:
+        bamToSplit = tumorMarkDuplicates.markDuplicates_bam,
+        baiToSplit = tumorMarkDuplicates.markDuplicates_bai,
+        chromosomes = chrs_to_split
+    }
 
-  call Mutect2TumorOnly {
-    input:
-      input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-      input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      genomeReference = af_only_gnomad,
-      genomeReferenceIndex = af_only_gnomad_index
-  }
+    #Scatter by chromosomes
+    scatter(i in range(length(tumorSplitBamByChr.indexFiles))) {
+      File tumorSubBam = tumorSplitBamByChr.bams[i]
+      File tumorSubBamIndex = tumorSplitBamByChr.indexFiles[i]
+
+      call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator {
+        input:
+          input_bam = tumorSubBam,
+          input_bam_index = tumorSubBamIndex,
+          dbSNP_vcf = dbSNP_vcf,
+          dbSNP_vcf_index = dbSNP_vcf_index,
+          known_indels_sites_VCFs = known_indels_sites_VCFs,
+          known_indels_sites_indices = known_indels_sites_indices,
+          refGenome = refGenome
+      }
+    }
+
+    #Gather all chromosomes together      
+    call gatherBams as tumorGatherBams {
+      input:
+        bams = tumorApplyBaseRecalibrator.recalibrated_bam,
+        clean_baseName_regex = &quot;.duplicates_marked_12.recal&quot;
+    }
   
-  call annovar {
-    input:
-      input_vcf = Mutect2TumorOnly.output_vcf,
-      ref_name = ref_name,
-      annovar_operation = annovar_operation,
-      annovar_protocols = annovar_protocols
-  }
+
+    #Normals
+    call BwaMem as normalBwaMem {
+      input:
+        input_fastq = sample.normalSample,
+        refGenome = refGenome,
+        threads = bwa_mem_threads
+    }
+    
+    call MarkDuplicates as normalMarkDuplicates {
+      input:
+        input_bam = normalBwaMem.analysisReadySorted
+    }
   
-  # Outputs that will be retained when execution is complete
+    #Split by chromosomes
+    call splitBamByChr as normalSplitBamByChr {
+      input:
+        bamToSplit = normalMarkDuplicates.markDuplicates_bam,
+        baiToSplit = normalMarkDuplicates.markDuplicates_bai,
+        chromosomes = chrs_to_split
+    }
+
+    #Scatter by chromosomes
+    scatter(i in range(length(normalSplitBamByChr.indexFiles))) {
+      File normalSubBam = normalSplitBamByChr.bams[i]
+      File normalSubBamIndex = normalSplitBamByChr.indexFiles[i]
+
+      call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+        input:
+          input_bam = normalSubBam,
+          input_bam_index = normalSubBamIndex,
+          dbSNP_vcf = dbSNP_vcf,
+          dbSNP_vcf_index = dbSNP_vcf_index,
+          known_indels_sites_VCFs = known_indels_sites_VCFs,
+          known_indels_sites_indices = known_indels_sites_indices,
+          refGenome = refGenome
+      }
+    }
+
+    #Gather all chromosomes together      
+    call gatherBams as normalGatherBams {
+      input:
+        bams = normalApplyBaseRecalibrator.recalibrated_bam,
+        clean_baseName_regex = &quot;.duplicates_marked_12.recal&quot;
+    }
+       
+    #Paired Tumor-Normal calling
+    call Mutect2Paired {
+      input:
+        tumor_bam = tumorGatherBams.merged_bam,
+        tumor_bam_index = tumorGatherBams.merged_bai,
+        normal_bam = normalGatherBams.merged_bam,
+        normal_bam_index = normalGatherBams.merged_bai,
+        refGenome = refGenome,
+        genomeReference = af_only_gnomad,
+        genomeReferenceIndex = af_only_gnomad_index
+    }
+
+    call annovar {
+      input:
+        input_vcf = Mutect2Paired.output_vcf,
+        ref_name = refGenome.ref_name,
+        annovar_operation = annovar_operation,
+        annovar_protocols = annovar_protocols
+    }
+}
+
   output {
-    File alignedBamSorted = BwaMem.analysisReadySorted
-    File markDuplicates_bam = MarkDuplicates.markDuplicates_bam
-    File markDuplicates_bai = MarkDuplicates.markDuplicates_bai
-    File analysisReadyBam = ApplyBaseRecalibrator.recalibrated_bam 
-    File analysisReadyIndex = ApplyBaseRecalibrator.recalibrated_bai
-    File Mutect_Vcf = Mutect2TumorOnly.output_vcf
-    File Mutect_VcfIndex = Mutect2TumorOnly.output_vcf_index
-    File Mutect_AnnotatedVcf = annovar.output_annotated_vcf
-    File Mutect_AnnotatedTable = annovar.output_annotated_table
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorGatherBams.merged_bam
+    Array[File] tumoranalysisReadyIndex = tumorGatherBams.merged_bai
+    Array[File] normalalignedBamSorted = normalBwaMem.analysisReadySorted
+    Array[File] normalmarkDuplicates_bam = normalMarkDuplicates.markDuplicates_bam
+    Array[File] normalmarkDuplicates_bai = normalMarkDuplicates.markDuplicates_bai
+    Array[File] normalanalysisReadyBam = normalGatherBams.merged_bam
+    Array[File] normalanalysisReadyIndex = normalGatherBams.merged_bai
+    Array[File] Mutect2Paired_Vcf = Mutect2Paired.output_vcf
+    Array[File] Mutect2Paired_VcfIndex = Mutect2Paired.output_vcf_index
+    Array[File] Mutect2Paired_AnnotatedVcf = annovar.output_annotated_vcf
+    Array[File] Mutect2Paired_AnnotatedTable = annovar.output_annotated_table
   }
 
   parameter_meta {
-    sampleFastq: &quot;Tumor .fastq (expects Illumina)&quot;
-
-    ref_fasta: &quot;Reference genome to align reads to&quot;
-    ref_fasta_index: &quot;Reference genome index file (created by bwa index)&quot;
-    ref_dict: &quot;Reference genome dictionary file (created by bwa index)&quot;
-    ref_amb: &quot;Reference genome non-ATCG file (created by bwa index)&quot;
-    ref_ann: &quot;Reference genome ref seq annotation file (created by bwa index)&quot;
-    ref_bwt: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_pac: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_sa: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_name: &quot;Reference genome name (hg19, hg37, etc.)&quot;
+    tumorSamples: &quot;Tumor .fastq, one sample per .fastq file (expects Illumina)&quot;
+    normalFastq: &quot;Non-tumor .fastq (expects Illumina)&quot;
 
     dbSNP_vcf: &quot;dbSNP VCF for mutation calling&quot;
     dbSNP_vcf_index: &quot;dbSNP VCF index&quot;
@@ -521,38 +611,33 @@ workflow mutation_calling {
 task BwaMem {
   input {
     File input_fastq
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
+    referenceGenome refGenome
+    Int threads = 16  # if a workflow passes an optional variable with no value, fall back to 16
   }
   
   String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(ref_fasta)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
 
   String read_group_id = &quot;ID:&quot; + base_file_name
   String sample_name = &quot;SM:&quot; + base_file_name
   String platform_info = &quot;PL:illumina&quot;
 
+
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    mv &quot;~{ref_fasta}&quot; .
-    mv &quot;~{ref_fasta_index}&quot; .
-    mv &quot;~{ref_dict}&quot; .
-    mv &quot;~{ref_amb}&quot; .
-    mv &quot;~{ref_ann}&quot; .
-    mv &quot;~{ref_bwt}&quot; .
-    mv &quot;~{ref_pac}&quot; .
-    mv &quot;~{ref_sa}&quot; .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
+    mv &quot;~{refGenome.ref_amb}&quot; .
+    mv &quot;~{refGenome.ref_ann}&quot; .
+    mv &quot;~{refGenome.ref_bwt}&quot; .
+    mv &quot;~{refGenome.ref_pac}&quot; .
+    mv &quot;~{refGenome.ref_sa}&quot; .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
-      &quot;~{ref_fasta_local}&quot; &quot;~{input_fastq}&quot; &gt; &quot;~{base_file_name}.sam&quot;
+      -p -v 3 -t ~{threads} -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
+      &quot;~{ref_fasta_local}&quot; &quot;~{input_fastq}&quot; &gt; &quot;~{base_file_name}.sam&quot; 
     samtools view -1bS -@ 15 -o &quot;~{base_file_name}.aligned.bam&quot; &quot;~{base_file_name}.sam&quot;
     samtools sort -@ 15 -o &quot;~{base_file_name}.sorted_query_aligned.bam&quot; &quot;~{base_file_name}.aligned.bam&quot;
   &gt;&gt;&gt;
@@ -560,7 +645,7 @@ task BwaMem {
   output {
     File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
   }
-
+  
   runtime {
     memory: &quot;48 GB&quot;
     cpu: 16
@@ -608,14 +693,12 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
+    referenceGenome refGenome
   }
   
-  String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
+  String base_file_name = basename(input_bam, &quot;.bam&quot;)
   
-  String ref_fasta_local = basename(ref_fasta)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
   String dbSNP_vcf_local = basename(dbSNP_vcf)
   String known_indels_sites_VCFs_local = basename(known_indels_sites_VCFs)
 
@@ -623,9 +706,9 @@ task ApplyBaseRecalibrator {
   command &lt;&lt;&lt;
   set -eo pipefail
 
-  mv &quot;~{ref_fasta}&quot; .
-  mv &quot;~{ref_fasta_index}&quot; .
-  mv &quot;~{ref_dict}&quot; .
+  mv &quot;~{refGenome.ref_fasta}&quot; .
+  mv &quot;~{refGenome.ref_fasta_index}&quot; .
+  mv &quot;~{refGenome.ref_dict}&quot; .
 
   mv &quot;~{dbSNP_vcf}&quot; .
   mv &quot;~{dbSNP_vcf_index}&quot; .
@@ -668,40 +751,42 @@ task ApplyBaseRecalibrator {
   }
 }
 
-# Variant calling via mutect2 (tumor-only mode)
-task Mutect2TumorOnly {
+# Variant calling via mutect2 (tumor-and-normal mode)
+task Mutect2Paired {
   input {
-    File input_bam
-    File input_bam_index
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
+    File tumor_bam
+    File tumor_bam_index
+    File normal_bam
+    File normal_bam_index
+    referenceGenome refGenome
     File genomeReference
     File genomeReferenceIndex
   }
 
-  String base_file_name = basename(input_bam, &quot;.recal.bam&quot;)
-  String ref_fasta_local = basename(ref_fasta)
+  String base_file_name_tumor = basename(tumor_bam, &quot;.recal.bam&quot;)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
   String genomeReference_local = basename(genomeReference)
 
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    mv &quot;~{ref_fasta}&quot; .
-    mv &quot;~{ref_fasta_index}&quot; .
-    mv &quot;~{ref_dict}&quot; .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
+
     mv &quot;~{genomeReference}&quot; .
     mv &quot;~{genomeReferenceIndex}&quot; .
 
     gatk --java-options &quot;-Xms16g&quot; Mutect2 \
       -R &quot;~{ref_fasta_local}&quot; \
-      -I &quot;~{input_bam}&quot; \
+      -I &quot;~{tumor_bam}&quot; \
+      -I &quot;~{normal_bam}&quot; \
       -O preliminary.vcf.gz \
       --germline-resource &quot;~{genomeReference_local}&quot; \
-      
+
     gatk --java-options &quot;-Xms16g&quot; FilterMutectCalls \
       -V preliminary.vcf.gz \
-      -O &quot;~{base_file_name}.mutect2.vcf.gz&quot; \
+      -O &quot;~{base_file_name_tumor}.mutect2.vcf.gz&quot; \
       -R &quot;~{ref_fasta_local}&quot; \
       --stats preliminary.vcf.gz.stats \
   &gt;&gt;&gt;
@@ -713,10 +798,9 @@ task Mutect2TumorOnly {
   }
 
   output {
-    File output_vcf = &quot;~{base_file_name}.mutect2.vcf.gz&quot;
-    File output_vcf_index = &quot;~{base_file_name}.mutect2.vcf.gz.tbi&quot;
+    File output_vcf = &quot;${base_file_name_tumor}.mutect2.vcf.gz&quot;
+    File output_vcf_index = &quot;${base_file_name_tumor}.mutect2.vcf.gz.tbi&quot;
   }
-
 }
 
 # Annotate VCF using annovar
@@ -749,9 +833,70 @@ task annovar {
     File output_annotated_vcf = &quot;~{base_vcf_name}.${ref_name}_multianno.vcf&quot;
     File output_annotated_table = &quot;~{base_vcf_name}.${ref_name}_multianno.txt&quot;
   }
+}
+
+# Split a BAM file by chromosomes
+task splitBamByChr {
+  input {
+    File bamToSplit
+    File baiToSplit
+    Array[String] chromosomes
+  }
+
+  String baseFileName = basename(bamToSplit, &quot;.bam&quot;)
+
+  command &lt;&lt;&lt;
+    set -eo pipefail
+    #For each chromosome...
+    for x in ~{sep=&#39; &#39; chromosomes}; do
+      outputFile=&quot;~{baseFileName}_${x}.bam&quot;
+      samtools view -b -@ 3 &quot;~{bamToSplit}&quot; $x &gt; $outputFile
+      samtools index $outputFile
+    done
+    # List all bam and bai files created
+    ls *.bam &gt; bam_list.txt
+    ls *.bam.bai &gt; bai_list.txt
+  &gt;&gt;&gt;
+    
+  output {
+    Array[File] bams = read_lines(&quot;bam_list.txt&quot;)
+    Array[File] indexFiles = read_lines(&quot;bai_list.txt&quot;)
+  }
+
+  runtime {
+    docker: &quot;fredhutch/bwa:0.7.17&quot;
+    cpu: 4
+  }
+}
+
+#Gather an array of BAMs
+task gatherBams {
+  input {
+    Array[File] bams
+    String clean_baseName_regex
+  }
+
+  String temp = basename(bams[0], &quot;.bam&quot;)
+  String baseFileName = sub(temp, clean_baseName_regex, &quot;&quot;)
+
+  command &lt;&lt;&lt;
+    set -eo pipefail
+    samtools merge -c -@3 &quot;~{baseFileName}&quot;.merged.bam ~{sep=&#39; &#39; bams}
+    samtools index &quot;~{baseFileName}&quot;.merged.bam
+  &gt;&gt;&gt;
+    
+  runtime {
+      cpu: 4
+      docker: &quot;fredhutch/bwa:0.7.17&quot;
+  }
+  
+  output {
+    File merged_bam = &quot;~{baseFileName}.merged.bam&quot;
+    File merged_bai = &quot;~{baseFileName}.merged.bam.bai&quot;
+  }
 }</code></pre>
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
-Loading…
+<p>Loading…</p>
 </iframe>
 
 </div>
@@ -770,8 +915,8 @@ Loading…
           </div>
         </div>
       </div>
-<a href="the-first-task.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="organizing-variables-via-structs.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="optional-types.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="appendix-backends-and-executors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
