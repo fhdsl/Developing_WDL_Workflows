@@ -5,7 +5,7 @@ https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/defining-a-workflow-plan
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/the-first-task.html	3 The first task	resources/chapt_screen_images/the-first-task.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/connecting-multiple-tasks-together-in-a-linear-chain.html	4 Connecting multiple tasks together in a linear chain	resources/chapt_screen_images/connecting-multiple-tasks-together-in-a-linear-chain.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/organizing-variables-via-structs.html	5 Organizing variables via Structs	resources/chapt_screen_images/organizing-variables-via-structs.png
-https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/using-arrays-for-parallelization-and-other-use-cases.html	6 Using Arrays For Parallelization and Other Use Cases	resources/chapt_screen_images/using-arrays-for-parallelization-and-other-use-cases.png
+https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/parallelization-via-arrays.html	6 Parallelization via Arrays	resources/chapt_screen_images/parallelization-via-arrays.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/task-aliasing.html	7 Task Aliasing	resources/chapt_screen_images/task-aliasing.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/optional-types.html	8 Optional types	resources/chapt_screen_images/optional-types.png
 https://hutchdatascience.org/WDL_Workflows_Guide/no_toc/optimization.html	9 Optimization	resources/chapt_screen_images/optimization.png
