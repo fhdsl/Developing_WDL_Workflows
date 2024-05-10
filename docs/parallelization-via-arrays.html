@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows</title>
+  <title>Chapter 6 Parallelization via Arrays | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows" />
+  <meta property="og:title" content="Chapter 6 Parallelization via Arrays | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows" />
+  <meta name="twitter:title" content="Chapter 6 Parallelization via Arrays | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="the-first-task.html"/>
-<link rel="next" href="organizing-variables-via-structs.html"/>
+<link rel="prev" href="organizing-variables-via-structs.html"/>
+<link rel="next" href="task-aliasing.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -242,165 +242,46 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="connecting-multiple-tasks-together-in-a-linear-chain" class="section level1" number="4">
-<h1><span class="header-section-number">Chapter 4</span> Connecting multiple tasks together in a linear chain</h1>
-<p>Now that you have a first task in a workflow up and running, the next step is to continue building out the workflow as described in our Workflow Plan:</p>
-<ol style="list-style-type: decimal">
-<li><code>BwaMem</code> aligns the samples to the reference genome.</li>
-<li><code>MarkDuplicates</code> marks PCR duplicates.</li>
-<li><code>ApplyBaseRecalibrator</code> applies base recalibration.</li>
-<li><code>Mutect2</code> performs somatic mutation calling. For this current iteration, we start with <code>Mutect2TumorOnly</code> which only uses the tumor sample. Later on, we will switch to a version of mutect that will allow for comparing tumor samples against a non-tumor normal sample.</li>
-<li><code>annovar</code> annotates the called somatic mutations.</li>
-</ol>
-<p>We do this via a <strong>linear chain</strong>, in which we feed the output of one task to the input of the next task. Let’s see how to build a linear chain in a workflow.</p>
-<div id="how-to-connect-tasks-together-in-a-workflow" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> How to connect tasks together in a workflow</h2>
-<p>We can easily connect tasks together because of the following: <em>The output variables of a task can be accessed at the workflow level as inputs for the subsequent task.</em></p>
-<p>For instance, let’s see the output of our <code>BwaMem</code> task.</p>
-<pre><code>output {
-    File analysisReadyBam = &quot;~{base_file_name}.aligned.bam&quot;
-    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
-  }</code></pre>
-<p>The File variables <code>analysisReadyBam</code> and <code>analysisReadySorted</code> can now be accessed anywhere in the workflow block after the <code>BwaMem</code> task as <code>BwaMem.analysisReadyBam</code> and <code>BwaMem.analysisReadySorted</code>, respectively. Therefore, when we call the <code>MarkDuplicates</code> task, we can pass it the input <code>BwaMem.analysisReadySorted</code> from the <code>BwaMem</code> task:</p>
-<pre><code>workflow mutation_calling {
-  input {
-    File sampleFastq
-
-    # Reference genome
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-  }
-    
-
-  #  Map reads to reference
-  call BwaMem {
-    input:
-      input_fastq = sampleFastq,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict,
-      ref_amb = ref_amb,
-      ref_ann = ref_ann,
-      ref_bwt = ref_bwt,
-      ref_pac = ref_pac,
-      ref_sa = ref_sa
-  }
-   
-  call MarkDuplicates {
-    input:
-      input_bam = BwaMem.analysisReadySorted
-  }
-}</code></pre>
-<div class="notice">
-<p>Resources:</p>
+<div id="parallelization-via-arrays" class="section level1" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Parallelization via Arrays</h1>
+<p>We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let’s look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.</p>
+<p>In this chapter, we’ll be going over:</p>
 <ul>
-<li>
-For a basic introduction to linear chain, see <a href="https://docs.openwdl.org/en/latest/WDL/Linear_chaining/">OpenWDL Docs</a>’ introduction.
-</li>
-<li>
-To see other examples of linear chain and variations, see <a href="https://docs.openwdl.org/en/latest/WDL/add_plumbing/">OpenWDL Docs</a>’s section on workflow plumbing.
-</li>
+<li><p>How to use scattered tasks to run a workflow on multiple samples at once</p></li>
+<li><p>How to use arrays effectively</p></li>
+<li><p>How to reference arrays in a task’s command section</p></li>
+<li><p>How arrays differ from Structs</p></li>
 </ul>
+<div id="the-array-type" class="section level2" number="6.1">
+<h2><span class="header-section-number">6.1</span> The array type</h2>
+<p>Arrays are essentially lists of another <a href="https://en.wikipedia.org/wiki/Primitive_data_type">primitive type</a>. It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primitive type. For example, an Array[String] could contain the strings “cat” and “dog” but not the integer 1965 (however, it could have “1965” as a string).</p>
+<p>In chapter 5, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.</p>
+<p>In WDL, arrays are 0 indexed, so the “first” value in an array is referenced by <code>[0]</code>. As per the WDL spec, arrays retain their order and are <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a> – if you explicitly define an Array[String] with the members [“foo”, “bar”, “bizz”], you can be confident that “foo” will always be at index 0.</p>
+<pre><code>Array[String] foobarbizz = [&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;]
+String foo = foobarbizz[0]  # will always be &quot;foo&quot;</code></pre>
+<p>Because arrays are immutable in WDL, if you wish to add values to an array, you will need to define a new array. You can combine an existing array and new values using <code>flatten()</code>, a WDL built-in function that will turned a nested array into a “flat” array, like so:</p>
+<pre><code>Array[String] foobarbizz = [&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;]
+String foo = foobarbizz[0]  # will always be &quot;foo&quot;
+Array[Array[String]] foobarbizz_but_with_bonus_foo = [foobarbizz, foo, foo, foo]  # [[&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;], &quot;foo&quot;, &quot;foo&quot;, &quot;foo&quot;]
+Array[String] foobarbizzfoofoofoo = flatten(foobarbizz_but_with_bonus_foo)        # [&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;, &quot;foo&quot;, &quot;foo&quot;, &quot;foo&quot;]</code></pre>
+</div>
+<div id="scattered-tasks" class="section level2" number="6.2">
+<h2><span class="header-section-number">6.2</span> Scattered tasks</h2>
+<p>Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample’s chromosomes in parallel, or similar situations where breaking up data into discrete “chunks” makes sense.</p>
+<p>It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the <code>cpu</code> WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially “unaware” of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.</p>
+<div id="troubleshooting-1" class="section level3" number="6.2.1">
+<h3><span class="header-section-number">6.2.1</span> Troubleshooting</h3>
+<p>Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintuitive. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.</p>
+<p>Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend’s hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scalable cloud-based backends such as Terra, but isn’t uncommon when running scattered tasks on a local machine.</p>
 </div>
 </div>
-<div id="writing-markduplicates-task" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Writing <code>MarkDuplicates</code> task</h2>
-<p>Of course, the task <code>MarkDuplicates</code> hasn’t been written yet! Let’s go through it together:</p>
-<div id="input" class="section level3" number="4.2.1">
-<h3><span class="header-section-number">4.2.1</span> Input</h3>
-<p>The task takes an input bam file that has been aligned to the reference genome. It needs to be a File <code>input_bam</code> based on how we introduced it in the workflow above. That is easy to write up:</p>
-<pre><code>task MarkDuplicates {
-  input {
-    File input_bam
-  }
-}</code></pre>
-</div>
-<div id="private-variables-in-the-task" class="section level3" number="4.2.2">
-<h3><span class="header-section-number">4.2.2</span> Private variables in the task</h3>
-<p>Similar to the <code>BwaMem</code> task, we will name our output files based on the base name of the original input file in the workflow. Therefore, it makes sense to create a private String variable <code>base_file_name</code> that contains this base name of <code>input_bam</code>. We will use <code>base_file_name</code> in the Command section to specify the output bam and metrics files.</p>
-<pre><code>task MarkDuplicates {
-  input {
-    File input_bam
-  }
-  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-}</code></pre>
-</div>
-<div id="command" class="section level3" number="4.2.3">
-<h3><span class="header-section-number">4.2.3</span> Command</h3>
-<p>As we have been doing all along, we refer to any defined variables from the input or private variables using ~{this} syntax.</p>
-<pre><code>task MarkDuplicates {
-  input {
-    File input_bam
-  }
-
-  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-
-  command &lt;&lt;&lt;
-    gatk MarkDuplicates \
-      --INPUT &quot;~{input_bam}&quot; \
-      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
-      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
-      --CREATE_INDEX true \
-      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
-      --VALIDATION_STRINGENCY SILENT
-  &gt;&gt;&gt;
-}</code></pre>
-</div>
-<div id="runtime-and-output" class="section level3" number="4.2.4">
-<h3><span class="header-section-number">4.2.4</span> Runtime and Output</h3>
-<p>We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a bam index file that is automatically created by the command section.</p>
-<p>Below is the task all together. It has a form very similar to our first task <code>BwaMem</code>.</p>
-<pre><code> task MarkDuplicates {
-  input {
-    File input_bam
-  }
-
-  String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
-
-  command &lt;&lt;&lt;
-    gatk MarkDuplicates \
-      --INPUT &quot;~{input_bam}&quot; \
-      --OUTPUT &quot;~{base_file_name}.duplicates_marked.bam&quot; \
-      --METRICS_FILE &quot;~{base_file_name}.duplicate_metrics&quot; \
-      --CREATE_INDEX true \
-      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
-      --VALIDATION_STRINGENCY SILENT
-  &gt;&gt;&gt;
-  
-  runtime {
-    docker: &quot;broadinstitute/gatk:4.1.4.0&quot;
-    memory: &quot;48 GB&quot;
-    cpu: 4
-  }
-  
-  output {
-    File markDuplicates_bam = &quot;~{base_file_name}.duplicates_marked.bam&quot;
-    File markDuplicates_bai = &quot;~{base_file_name}.duplicates_marked.bai&quot;
-    File duplicate_metrics = &quot;~{base_file_name}.duplicate_metrics&quot;
-  }
-}</code></pre>
-</div>
-<div id="testing-the-workflow" class="section level3" number="4.2.5">
-<h3><span class="header-section-number">4.2.5</span> Testing the workflow</h3>
-<p>As before, when you add a new task to the workflow, you should always test that it works on your test sample. To check that <code>MarkDuplicates</code> is indeed marking PCR duplicates, you could check for the presence of the <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360051306171-MarkDuplicates-Picard">PCR duplicate flag in reads</a>, which has a decimal value of 1024 in the SAM Flags Field.</p>
-</div>
-</div>
-<div id="the-rest-of-the-linear-chain-workflow" class="section level2" number="4.3">
-<h2><span class="header-section-number">4.3</span> The rest of the linear chain workflow</h2>
-<p>We build out the rest of the tasks in a very similar fashion. Tasks <code>ApplyBaseRecalibrator</code> and <code>Mutect2TumorOnly</code> both have files that need to be localized, but otherwise all the tasks have a very similar form as <code>BwaMem</code> and <code>MarkDuplicates</code>. For this current iteration, we use only the tumor sample for mutation calling. In the following chapters, we will use additional WDL features to make use of tumor and normal samples for mutation calling.</p>
+<div id="making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays" class="section level2" number="6.3">
+<h2><span class="header-section-number">6.3</span> Making our workflow run on multiple samples at once using scattered tasks and arrays</h2>
+<p>When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we’ll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.</p>
+<p>For starters, we’ll want to change our workflow-level sample variables from File to Array[File]. However, we don’t need to change any of the reference genome files, because every instance of our tasks will be taking in the same reference genome files. In other words, our struct is unchanged.</p>
 <pre><code>version 1.0
 
-workflow mutation_calling {
-  input {
-    File sampleFastq
-
-    # Reference genome
+struct referenceGenome {
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -410,7 +291,118 @@ workflow mutation_calling {
     File ref_pac
     File ref_sa
     String ref_name
+}
 
+
+workflow mutation_calling {
+  input {
+    Array[File] tumorSamples
+
+    referenceGenome refGenome
+    
+    File dbSNP_vcf
+    File dbSNP_vcf_index
+    File known_indels_sites_VCFs
+    File known_indels_sites_indices
+    ...
+  }
+  ...
+}
+</code></pre>
+<p>Next, we will want to look at our chain of tasks. Each of these tasks are designed to take in a single sample. In theory, we could rewrite each task to iterate through an array of multiple samples. However, it’s much simpler to keep those tasks as single-sample tasks, and simply run them on one sample at a time. To do this, we encapsulate the task calls in the workflow document with <code>scatter</code>.</p>
+<pre><code>
+  scatter (tumorFastq in tumorSamples) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
+    call MarkDuplicates as tumorMarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+      input:
+        input_bam = tumorMarkDuplicates.markDuplicates_bam,
+        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+    }
+  }</code></pre>
+<p>A scatter is essentially the WDL version of a <a href="https://en.wikipedia.org/wiki/For_loop">for loop</a>. Every task within that loop will have access to a single File within the Array[File] that it is looping through. Within the scatter, downstream tasks can access outputs of upstream tasks like normal. So, the first tumor fastq file will go through BwaMem, then the resulting bam will go through MarkDuplicates, and the marked bam will undergo base recalibration. Since all three of these tasks are within the same scatter, each task only “sees” one sample at a time.</p>
+<p>However, outside the scatter, every task is considered in the context of all samples, so every output of those scattered tasks becomes arrays. As a result, our workflow-level outputs are now Array[File] instead of just File.</p>
+<pre><code>  output {
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+  }</code></pre>
+<p>You can reference a full copy of this workflow at the end of this chapter.</p>
+</div>
+<div id="referencing-an-array-in-a-task" class="section level2" number="6.4">
+<h2><span class="header-section-number">6.4</span> Referencing an array in a task</h2>
+<p>In our example, each task only takes in one sample, so we are not directly inputting arrays into a file. However, it’s important to know how to input arrays in a task’s command section. If a task’s input variable is an array, we must include an array separator. In WDL 1.0, this is done using the <code>sep=</code> expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via <code>sep</code>. In this example, that is a simple space, as that is one way how to construct a bash variable.</p>
+<pre><code>task count_words {
+  input {
+    Array[String] a_big_sentence
+  }
+  command &lt;&lt;&lt;
+    ARRAY_OF_WORDS=(~{sep=&quot; &quot; a_big_sentence})
+    echo ${#ARRAY_OF_FILES[@]} &gt;&gt; length.txt
+    # Note how the bash array uses ${} syntax, which could quickly get
+    # confusing if we used that syntax for our WDL variables. This is
+    # why we recommend using tilde + {} for your WDL variables.
+  &gt;&gt;&gt;
+}</code></pre>
+<p>It’s usually unnecessary to declare an Array[String], because a single String can have many words in it. That being said, an Array[String] can sometimes come in handy if it is made up of outputs from other tasks. We’ll talk more about chaining tasks together in upcoming chapters.</p>
+<div class="notice">
+<p>The WDL 1.1 spec added a new built-in function, <code>sep()</code>, which replaces the <code>sep=</code> expression placeholder for arrays. This same version of the spec also notes that the <code>sep=</code> expression placeholder <a href="https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#-expression-placeholder-options">are deprecated and will be removed from future versions of WDL</a>. For the time being, we recommend sticking with <code>sep=</code> as it is compatible with both WDL 1.0 and WDL 1.1, even though it is technically deprecated in WDL 1.1.</p>
+</div>
+<p>If you’re not used to working in bash, the syntax for interacting with bash arrays can be unintuitive, but you don’t have to write a WDL’s command section only using bash. In fact, working in another language besides bash within a WDL can be a great way to write code quickly, or perform tasks that are more advanced than what a typical bash script can handle. Just be sure to set <code>sep</code> properly to ensure that your array is interpreted correctly. In this example, we place quotation marks before and after the variable to ensure that the first and last value of the list are given beginning and ending quotation marks respectively.</p>
+<pre><code>task count_words_python {
+  input {
+    Array[String] a_big_sentence
+  }
+  command &lt;&lt;&lt;
+    python &lt;&lt; CODE
+    sentence = [ &quot;~{sep=&#39;&quot;, &quot;&#39; a_big_sentence}&quot; ]
+    print(len(sentence))
+    CODE
+  &gt;&gt;&gt;
+  runtime {
+    docker: &quot;python:latest&quot;
+  }
+}</code></pre>
+</div>
+<div id="the-workflow-so-far" class="section level2" number="6.5">
+<h2><span class="header-section-number">6.5</span> The workflow so far</h2>
+<p>Let’s take another look at our workflow.</p>
+<pre><code>version 1.0
+
+struct referenceGenome {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_pac
+    File ref_sa
+    String ref_name
+}
+
+
+workflow mutation_calling {
+  input {
+    Array[File] tumorSamples
+
+    referenceGenome refGenome
+    
     # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
@@ -423,82 +415,63 @@ workflow mutation_calling {
     String annovar_protocols
     String annovar_operation
   }
+ 
+  # Scatter for tumor samples   
+  scatter (tumorFastq in tumorSamples) {
+    call BwaMem as tumorBwaMem {
+      input:
+        input_fastq = tumorFastq,
+        refGenome = refGenome
+    }
     
-  call BwaMem {
-    input:
-      input_fastq = sampleFastq,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict,
-      ref_amb = ref_amb,
-      ref_ann = ref_ann,
-      ref_bwt = ref_bwt,
-      ref_pac = ref_pac,
-      ref_sa = ref_sa
-  }
-  
-  call MarkDuplicates {
-    input:
-      input_bam = BwaMem.analysisReadySorted
+    call MarkDuplicates {
+      input:
+        input_bam = tumorBwaMem.analysisReadySorted
+    }
+
+    call ApplyBaseRecalibrator {
+      input:
+        input_bam = MarkDuplicates.markDuplicates_bam,
+        input_bam_index = MarkDuplicates.markDuplicates_bai,
+        dbSNP_vcf = dbSNP_vcf,
+        dbSNP_vcf_index = dbSNP_vcf_index,
+        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        known_indels_sites_indices = known_indels_sites_indices,
+        refGenome = refGenome
+    }
+
+    call Mutect2TumorOnly {
+      input:
+        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
+        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+        refGenome = refGenome,
+        genomeReference = af_only_gnomad,
+        genomeReferenceIndex = af_only_gnomad_index
+    }
+    
+    call annovar {
+      input:
+        input_vcf = Mutect2TumorOnly.output_vcf,
+        ref_name = refGenome.ref_name,
+        annovar_operation = annovar_operation,
+        annovar_protocols = annovar_protocols
+    }
   }
 
-  call ApplyBaseRecalibrator {
-    input:
-      input_bam = MarkDuplicates.markDuplicates_bam,
-      input_bam_index = MarkDuplicates.markDuplicates_bai,
-      dbSNP_vcf = dbSNP_vcf,
-      dbSNP_vcf_index = dbSNP_vcf_index,
-      known_indels_sites_VCFs = known_indels_sites_VCFs,
-      known_indels_sites_indices = known_indels_sites_indices,
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index
-  }
-
-  call Mutect2TumorOnly {
-    input:
-      input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-      input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
-      ref_dict = ref_dict,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      genomeReference = af_only_gnomad,
-      genomeReferenceIndex = af_only_gnomad_index
-  }
-  
-  call annovar {
-    input:
-      input_vcf = Mutect2TumorOnly.output_vcf,
-      ref_name = ref_name,
-      annovar_operation = annovar_operation,
-      annovar_protocols = annovar_protocols
-  }
-  
-  # Outputs that will be retained when execution is complete
   output {
-    File alignedBamSorted = BwaMem.analysisReadySorted
-    File markDuplicates_bam = MarkDuplicates.markDuplicates_bam
-    File markDuplicates_bai = MarkDuplicates.markDuplicates_bai
-    File analysisReadyBam = ApplyBaseRecalibrator.recalibrated_bam 
-    File analysisReadyIndex = ApplyBaseRecalibrator.recalibrated_bai
-    File Mutect_Vcf = Mutect2TumorOnly.output_vcf
-    File Mutect_VcfIndex = Mutect2TumorOnly.output_vcf_index
-    File Mutect_AnnotatedVcf = annovar.output_annotated_vcf
-    File Mutect_AnnotatedTable = annovar.output_annotated_table
+    Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
+    Array[File] tumorMarkDuplicates_bam = MarkDuplicates.markDuplicates_bam
+    Array[File] tumorMarkDuplicates_bai = MarkDuplicates.markDuplicates_bai
+    Array[File] tumoranalysisReadyBam = ApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] tumoranalysisReadyIndex = ApplyBaseRecalibrator.recalibrated_bai
+    Array[File] Mutect_Vcf = Mutect2TumorOnly.output_vcf
+    Array[File] Mutect_VcfIndex = Mutect2TumorOnly.output_vcf_index
+    Array[File] Mutect_AnnotatedVcf = annovar.output_annotated_vcf
+    Array[File] Mutect_AnnotatedTable = annovar.output_annotated_table
   }
 
   parameter_meta {
-    sampleFastq: &quot;Tumor .fastq (expects Illumina)&quot;
-
-    ref_fasta: &quot;Reference genome to align reads to&quot;
-    ref_fasta_index: &quot;Reference genome index file (created by bwa index)&quot;
-    ref_dict: &quot;Reference genome dictionary file (created by bwa index)&quot;
-    ref_amb: &quot;Reference genome non-ATCG file (created by bwa index)&quot;
-    ref_ann: &quot;Reference genome ref seq annotation file (created by bwa index)&quot;
-    ref_bwt: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_pac: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_sa: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_name: &quot;Reference genome name (hg19, hg37, etc.)&quot;
+    tumorSamples: &quot;Tumor .fastq, one sample per .fastq file (expects Illumina)&quot;
 
     dbSNP_vcf: &quot;dbSNP VCF for mutation calling&quot;
     dbSNP_vcf_index: &quot;dbSNP VCF index&quot;
@@ -520,34 +493,28 @@ workflow mutation_calling {
 task BwaMem {
   input {
     File input_fastq
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
+    referenceGenome refGenome
   }
   
   String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(ref_fasta)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
 
   String read_group_id = &quot;ID:&quot; + base_file_name
   String sample_name = &quot;SM:&quot; + base_file_name
   String platform_info = &quot;PL:illumina&quot;
 
+
   command &lt;&lt;&lt;
     set -eo pipefail
 
-    mv &quot;~{ref_fasta}&quot; .
-    mv &quot;~{ref_fasta_index}&quot; .
-    mv &quot;~{ref_dict}&quot; .
-    mv &quot;~{ref_amb}&quot; .
-    mv &quot;~{ref_ann}&quot; .
-    mv &quot;~{ref_bwt}&quot; .
-    mv &quot;~{ref_pac}&quot; .
-    mv &quot;~{ref_sa}&quot; .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
+    mv &quot;~{refGenome.ref_amb}&quot; .
+    mv &quot;~{refGenome.ref_ann}&quot; .
+    mv &quot;~{refGenome.ref_bwt}&quot; .
+    mv &quot;~{refGenome.ref_pac}&quot; .
+    mv &quot;~{refGenome.ref_sa}&quot; .
 
     bwa mem \
       -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
@@ -559,7 +526,7 @@ task BwaMem {
   output {
     File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
   }
-
+  
   runtime {
     memory: &quot;48 GB&quot;
     cpu: 16
@@ -607,14 +574,12 @@ task ApplyBaseRecalibrator {
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
+    referenceGenome refGenome
   }
   
   String base_file_name = basename(input_bam, &quot;.duplicates_marked.bam&quot;)
   
-  String ref_fasta_local = basename(ref_fasta)
+  String ref_fasta_local = basename(refGenome.ref_fasta)
   String dbSNP_vcf_local = basename(dbSNP_vcf)
   String known_indels_sites_VCFs_local = basename(known_indels_sites_VCFs)
 
@@ -622,9 +587,9 @@ task ApplyBaseRecalibrator {
   command &lt;&lt;&lt;
   set -eo pipefail
 
-  mv &quot;~{ref_fasta}&quot; .
-  mv &quot;~{ref_fasta_index}&quot; .
-  mv &quot;~{ref_dict}&quot; .
+  mv &quot;~{refGenome.ref_fasta}&quot; .
+  mv &quot;~{refGenome.ref_fasta_index}&quot; .
+  mv &quot;~{refGenome.ref_dict}&quot; .
 
   mv &quot;~{dbSNP_vcf}&quot; .
   mv &quot;~{dbSNP_vcf_index}&quot; .
@@ -672,23 +637,21 @@ task Mutect2TumorOnly {
   input {
     File input_bam
     File input_bam_index
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
+    referenceGenome refGenome
     File genomeReference
     File genomeReferenceIndex
   }
 
-  String base_file_name = basename(input_bam, &quot;.recal.bam&quot;)
-  String ref_fasta_local = basename(ref_fasta)
-  String genomeReference_local = basename(genomeReference)
+    String base_file_name = basename(input_bam, &quot;.recal.bam&quot;)
+    String ref_fasta_local = basename(refGenome.ref_fasta)
+    String genomeReference_local = basename(genomeReference)
 
-  command &lt;&lt;&lt;
+command &lt;&lt;&lt;
     set -eo pipefail
 
-    mv &quot;~{ref_fasta}&quot; .
-    mv &quot;~{ref_fasta_index}&quot; .
-    mv &quot;~{ref_dict}&quot; .
+    mv &quot;~{refGenome.ref_fasta}&quot; .
+    mv &quot;~{refGenome.ref_fasta_index}&quot; .
+    mv &quot;~{refGenome.ref_dict}&quot; .
     mv &quot;~{genomeReference}&quot; .
     mv &quot;~{genomeReferenceIndex}&quot; .
 
@@ -697,7 +660,7 @@ task Mutect2TumorOnly {
       -I &quot;~{input_bam}&quot; \
       -O preliminary.vcf.gz \
       --germline-resource &quot;~{genomeReference_local}&quot; \
-      
+     
     gatk --java-options &quot;-Xms16g&quot; FilterMutectCalls \
       -V preliminary.vcf.gz \
       -O &quot;~{base_file_name}.mutect2.vcf.gz&quot; \
@@ -705,13 +668,13 @@ task Mutect2TumorOnly {
       --stats preliminary.vcf.gz.stats \
   &gt;&gt;&gt;
 
-  runtime {
+runtime {
     docker: &quot;ghcr.io/getwilds/gatk:4.3.0.0&quot;
     memory: &quot;24 GB&quot;
     cpu: 1
   }
 
-  output {
+output {
     File output_vcf = &quot;~{base_file_name}.mutect2.vcf.gz&quot;
     File output_vcf_index = &quot;~{base_file_name}.mutect2.vcf.gz.tbi&quot;
   }
@@ -749,18 +712,20 @@ task annovar {
     File output_annotated_table = &quot;~{base_vcf_name}.${ref_name}_multianno.txt&quot;
   }
 }</code></pre>
-<p>We also expand our input JSON metadata to have files needed for each task:</p>
+<p>The JSON metadata:</p>
 <pre><code>{
-  &quot;mutation_calling.sampleFastq&quot;: &quot;/path/to/Tumor_2_EGFR_HCC4006_combined.fastq&quot;,
-  &quot;mutation_calling.ref_fasta&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta&quot;,
-  &quot;mutation_calling.ref_fasta_index&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.fai&quot;,
-  &quot;mutation_calling.ref_dict&quot;: &quot;/path/to/Homo_sapiens_assembly19.dict&quot;,
-  &quot;mutation_calling.ref_pac&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.pac&quot;,
-  &quot;mutation_calling.ref_sa&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.sa&quot;,
-  &quot;mutation_calling.ref_amb&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.amb&quot;,
-  &quot;mutation_calling.ref_ann&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.ann&quot;,
-  &quot;mutation_calling.ref_bwt&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.bwt&quot;,
-  &quot;mutation_calling.ref_name&quot;: &quot;hg19&quot;,
+  &quot;mutation_calling.tumorSamples&quot;: [&quot;/path/to/Tumor_1_KRAS_CALU1_combined_final.fastq&quot;, &quot;/path/to/Tumor_2_EGFR_HCC4006_combined.fastq&quot;],
+  &quot;mutation_calling.refGenome&quot;: {
+    &quot;ref_fasta&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta&quot;,
+    &quot;ref_fasta_index&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.fai&quot;,
+    &quot;ref_dict&quot;: &quot;/path/to/Homo_sapiens_assembly19.dict&quot;,
+    &quot;ref_pac&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.pac&quot;,
+    &quot;ref_sa&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.sa&quot;,
+    &quot;ref_amb&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.amb&quot;,
+    &quot;ref_ann&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.ann&quot;,
+    &quot;ref_bwt&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.bwt&quot;,
+    &quot;ref_name&quot;: &quot;hg19&quot;
+  },
   &quot;mutation_calling.dbSNP_vcf_index&quot;: &quot;/path/to/dbsnp_138.b37.vcf.gz.tbi&quot;,
   &quot;mutation_calling.dbSNP_vcf&quot;: &quot;/path/to/dbsnp_138.b37.vcf.gz&quot;,
   &quot;mutation_calling.known_indels_sites_indices&quot;: &quot;/path/to/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx&quot;,
@@ -775,16 +740,18 @@ task annovar {
 <b>The JSON using the Fred Hutch HPC</b>
 </summary>
 <pre><code>{
-  &quot;mutation_calling.sampleFastq&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq&quot;,
-  &quot;mutation_calling.ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
-  &quot;mutation_calling.ref_fasta_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai&quot;,
-  &quot;mutation_calling.ref_dict&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict&quot;,
-  &quot;mutation_calling.ref_pac&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac&quot;,
-  &quot;mutation_calling.ref_sa&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa&quot;,
-  &quot;mutation_calling.ref_amb&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb&quot;,
-  &quot;mutation_calling.ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
-  &quot;mutation_calling.ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;,
-  &quot;mutation_calling.ref_name&quot;: &quot;hg19&quot;,
+  &quot;mutation_calling.tumorSamples&quot;: [&quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq&quot;, &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/CALU1_combined_final.fastq&quot;],
+  &quot;mutation_calling.refGenome&quot;: {
+    &quot;ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
+    &quot;ref_fasta_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai&quot;,
+    &quot;ref_dict&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict&quot;,
+    &quot;ref_pac&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac&quot;,
+    &quot;ref_sa&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa&quot;,
+    &quot;ref_amb&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb&quot;,
+    &quot;ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
+    &quot;ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;,
+    &quot;ref_name&quot;: &quot;hg19&quot;
+  },
   &quot;mutation_calling.dbSNP_vcf_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi&quot;,
   &quot;mutation_calling.dbSNP_vcf&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz&quot;,
   &quot;mutation_calling.known_indels_sites_indices&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx&quot;,
@@ -815,8 +782,8 @@ Loading…
           </div>
         </div>
       </div>
-<a href="the-first-task.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="organizing-variables-via-structs.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="organizing-variables-via-structs.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="task-aliasing.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
