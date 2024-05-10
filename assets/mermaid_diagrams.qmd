@@ -1,0 +1,40 @@
+```{mermaid}
+flowchart LR
+    A([sample.bam]) --> B[splitBamByChr]
+    C(["'1 2 3'"]) --> B
+    B --'chr1.bam'--> I([chr_array])
+    I --> D[ApplyBaseRecalibrator]
+    B --'chr2.bam'--> I
+    I --> E[ApplyBaseRecalibrator]
+    B --'chr3.bam'--> I
+    I --> F[ApplyBaseRecalibrator]
+    D --'chr1-dupes.bam'--> K([chr_array])
+    E --'chr2-dupes.bam'--> K
+    F --'chr3-dupes.bam'--> K
+    K --> L[gatherBams]
+    L --> H([Sample.merged.bam]) 
+```
+```{mermaid}
+flowchart LR
+    A([sample.bam]) --> B[splitBamByChr]
+    C(["'1 2 3'"]) --> B
+    B --'chr1.bam'--> I([chr_array])
+    B --'chr2.bam'--> I
+    B --'chr3.bam'--> I
+```
+
+```{mermaid}
+flowchart LR
+I([sample_array]) --> D[ApplyBaseRecalibrator]
+    I --> E[ApplyBaseRecalibrator]
+    I --> F[ApplyBaseRecalibrator]
+    D --'chr1-dupes.bam'--> K([chr_array])
+    E --'chr2-dupes.bam'--> K
+    F --'chr3-dupes.bam'--> K
+```
+
+```{mermaid}
+flowchart LR
+ K[(chr_array)] --> L[gatherBams]
+ L --> H([Sample.merged.bam]) 
+```
