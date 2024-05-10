@@ -41,6 +41,9 @@ workflow mutation_calling {
     Array[pairedSample] samples
 
     referenceGenome refGenome
+
+    # Optional variable for bwa mem
+    Int? bwa_mem_threads
     
     # Files for specific tools
     File dbSNP_vcf
@@ -53,6 +56,9 @@ workflow mutation_calling {
     # Annovar options
     String annovar_protocols
     String annovar_operation
+
+    #Chromosomes to scatter over
+    Array[String] chrs_to_split = ["12", "7"]
   }
 
  
@@ -63,7 +69,8 @@ workflow mutation_calling {
     call BwaMem as tumorBwaMem {
       input:
         input_fastq = sample.tumorSample,
-        refGenome = refGenome
+        refGenome = refGenome,
+        threads = bwa_mem_threads
     }
     
     call MarkDuplicates as tumorMarkDuplicates {
@@ -71,22 +78,45 @@ workflow mutation_calling {
         input_bam = tumorBwaMem.analysisReadySorted
     }
 
-    call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator{
+    #Split by chromosomes
+    call splitBamByChr as tumorSplitBamByChr {
       input:
-        input_bam = tumorMarkDuplicates.markDuplicates_bam,
-        input_bam_index = tumorMarkDuplicates.markDuplicates_bai,
-        dbSNP_vcf = dbSNP_vcf,
-        dbSNP_vcf_index = dbSNP_vcf_index,
-        known_indels_sites_VCFs = known_indels_sites_VCFs,
-        known_indels_sites_indices = known_indels_sites_indices,
-        refGenome = refGenome
+        bamToSplit = tumorMarkDuplicates.markDuplicates_bam,
+        baiToSplit = tumorMarkDuplicates.markDuplicates_bai,
+        chromosomes = chrs_to_split
     }
+
+    #Scatter by chromosomes
+    scatter(i in range(length(tumorSplitBamByChr.indexFiles))) {
+      File tumorSubBam = tumorSplitBamByChr.bams[i]
+      File tumorSubBamIndex = tumorSplitBamByChr.indexFiles[i]
+
+      call ApplyBaseRecalibrator as tumorApplyBaseRecalibrator {
+        input:
+          input_bam = tumorSubBam,
+          input_bam_index = tumorSubBamIndex,
+          dbSNP_vcf = dbSNP_vcf,
+          dbSNP_vcf_index = dbSNP_vcf_index,
+          known_indels_sites_VCFs = known_indels_sites_VCFs,
+          known_indels_sites_indices = known_indels_sites_indices,
+          refGenome = refGenome
+      }
+    }
+
+    #Gather all chromosomes together      
+    call gatherBams as tumorGatherBams {
+      input:
+        bams = tumorApplyBaseRecalibrator.recalibrated_bam,
+        clean_baseName_regex = ".duplicates_marked_12.recal"
+    }
+  
 
     #Normals
     call BwaMem as normalBwaMem {
       input:
         input_fastq = sample.normalSample,
-        refGenome = refGenome
+        refGenome = refGenome,
+        threads = bwa_mem_threads
     }
     
     call MarkDuplicates as normalMarkDuplicates {
@@ -94,24 +124,45 @@ workflow mutation_calling {
         input_bam = normalBwaMem.analysisReadySorted
     }
   
-    call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+    #Split by chromosomes
+    call splitBamByChr as normalSplitBamByChr {
       input:
-        input_bam = normalMarkDuplicates.markDuplicates_bam,
-        input_bam_index = normalMarkDuplicates.markDuplicates_bai,
-        dbSNP_vcf = dbSNP_vcf,
-        dbSNP_vcf_index = dbSNP_vcf_index,
-        known_indels_sites_VCFs = known_indels_sites_VCFs,
-        known_indels_sites_indices = known_indels_sites_indices,
-        refGenome = refGenome
+        bamToSplit = normalMarkDuplicates.markDuplicates_bam,
+        baiToSplit = normalMarkDuplicates.markDuplicates_bai,
+        chromosomes = chrs_to_split
     }
 
+    #Scatter by chromosomes
+    scatter(i in range(length(normalSplitBamByChr.indexFiles))) {
+      File normalSubBam = normalSplitBamByChr.bams[i]
+      File normalSubBamIndex = normalSplitBamByChr.indexFiles[i]
+
+      call ApplyBaseRecalibrator as normalApplyBaseRecalibrator {
+        input:
+          input_bam = normalSubBam,
+          input_bam_index = normalSubBamIndex,
+          dbSNP_vcf = dbSNP_vcf,
+          dbSNP_vcf_index = dbSNP_vcf_index,
+          known_indels_sites_VCFs = known_indels_sites_VCFs,
+          known_indels_sites_indices = known_indels_sites_indices,
+          refGenome = refGenome
+      }
+    }
+
+    #Gather all chromosomes together      
+    call gatherBams as normalGatherBams {
+      input:
+        bams = normalApplyBaseRecalibrator.recalibrated_bam,
+        clean_baseName_regex = ".duplicates_marked_12.recal"
+    }
+       
     #Paired Tumor-Normal calling
     call Mutect2Paired {
       input:
-        tumor_bam = tumorApplyBaseRecalibrator.recalibrated_bam,
-        tumor_bam_index = tumorApplyBaseRecalibrator.recalibrated_bai,
-        normal_bam = normalApplyBaseRecalibrator.recalibrated_bam,
-        normal_bam_index = normalApplyBaseRecalibrator.recalibrated_bai,
+        tumor_bam = tumorGatherBams.merged_bam,
+        tumor_bam_index = tumorGatherBams.merged_bai,
+        normal_bam = normalGatherBams.merged_bam,
+        normal_bam_index = normalGatherBams.merged_bai,
         refGenome = refGenome,
         genomeReference = af_only_gnomad,
         genomeReferenceIndex = af_only_gnomad_index
@@ -130,13 +181,13 @@ workflow mutation_calling {
     Array[File] tumoralignedBamSorted = tumorBwaMem.analysisReadySorted
     Array[File] tumorMarkDuplicates_bam = tumorMarkDuplicates.markDuplicates_bam
     Array[File] tumorMarkDuplicates_bai = tumorMarkDuplicates.markDuplicates_bai
-    Array[File] tumoranalysisReadyBam = tumorApplyBaseRecalibrator.recalibrated_bam 
-    Array[File] tumoranalysisReadyIndex = tumorApplyBaseRecalibrator.recalibrated_bai
+    Array[File] tumoranalysisReadyBam = tumorGatherBams.merged_bam
+    Array[File] tumoranalysisReadyIndex = tumorGatherBams.merged_bai
     Array[File] normalalignedBamSorted = normalBwaMem.analysisReadySorted
     Array[File] normalmarkDuplicates_bam = normalMarkDuplicates.markDuplicates_bam
     Array[File] normalmarkDuplicates_bai = normalMarkDuplicates.markDuplicates_bai
-    Array[File] normalanalysisReadyBam = normalApplyBaseRecalibrator.recalibrated_bam 
-    Array[File] normalanalysisReadyIndex = normalApplyBaseRecalibrator.recalibrated_bai
+    Array[File] normalanalysisReadyBam = normalGatherBams.merged_bam
+    Array[File] normalanalysisReadyIndex = normalGatherBams.merged_bai
     Array[File] Mutect2Paired_Vcf = Mutect2Paired.output_vcf
     Array[File] Mutect2Paired_VcfIndex = Mutect2Paired.output_vcf_index
     Array[File] Mutect2Paired_AnnotatedVcf = annovar.output_annotated_vcf
@@ -168,6 +219,7 @@ task BwaMem {
   input {
     File input_fastq
     referenceGenome refGenome
+    Int threads = 16  # if a workflow passes an optional variable with no value, fall back to 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -191,7 +243,7 @@ task BwaMem {
     mv "~{refGenome.ref_sa}" .
 
     bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam" 
     samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
     samtools sort -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
@@ -251,7 +303,7 @@ task ApplyBaseRecalibrator {
     referenceGenome refGenome
   }
   
-  String base_file_name = basename(input_bam, ".duplicates_marked.bam")
+  String base_file_name = basename(input_bam, ".bam")
   
   String ref_fasta_local = basename(refGenome.ref_fasta)
   String dbSNP_vcf_local = basename(dbSNP_vcf)
@@ -371,7 +423,7 @@ task annovar {
   command <<<
     set -eo pipefail
   
-    perl annovar/table_annovar.pl "~{input_vcf}" annovar/humandb/ \
+    perl /annovar/table_annovar.pl "~{input_vcf}" /annovar/humandb/ \
       -buildver "~{ref_name}" \
       -outfile "~{base_vcf_name}" \
       -remove \
@@ -380,12 +432,73 @@ task annovar {
       -nastring . -vcfinput
   >>>
   runtime {
-    docker: "ghcr.io/getwilds/annovar:~{ref_name}"
+    docker : "ghcr.io/getwilds/annovar:${ref_name}"
     cpu: 1
     memory: "2GB"
   }
   output {
     File output_annotated_vcf = "~{base_vcf_name}.${ref_name}_multianno.vcf"
     File output_annotated_table = "~{base_vcf_name}.${ref_name}_multianno.txt"
+  }
+}
+
+# Split a BAM file by chromosomes
+task splitBamByChr {
+  input {
+    File bamToSplit
+    File baiToSplit
+    Array[String] chromosomes
+  }
+
+  String baseFileName = basename(bamToSplit, ".bam")
+
+  command <<<
+    set -eo pipefail
+    #For each chromosome...
+    for x in ~{sep=' ' chromosomes}; do
+      outputFile="~{baseFileName}_${x}.bam"
+      samtools view -b -@ 3 "~{bamToSplit}" $x > $outputFile
+      samtools index $outputFile
+    done
+    # List all bam and bai files created
+    ls *.bam > bam_list.txt
+    ls *.bam.bai > bai_list.txt
+  >>>
+    
+  output {
+    Array[File] bams = read_lines("bam_list.txt")
+    Array[File] indexFiles = read_lines("bai_list.txt")
+  }
+
+  runtime {
+    docker: "fredhutch/bwa:0.7.17"
+    cpu: 4
+  }
+}
+
+#Gather an array of BAMs
+task gatherBams {
+  input {
+    Array[File] bams
+    String clean_baseName_regex
+  }
+
+  String temp = basename(bams[0], ".bam")
+  String baseFileName = sub(temp, clean_baseName_regex, "")
+
+  command <<<
+    set -eo pipefail
+    samtools merge -c -@3 "~{baseFileName}".merged.bam ~{sep=' ' bams}
+    samtools index "~{baseFileName}".merged.bam
+  >>>
+    
+  runtime {
+      cpu: 4
+      docker: "fredhutch/bwa:0.7.17"
+  }
+  
+  output {
+    File merged_bam = "~{baseFileName}.merged.bam"
+    File merged_bai = "~{baseFileName}.merged.bam.bai"
   }
 }

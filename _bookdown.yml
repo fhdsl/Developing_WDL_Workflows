@@ -10,7 +10,8 @@ rmd_files: ["index.Rmd",
             "06-arrays.Rmd",
             "07-task-aliasing.Rmd",
             "08-optional-types.Rmd",
-            "09-appendix-backends.Rmd",
+            "09-optimization.Rmd",
+            "10-appendix-backends.Rmd",
             "About.Rmd",
             "References.Rmd"]
 new_session: yes
