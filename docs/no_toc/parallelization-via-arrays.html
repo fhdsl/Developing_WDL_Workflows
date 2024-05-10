@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 6 Using Arrays For Parallelization and Other Use Cases | Developing WDL Workflows</title>
+  <title>Chapter 6 Parallelization via Arrays | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Using Arrays For Parallelization and Other Use Cases | Developing WDL Workflows" />
+  <meta property="og:title" content="Chapter 6 Parallelization via Arrays | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Using Arrays For Parallelization and Other Use Cases | Developing WDL Workflows" />
+  <meta name="twitter:title" content="Chapter 6 Parallelization via Arrays | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -118,6 +118,7 @@
 <li class="chapter" data-level="2.3.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-2-calu1"><i class="fa fa-check"></i><b>2.3.2</b> Tumor 2 : CALU1</a></li>
 <li class="chapter" data-level="2.3.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#normal-molm13"><i class="fa fa-check"></i><b>2.3.3</b> Normal : MOLM13</a></li>
 <li class="chapter" data-level="2.3.4" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-data-details"><i class="fa fa-check"></i><b>2.3.4</b> Test data details</a></li>
+<li class="chapter" data-level="2.3.5" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#access-to-files"><i class="fa fa-check"></i><b>2.3.5</b> Access to files</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="the-first-task.html"><a href="the-first-task.html"><i class="fa fa-check"></i><b>3</b> The first task</a>
@@ -151,16 +152,16 @@
 <li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
-<li class="chapter" data-level="6" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html"><i class="fa fa-check"></i><b>6</b> Using Arrays For Parallelization and Other Use Cases</a>
+<li class="chapter" data-level="6" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html"><i class="fa fa-check"></i><b>6</b> Parallelization via Arrays</a>
 <ul>
-<li class="chapter" data-level="6.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
-<li class="chapter" data-level="6.2" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
+<li class="chapter" data-level="6.1" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
+<li class="chapter" data-level="6.2" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
 <ul>
-<li class="chapter" data-level="6.2.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
+<li class="chapter" data-level="6.2.1" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
 </ul></li>
-<li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
-<li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
-<li class="chapter" data-level="6.5" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
+<li class="chapter" data-level="6.3" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
+<li class="chapter" data-level="6.4" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+<li class="chapter" data-level="6.5" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="task-aliasing.html"><a href="task-aliasing.html"><i class="fa fa-check"></i><b>7</b> Task Aliasing</a>
 <ul>
@@ -241,8 +242,8 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="using-arrays-for-parallelization-and-other-use-cases" class="section level1" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Using Arrays For Parallelization and Other Use Cases</h1>
+<div id="parallelization-via-arrays" class="section level1" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Parallelization via Arrays</h1>
 <p>We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let’s look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.</p>
 <p>In this chapter, we’ll be going over:</p>
 <ul>
@@ -711,6 +712,56 @@ task annovar {
     File output_annotated_table = &quot;~{base_vcf_name}.${ref_name}_multianno.txt&quot;
   }
 }</code></pre>
+<p>The JSON metadata:</p>
+<pre><code>{
+  &quot;mutation_calling.tumorSamples&quot;: [&quot;/path/to/Tumor_1_KRAS_CALU1_combined_final.fastq&quot;, &quot;/path/to/Tumor_2_EGFR_HCC4006_combined.fastq&quot;],
+  &quot;mutation_calling.refGenome&quot;: {
+    &quot;ref_fasta&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta&quot;,
+    &quot;ref_fasta_index&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.fai&quot;,
+    &quot;ref_dict&quot;: &quot;/path/to/Homo_sapiens_assembly19.dict&quot;,
+    &quot;ref_pac&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.pac&quot;,
+    &quot;ref_sa&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.sa&quot;,
+    &quot;ref_amb&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.amb&quot;,
+    &quot;ref_ann&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.ann&quot;,
+    &quot;ref_bwt&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.bwt&quot;,
+    &quot;ref_name&quot;: &quot;hg19&quot;
+  },
+  &quot;mutation_calling.dbSNP_vcf_index&quot;: &quot;/path/to/dbsnp_138.b37.vcf.gz.tbi&quot;,
+  &quot;mutation_calling.dbSNP_vcf&quot;: &quot;/path/to/dbsnp_138.b37.vcf.gz&quot;,
+  &quot;mutation_calling.known_indels_sites_indices&quot;: &quot;/path/to/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx&quot;,
+  &quot;mutation_calling.known_indels_sites_VCFs&quot;: &quot;/path/to/Mills_and_1000G_gold_standard.indels.b37.sites.vcf&quot;,
+  &quot;mutation_calling.af_only_gnomad&quot;: &quot;/path/to/af-only-gnomad.raw.sites.b37.vcf.gz&quot;,
+  &quot;mutation_calling.af_only_gnomad_index&quot;: &quot;/path/to/af-only-gnomad.raw.sites.b37.vcf.gz.tbi&quot;,
+  &quot;mutation_calling.annovar_protocols&quot;: &quot;refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome&quot;,
+  &quot;mutation_calling.annovar_operation&quot;: &quot;g,f,f,f,f,f&quot;
+}</code></pre>
+<details>
+<summary>
+<b>The JSON using the Fred Hutch HPC</b>
+</summary>
+<pre><code>{
+  &quot;mutation_calling.tumorSamples&quot;: [&quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq&quot;, &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/CALU1_combined_final.fastq&quot;],
+  &quot;mutation_calling.refGenome&quot;: {
+    &quot;ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
+    &quot;ref_fasta_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai&quot;,
+    &quot;ref_dict&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict&quot;,
+    &quot;ref_pac&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac&quot;,
+    &quot;ref_sa&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa&quot;,
+    &quot;ref_amb&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb&quot;,
+    &quot;ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
+    &quot;ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;,
+    &quot;ref_name&quot;: &quot;hg19&quot;
+  },
+  &quot;mutation_calling.dbSNP_vcf_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi&quot;,
+  &quot;mutation_calling.dbSNP_vcf&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz&quot;,
+  &quot;mutation_calling.known_indels_sites_indices&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx&quot;,
+  &quot;mutation_calling.known_indels_sites_VCFs&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Mills_and_1000G_gold_standard.indels.b37.sites.vcf&quot;,
+  &quot;mutation_calling.af_only_gnomad&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/af-only-gnomad.raw.sites.b37.vcf.gz&quot;,
+  &quot;mutation_calling.af_only_gnomad_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/af-only-gnomad.raw.sites.b37.vcf.gz.tbi&quot;,
+  &quot;mutation_calling.annovar_protocols&quot;: &quot;refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome&quot;,
+  &quot;mutation_calling.annovar_operation&quot;: &quot;g,f,f,f,f,f&quot;
+}</code></pre>
+</details>
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
 Loading…
 </iframe>

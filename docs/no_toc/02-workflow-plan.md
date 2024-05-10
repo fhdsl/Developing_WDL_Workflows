@@ -60,6 +60,10 @@ MOLM 13 is a human leukemia cell line commonly used in research. While it is als
 
 Fastq files for all these three samples were derived from their respective whole exome sequencing. However, for the purpose of this guide we have limited the sequencing reads to span +/- 200 bp around the mutation sites for both genes. In doing so we are able to shrink the data files for quick testing.
 
+### Access to files
+
+All files needed to run the workflow can be [downloaded here](https://figshare.com/articles/dataset/WDL_101_Dataset/25447528).
+
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
 
 Loading...

@@ -118,6 +118,7 @@
 <li class="chapter" data-level="2.3.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-2-calu1"><i class="fa fa-check"></i><b>2.3.2</b> Tumor 2 : CALU1</a></li>
 <li class="chapter" data-level="2.3.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#normal-molm13"><i class="fa fa-check"></i><b>2.3.3</b> Normal : MOLM13</a></li>
 <li class="chapter" data-level="2.3.4" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-data-details"><i class="fa fa-check"></i><b>2.3.4</b> Test data details</a></li>
+<li class="chapter" data-level="2.3.5" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#access-to-files"><i class="fa fa-check"></i><b>2.3.5</b> Access to files</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="the-first-task.html"><a href="the-first-task.html"><i class="fa fa-check"></i><b>3</b> The first task</a>
@@ -151,16 +152,16 @@
 <li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
-<li class="chapter" data-level="6" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html"><i class="fa fa-check"></i><b>6</b> Using Arrays For Parallelization and Other Use Cases</a>
+<li class="chapter" data-level="6" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html"><i class="fa fa-check"></i><b>6</b> Parallelization via Arrays</a>
 <ul>
-<li class="chapter" data-level="6.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
-<li class="chapter" data-level="6.2" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
+<li class="chapter" data-level="6.1" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
+<li class="chapter" data-level="6.2" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
 <ul>
-<li class="chapter" data-level="6.2.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
+<li class="chapter" data-level="6.2.1" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
 </ul></li>
-<li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
-<li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
-<li class="chapter" data-level="6.5" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
+<li class="chapter" data-level="6.3" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
+<li class="chapter" data-level="6.4" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+<li class="chapter" data-level="6.5" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="task-aliasing.html"><a href="task-aliasing.html"><i class="fa fa-check"></i><b>7</b> Task Aliasing</a>
 <ul>
@@ -714,7 +715,22 @@ task BwaMem {
 <div id="testing-your-first-task" class="section level2" number="3.6">
 <h2><span class="header-section-number">3.6</span> Testing your first task</h2>
 <p>To test your first task and your workflow, you should have expectation of output is. For this first <code>BwaMem</code> task, we just care that the BAM file is created with aligned reads. You can use <code>samtools view output.sorted_query_aligned.bam</code> to examine the reads and pipe it to wordcount <code>wc</code> to get the number of total reads. This number should be almost identical as the number of reads from your input FASTQ file if you run <code>wc input.fastq</code>. In other tasks, we might have a more precise expectation of what the output file should be, such as containing the specific somatic mutation call that we have curated.</p>
-<p>Here is an example JSON with the test data needed to run this single-task workflow:</p>
+<p>Here is an example JSON with the <a href="https://figshare.com/articles/dataset/WDL_101_Dataset/25447528">test data</a> needed to run this single-task workflow:</p>
+<pre><code>{
+  &quot;mutation_calling.sampleFastq&quot;: &quot;/path/to/Tumor_2_EGFR_HCC4006_combined.fastq&quot;,
+  &quot;mutation_calling.ref_fasta&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta&quot;,
+  &quot;mutation_calling.ref_fasta_index&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.fai&quot;,
+  &quot;mutation_calling.ref_dict&quot;: &quot;/path/to/Homo_sapiens_assembly19.dict&quot;,
+  &quot;mutation_calling.ref_pac&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.pac&quot;,
+  &quot;mutation_calling.ref_sa&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.sa&quot;,
+  &quot;mutation_calling.ref_amb&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.amb&quot;,
+  &quot;mutation_calling.ref_ann&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.ann&quot;,
+  &quot;mutation_calling.ref_bwt&quot;: &quot;/path/to/Homo_sapiens_assembly19.fasta.bwt&quot;
+}</code></pre>
+<details>
+<summary>
+<b>The example JSON using the Fred Hutch HPC</b>
+</summary>
 <pre><code>{
   &quot;mutation_calling.sampleFastq&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq&quot;,
   &quot;mutation_calling.ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
@@ -726,7 +742,7 @@ task BwaMem {
   &quot;mutation_calling.ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
   &quot;mutation_calling.ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;
 }</code></pre>
-<p>If you are not running on the Fred Hutch HPC, you’ll need to modify your JSON file to point to wherever you have the data files stored. You can download the same fastq we’re using from <a href="https://github.com/fhdsl/WDL-sandbox/tree/main/data">our sandbox repo</a>, and the reference files can be generated via <code>samtools index</code> or <a href="https://data.broadinstitute.org/snowman/hg19/">downloaded from the Broad Institute’s mirror</a>.</p>
+</details>
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
 Loading…
 </iframe>
