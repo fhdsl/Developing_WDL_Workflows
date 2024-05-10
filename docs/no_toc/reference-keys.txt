@@ -64,6 +64,14 @@ optional-outputs
 declaring-a-tasks-output-to-be-optional
 making-an-entire-task-optional
 the-final-workflow
+optimization
+common-optimizingparallelizing-methods
+memory-optimization
+embarrassingly-parallel-scatter-gather
+multithreading-shared-memory-parallelism
+multiprocessing-distributed-memory-parallelism
+graphical-processing-units-gpus
+scatter-gather-on-chromosomes
 appendix-backends-and-executors
 commonly-used-runtime-attributes
 general-advice
