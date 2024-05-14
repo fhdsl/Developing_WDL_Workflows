@@ -21,19 +21,21 @@ struct referenceGenome {
     String ref_name
 }
 
-workflow minidata_mutation_calling_v1 {
+workflow mutation_calling {
   input {
     File sampleFastq
-    referenceGenome refGenome
+    referenceGenome refGenome           ## our struct
     ...
   }
+    
   # Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
-      refGenome = refGenome
+      refGenome = refGenome             ## our struct 
   }
 }
+  
 ```
 
 The `referenceGenome` struct contains all the variables related to the reference genome, but values cannot be defined here. The struct definition merely lays the skeleton components of the data structure, but contains no actual values.
@@ -44,18 +46,18 @@ To give values to `refGenome`, we need to modify our JSON metadata file. We defi
 
 ```         
 {
-  "minidata_mutation_calling_v1.refGenome": {
-    "ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
-    "ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
-    "ref_dict": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict",
-    "ref_pac": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac",
-    "ref_sa": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa",
-    "ref_amb": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb",
-    "ref_ann": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann",
-    "ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt",
+  "mutation_calling.refGenome": {
+    "ref_fasta": "/path/to/Homo_sapiens_assembly19.fasta",
+    "ref_fasta_index": "/path/to/Homo_sapiens_assembly19.fasta.fai",
+    "ref_dict": "/path/to/Homo_sapiens_assembly19.dict",
+    "ref_pac": "/path/to/Homo_sapiens_assembly19.fasta.pac",
+    "ref_sa": "/path/to/Homo_sapiens_assembly19.fasta.sa",
+    "ref_amb": "/path/to/Homo_sapiens_assembly19.fasta.amb",
+    "ref_ann": "/path/to/Homo_sapiens_assembly19.fasta.ann",
+    "ref_bwt": "/path/to/Homo_sapiens_assembly19.fasta.bwt",
     "ref_name": "hg19"
   },
-  "minidata_mutation_calling_v1.dbSNP_vcf_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi",
+  "mutation_calling.dbSNP_vcf_index": "/path/to/dbsnp_138.b37.vcf.gz.tbi",
   ...
 }
 ```
@@ -67,6 +69,7 @@ In addition, we have replaced all the reference genome inputs in call `BwaMem` w
 Within the `BwaMem` task, we must refer to variables inside the struct, such as `refGenome.ref_name` (which has a value of "hg19" using this JSON metadata):
 
 ```         
+# Align fastq file to the reference genome
 task BwaMem {
   input {
     File input_fastq
@@ -78,28 +81,26 @@ task BwaMem {
 
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:illumina"
 
 
   command <<<
     set -eo pipefail
 
-    #can we iterate through a struct??
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-    mv ~{refGenome.ref_amb} .
-    mv ~{refGenome.ref_ann} .
-    mv ~{refGenome.ref_bwt} .
-    mv ~{refGenome.ref_pac} .
-    mv ~{refGenome.ref_sa} .
+    mv "~{refGenome.ref_fasta}" .
+    mv "~{refGenome.ref_fasta_index}" .
+    mv "~{refGenome.ref_dict}" .
+    mv "~{refGenome.ref_amb}" .
+    mv "~{refGenome.ref_ann}" .
+    mv "~{refGenome.ref_bwt}" .
+    mv "~{refGenome.ref_pac}" .
+    mv "~{refGenome.ref_sa}" .
 
     bwa mem \
       -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
-      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
+    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
+    samtools sort -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
   >>>
 
   output {
@@ -109,7 +110,7 @@ task BwaMem {
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }
 ```
@@ -121,7 +122,6 @@ Other tasks in the workflow, such as `ApplyBaseRecalibrator` and `Mutect2TumorOn
     input:
       input_vcf = Mutect2TumorOnly.output_vcf,
       ref_name = refGenome.ref_name,
-      annovarTAR = annovarTAR,
       annovar_operation = annovar_operation,
       annovar_protocols = annovar_protocols
   }
@@ -130,6 +130,8 @@ Other tasks in the workflow, such as `ApplyBaseRecalibrator` and `Mutect2TumorOn
 Putting everything together in the workflow:
 
 ```         
+version 1.0
+
 struct referenceGenome {
     File ref_fasta
     File ref_fasta_index
@@ -142,21 +144,21 @@ struct referenceGenome {
     String ref_name
 }
 
-workflow minidata_mutation_calling_v1 {
+workflow mutation_calling {
   input {
     File sampleFastq
 
     referenceGenome refGenome
     
+    # Files for specific tools
     File dbSNP_vcf
     File dbSNP_vcf_index
     File known_indels_sites_VCFs
     File known_indels_sites_indices
-    
     File af_only_gnomad
     File af_only_gnomad_index
-    
-    File annovarTAR
+
+    # Annovar options
     String annovar_protocols
     String annovar_operation
   }
@@ -182,25 +184,24 @@ workflow minidata_mutation_calling_v1 {
       known_indels_sites_VCFs = known_indels_sites_VCFs,
       known_indels_sites_indices = known_indels_sites_indices,
       refGenome = refGenome
-    }
+  }
 
   call Mutect2TumorOnly {
-      input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
-        refGenome = refGenome,
-        genomeReference = af_only_gnomad,
-        genomeReferenceIndex = af_only_gnomad_index
-    }
+    input:
+      input_bam = ApplyBaseRecalibrator.recalibrated_bam,
+      input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+      refGenome = refGenome,
+      genomeReference = af_only_gnomad,
+      genomeReferenceIndex = af_only_gnomad_index
+  }
   
   call annovar {
-      input:
-        input_vcf = Mutect2TumorOnly.output_vcf,
-        ref_name = refGenome.ref_name,
-        annovarTAR = annovarTAR,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols
-    }
+    input:
+      input_vcf = Mutect2TumorOnly.output_vcf,
+      ref_name = refGenome.ref_name,
+      annovar_operation = annovar_operation,
+      annovar_protocols = annovar_protocols
+  }
   
   # Outputs that will be retained when execution is complete
   output {
@@ -214,14 +215,25 @@ workflow minidata_mutation_calling_v1 {
     File Mutect_AnnotatedVcf = annovar.output_annotated_vcf
     File Mutect_AnnotatedTable = annovar.output_annotated_table
   }
+
+  parameter_meta {
+    sampleFastq: "Tumor .fastq (expects Illumina)"
+
+    dbSNP_vcf: "dbSNP VCF for mutation calling"
+    dbSNP_vcf_index: "dbSNP VCF index"
+    known_indels_sites_VCFs: "Known indel site VCF for mutation calling"
+    known_indels_sites_indices: "Known indel site VCF indicies"
+    af_only_gnomad: "gnomAD population allele fraction for mutation calling"
+    af_only_gnomad_index: "gnomAD population allele fraction index"
+
+    annovar_protocols: "annovar protocols: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
+    annovar_operation: "annovar operation: see https://annovar.openbioinformatics.org/en/latest/user-guide/startup"
+  }
 }
 
-
-
-
-
-
-# TASK DEFINITIONS
+####################
+# Task definitions #
+####################
 
 # Align fastq file to the reference genome
 task BwaMem {
@@ -235,28 +247,26 @@ task BwaMem {
 
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:illumina"
 
 
   command <<<
     set -eo pipefail
 
-    #can we iterate through a struct??
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-    mv ~{refGenome.ref_amb} .
-    mv ~{refGenome.ref_ann} .
-    mv ~{refGenome.ref_bwt} .
-    mv ~{refGenome.ref_pac} .
-    mv ~{refGenome.ref_sa} .
+    mv "~{refGenome.ref_fasta}" .
+    mv "~{refGenome.ref_fasta_index}" .
+    mv "~{refGenome.ref_dict}" .
+    mv "~{refGenome.ref_amb}" .
+    mv "~{refGenome.ref_ann}" .
+    mv "~{refGenome.ref_bwt}" .
+    mv "~{refGenome.ref_pac}" .
+    mv "~{refGenome.ref_sa}" .
 
     bwa mem \
       -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
-      ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
-    samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
-    samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
+      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
+    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
+    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
   >>>
 
   output {
@@ -266,41 +276,38 @@ task BwaMem {
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }
 
-# Mark duplicates (not SPARK, for some reason that does something weird)
+# Mark duplicates on a BAM file
 task MarkDuplicates {
   input {
     File input_bam
   }
 
   String base_file_name = basename(input_bam, ".sorted_query_aligned.bam")
-  String output_bam = "~{base_file_name}.duplicates_marked.bam"
-  String output_bai = "~{base_file_name}.duplicates_marked.bai"
-  String metrics_file = "~{base_file_name}.duplicate_metrics"
 
   command <<<
     gatk MarkDuplicates \
-      --INPUT ~{input_bam} \
-      --OUTPUT ~{output_bam} \
-      --METRICS_FILE ~{metrics_file} \
+      --INPUT "~{input_bam}" \
+      --OUTPUT "~{base_file_name}.duplicates_marked.bam" \
+      --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
       --CREATE_INDEX true \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 100 \
       --VALIDATION_STRINGENCY SILENT
   >>>
 
   runtime {
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
     memory: "48 GB"
     cpu: 4
   }
 
   output {
-    File markDuplicates_bam = "~{output_bam}"
-    File markDuplicates_bai = "~{output_bai}"
-    File duplicate_metrics = "~{metrics_file}"
+    File markDuplicates_bam = "~{base_file_name}.duplicates_marked.bam"
+    File markDuplicates_bai = "~{base_file_name}.duplicates_marked.bai"
+    File duplicate_metrics = "~{base_file_name}.duplicates_marked.bai"
   }
 }
 
@@ -326,37 +333,37 @@ task ApplyBaseRecalibrator {
   command <<<
   set -eo pipefail
 
-  mv ~{refGenome.ref_fasta} .
-  mv ~{refGenome.ref_fasta_index} .
-  mv ~{refGenome.ref_dict} .
+  mv "~{refGenome.ref_fasta}" .
+  mv "~{refGenome.ref_fasta_index}" .
+  mv "~{refGenome.ref_dict}" .
 
-  mv ~{dbSNP_vcf} .
-  mv ~{dbSNP_vcf_index} .
+  mv "~{dbSNP_vcf}" .
+  mv "~{dbSNP_vcf_index}" .
 
-  mv ~{known_indels_sites_VCFs} .
-  mv ~{known_indels_sites_indices} .
+  mv "~{known_indels_sites_VCFs}" .
+  mv "~{known_indels_sites_indices}" .
 
-  samtools index ~{input_bam} #redundant? markduplicates already does this?
+  samtools index "~{input_bam}"
 
   gatk --java-options "-Xms8g" \
       BaseRecalibrator \
-      -R ~{ref_fasta_local} \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal_data.csv \
-      --known-sites ~{dbSNP_vcf_local} \
-      --known-sites ~{known_indels_sites_VCFs_local} \
+      -R "~{ref_fasta_local}" \
+      -I "~{input_bam}" \
+      -O "~{base_file_name}.recal_data.csv" \
+      --known-sites "~{dbSNP_vcf_local}" \
+      --known-sites "~{known_indels_sites_VCFs_local}" \
       
 
   gatk --java-options "-Xms8g" \
       ApplyBQSR \
-      -bqsr ~{base_file_name}.recal_data.csv \
-      -I ~{input_bam} \
-      -O ~{base_file_name}.recal.bam \
-      -R ~{ref_fasta_local} \
+      -bqsr "~{base_file_name}.recal_data.csv" \
+      -I "~{input_bam}" \
+      -O "~{base_file_name}.recal.bam" \
+      -R "~{ref_fasta_local}" \
       
 
-  #finds the current sort order of this bam file
-  samtools view -H ~{base_file_name}.recal.bam | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > ~{base_file_name}.sortOrder.txt
+  # finds the current sort order of this bam file
+  samtools view -H "~{base_file_name}.recal.bam" | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > "~{base_file_name}.sortOrder.txt"
 >>>
 
   output {
@@ -367,14 +374,11 @@ task ApplyBaseRecalibrator {
   runtime {
     memory: "36 GB"
     cpu: 2
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
   }
 }
 
-
-
-# Mutect 2 calling
-
+# Variant calling via mutect2 (tumor-only mode)
 task Mutect2TumorOnly {
   input {
     File input_bam
@@ -391,75 +395,126 @@ task Mutect2TumorOnly {
 command <<<
     set -eo pipefail
 
-    mv ~{refGenome.ref_fasta} .
-    mv ~{refGenome.ref_fasta_index} .
-    mv ~{refGenome.ref_dict} .
-
-    mv ~{genomeReference} .
-    mv ~{genomeReferenceIndex} .
+    mv "~{refGenome.ref_fasta}" .
+    mv "~{refGenome.ref_fasta_index}" .
+    mv "~{refGenome.ref_dict}" .
+    mv "~{genomeReference}" .
+    mv "~{genomeReferenceIndex}" .
 
     gatk --java-options "-Xms16g" Mutect2 \
-      -R ~{ref_fasta_local} \
-      -I ~{input_bam} \
+      -R "~{ref_fasta_local}" \
+      -I "~{input_bam}" \
       -O preliminary.vcf.gz \
-      --germline-resource ~{genomeReference_local} \
+      --germline-resource "~{genomeReference_local}" \
      
     gatk --java-options "-Xms16g" FilterMutectCalls \
       -V preliminary.vcf.gz \
-      -O ~{base_file_name}.mutect2.vcf.gz \
-      -R ~{ref_fasta_local} \
+      -O "~{base_file_name}.mutect2.vcf.gz" \
+      -R "~{ref_fasta_local}" \
       --stats preliminary.vcf.gz.stats \
      
 >>>
 
 runtime {
-    docker: "broadinstitute/gatk:4.1.4.0"
+    docker: "ghcr.io/getwilds/gatk:4.3.0.0"
     memory: "24 GB"
     cpu: 1
   }
 
 output {
-    File output_vcf = "${base_file_name}.mutect2.vcf.gz"
-    File output_vcf_index = "${base_file_name}.mutect2.vcf.gz.tbi"
+    File output_vcf = "~{base_file_name}.mutect2.vcf.gz"
+    File output_vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
   }
 
 }
 
-
-
-
-# annotate with annovar
+# Annotate VCF using annovar
 task annovar {
   input {
-  File input_vcf
-  String ref_name
-  File annovarTAR
-  String annovar_protocols
-  String annovar_operation
-}
+    File input_vcf
+    String ref_name
+    String annovar_protocols
+    String annovar_operation
+  }
   String base_vcf_name = basename(input_vcf, ".vcf.gz")
   
   command <<<
-  set -eo pipefail
+    set -eo pipefail
   
-  tar -xzvf ~{annovarTAR}
-  
-  perl annovar/table_annovar.pl ~{input_vcf} annovar/humandb/ \
-    -buildver ~{ref_name} \
-    -outfile ~{base_vcf_name} \
-    -remove \
-    -protocol ~{annovar_protocols} \
-    -operation ~{annovar_operation} \
-    -nastring . -vcfinput
->>>
+    perl /annovar/table_annovar.pl "~{input_vcf}" /annovar/humandb/ \
+      -buildver "~{ref_name}" \
+      -outfile "~{base_vcf_name}" \
+      -remove \
+      -protocol "~{annovar_protocols}" \
+      -operation "~{annovar_operation}" \
+      -nastring . -vcfinput
+  >>>
   runtime {
-    docker : "perl:5.28.0"
+    docker : "ghcr.io/getwilds/annovar:${ref_name}"
     cpu: 1
     memory: "2GB"
   }
   output {
-    File output_annotated_vcf = "${base_vcf_name}.${ref_name}_multianno.vcf"
-    File output_annotated_table = "${base_vcf_name}.${ref_name}_multianno.txt"
+    File output_annotated_vcf = "~{base_vcf_name}.${ref_name}_multianno.vcf"
+    File output_annotated_table = "~{base_vcf_name}.${ref_name}_multianno.txt"
   }
 }
 ```
+
+The JSON metadata:
+
+```
+{
+  "mutation_calling.sampleFastq": "/path/to/Tumor_2_EGFR_HCC4006_combined.fastq",
+  "mutation_calling.refGenome": {
+    "ref_fasta": "/path/to/Homo_sapiens_assembly19.fasta",
+    "ref_fasta_index": "/path/to/Homo_sapiens_assembly19.fasta.fai",
+    "ref_dict": "/path/to/Homo_sapiens_assembly19.dict",
+    "ref_pac": "/path/to/Homo_sapiens_assembly19.fasta.pac",
+    "ref_sa": "/path/to/Homo_sapiens_assembly19.fasta.sa",
+    "ref_amb": "/path/to/Homo_sapiens_assembly19.fasta.amb",
+    "ref_ann": "/path/to/Homo_sapiens_assembly19.fasta.ann",
+    "ref_bwt": "/path/to/Homo_sapiens_assembly19.fasta.bwt",
+    "ref_name": "hg19"
+  },
+  "mutation_calling.dbSNP_vcf_index": "/path/to/dbsnp_138.b37.vcf.gz.tbi",
+  "mutation_calling.dbSNP_vcf": "/path/to/dbsnp_138.b37.vcf.gz",
+  "mutation_calling.known_indels_sites_indices": "/path/to/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx",
+  "mutation_calling.known_indels_sites_VCFs": "/path/to/Mills_and_1000G_gold_standard.indels.b37.sites.vcf",
+  "mutation_calling.af_only_gnomad": "/path/to/af-only-gnomad.raw.sites.b37.vcf.gz",
+  "mutation_calling.af_only_gnomad_index": "/path/to/af-only-gnomad.raw.sites.b37.vcf.gz.tbi",
+  "mutation_calling.annovar_protocols": "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
+  "mutation_calling.annovar_operation": "g,f,f,f,f,f"
+}
+```
+
+<details>
+<summary><b>The JSON using the Fred Hutch HPC</b></summary>
+
+```
+{
+  "mutation_calling.sampleFastq": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq",
+  "mutation_calling.refGenome": {
+    "ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
+    "ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
+    "ref_dict": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict",
+    "ref_pac": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac",
+    "ref_sa": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa",
+    "ref_amb": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb",
+    "ref_ann": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann",
+    "ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt",
+    "ref_name": "hg19"
+  },
+  "mutation_calling.dbSNP_vcf_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz.tbi",
+  "mutation_calling.dbSNP_vcf": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/dbsnp_138.b37.vcf.gz",
+  "mutation_calling.known_indels_sites_indices": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx",
+  "mutation_calling.known_indels_sites_VCFs": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Mills_and_1000G_gold_standard.indels.b37.sites.vcf",
+  "mutation_calling.af_only_gnomad": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/af-only-gnomad.raw.sites.b37.vcf.gz",
+  "mutation_calling.af_only_gnomad_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/af-only-gnomad.raw.sites.b37.vcf.gz.tbi",
+  "mutation_calling.annovar_protocols": "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
+  "mutation_calling.annovar_operation": "g,f,f,f,f,f"
+}
+```
+
+</details>
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>

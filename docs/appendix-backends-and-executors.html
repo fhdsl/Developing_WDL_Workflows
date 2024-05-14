@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 8 Appendix: Backends and Executors | Developing WDL Workflows</title>
+  <title>Chapter 10 Appendix: Backends and Executors | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 8 Appendix: Backends and Executors | Developing WDL Workflows" />
+  <meta property="og:title" content="Chapter 10 Appendix: Backends and Executors | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 8 Appendix: Backends and Executors | Developing WDL Workflows" />
+  <meta name="twitter:title" content="Chapter 10 Appendix: Backends and Executors | Developing WDL Workflows" />
   
   <meta name="twitter:description" content="Description about Course/Book." />
   
@@ -29,7 +29,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
-<link rel="prev" href="task-aliasing.html"/>
+<link rel="prev" href="optimization.html"/>
 <link rel="next" href="about-the-authors.html"/>
 <script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -118,6 +118,7 @@
 <li class="chapter" data-level="2.3.2" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#tumor-2-calu1"><i class="fa fa-check"></i><b>2.3.2</b> Tumor 2 : CALU1</a></li>
 <li class="chapter" data-level="2.3.3" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#normal-molm13"><i class="fa fa-check"></i><b>2.3.3</b> Normal : MOLM13</a></li>
 <li class="chapter" data-level="2.3.4" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#test-data-details"><i class="fa fa-check"></i><b>2.3.4</b> Test data details</a></li>
+<li class="chapter" data-level="2.3.5" data-path="defining-a-workflow-plan.html"><a href="defining-a-workflow-plan.html#access-to-files"><i class="fa fa-check"></i><b>2.3.5</b> Access to files</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="the-first-task.html"><a href="the-first-task.html"><i class="fa fa-check"></i><b>3</b> The first task</a>
@@ -151,42 +152,62 @@
 <li class="chapter" data-level="4.3" data-path="connecting-multiple-tasks-together-in-a-linear-chain.html"><a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow"><i class="fa fa-check"></i><b>4.3</b> The rest of the linear chain workflow</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="organizing-variables-via-structs.html"><a href="organizing-variables-via-structs.html"><i class="fa fa-check"></i><b>5</b> Organizing variables via Structs</a></li>
-<li class="chapter" data-level="6" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html"><i class="fa fa-check"></i><b>6</b> Using Arrays For Parallelization and Other Use Cases</a>
+<li class="chapter" data-level="6" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html"><i class="fa fa-check"></i><b>6</b> Parallelization via Arrays</a>
 <ul>
-<li class="chapter" data-level="6.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
-<li class="chapter" data-level="6.2" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
+<li class="chapter" data-level="6.1" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#the-array-type"><i class="fa fa-check"></i><b>6.1</b> The array type</a></li>
+<li class="chapter" data-level="6.2" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#scattered-tasks"><i class="fa fa-check"></i><b>6.2</b> Scattered tasks</a>
 <ul>
-<li class="chapter" data-level="6.2.1" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
+<li class="chapter" data-level="6.2.1" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#troubleshooting-1"><i class="fa fa-check"></i><b>6.2.1</b> Troubleshooting</a></li>
 </ul></li>
-<li class="chapter" data-level="6.3" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
-<li class="chapter" data-level="6.4" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
-<li class="chapter" data-level="6.5" data-path="using-arrays-for-parallelization-and-other-use-cases.html"><a href="using-arrays-for-parallelization-and-other-use-cases.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
+<li class="chapter" data-level="6.3" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays"><i class="fa fa-check"></i><b>6.3</b> Making our workflow run on multiple samples at once using scattered tasks and arrays</a></li>
+<li class="chapter" data-level="6.4" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#referencing-an-array-in-a-task"><i class="fa fa-check"></i><b>6.4</b> Referencing an array in a task</a></li>
+<li class="chapter" data-level="6.5" data-path="parallelization-via-arrays.html"><a href="parallelization-via-arrays.html#the-workflow-so-far"><i class="fa fa-check"></i><b>6.5</b> The workflow so far</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="task-aliasing.html"><a href="task-aliasing.html"><i class="fa fa-check"></i><b>7</b> Task Aliasing</a>
 <ul>
-<li class="chapter" data-level="7.1" data-path="task-aliasing.html"><a href="task-aliasing.html#advantages-of-aliasing"><i class="fa fa-check"></i><b>7.1</b> Advantages of aliasing</a></li>
-<li class="chapter" data-level="7.2" data-path="task-aliasing.html"><a href="task-aliasing.html#start-to-add-a-task-alias"><i class="fa fa-check"></i><b>7.2</b> Start to add a task alias</a></li>
-<li class="chapter" data-level="7.3" data-path="task-aliasing.html"><a href="task-aliasing.html#add-the-task-alias"><i class="fa fa-check"></i><b>7.3</b> Add the task alias</a></li>
-<li class="chapter" data-level="7.4" data-path="task-aliasing.html"><a href="task-aliasing.html#modify-your-output"><i class="fa fa-check"></i><b>7.4</b> Modify your output</a></li>
-<li class="chapter" data-level="7.5" data-path="task-aliasing.html"><a href="task-aliasing.html#alias-for-other-tasks"><i class="fa fa-check"></i><b>7.5</b> Alias for other tasks</a></li>
+<li class="chapter" data-level="7.1" data-path="task-aliasing.html"><a href="task-aliasing.html#aliasing-your-first-task"><i class="fa fa-check"></i><b>7.1</b> Aliasing your first task</a></li>
+<li class="chapter" data-level="7.2" data-path="task-aliasing.html"><a href="task-aliasing.html#aliasing-other-tasks"><i class="fa fa-check"></i><b>7.2</b> Aliasing other tasks</a></li>
+<li class="chapter" data-level="7.3" data-path="task-aliasing.html"><a href="task-aliasing.html#paired-tumor-normal-calling"><i class="fa fa-check"></i><b>7.3</b> Paired tumor normal calling</a></li>
 </ul></li>
-<li class="chapter" data-level="8" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>8</b> Appendix: Backends and Executors</a>
+<li class="chapter" data-level="8" data-path="optional-types.html"><a href="optional-types.html"><i class="fa fa-check"></i><b>8</b> Optional types</a>
 <ul>
-<li class="chapter" data-level="8.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>8.1</b> Commonly used runtime attributes</a></li>
-<li class="chapter" data-level="8.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>8.2</b> General advice</a></li>
-<li class="chapter" data-level="8.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>8.3</b> Executor-specific notes</a>
+<li class="chapter" data-level="8.1" data-path="optional-types.html"><a href="optional-types.html#optional-inputs"><i class="fa fa-check"></i><b>8.1</b> Optional inputs</a></li>
+<li class="chapter" data-level="8.2" data-path="optional-types.html"><a href="optional-types.html#optional-outputs"><i class="fa fa-check"></i><b>8.2</b> Optional outputs</a>
 <ul>
-<li class="chapter" data-level="8.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>8.3.1</b> Cromwell</a></li>
-<li class="chapter" data-level="8.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>8.3.2</b> miniwdl</a></li>
+<li class="chapter" data-level="8.2.1" data-path="optional-types.html"><a href="optional-types.html#declaring-a-tasks-output-to-be-optional"><i class="fa fa-check"></i><b>8.2.1</b> Declaring a task’s output to be optional</a></li>
+<li class="chapter" data-level="8.2.2" data-path="optional-types.html"><a href="optional-types.html#making-an-entire-task-optional"><i class="fa fa-check"></i><b>8.2.2</b> Making an entire task optional</a></li>
 </ul></li>
-<li class="chapter" data-level="8.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>8.4</b> Backend-specific notes</a>
+<li class="chapter" data-level="8.3" data-path="optional-types.html"><a href="optional-types.html#the-final-workflow"><i class="fa fa-check"></i><b>8.3</b> The final workflow</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="optimization.html"><a href="optimization.html"><i class="fa fa-check"></i><b>9</b> Optimization</a>
 <ul>
-<li class="chapter" data-level="8.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcp"><i class="fa fa-check"></i><b>8.4.1</b> GCP</a></li>
-<li class="chapter" data-level="8.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>8.4.2</b> HPCs</a></li>
+<li class="chapter" data-level="9.1" data-path="optimization.html"><a href="optimization.html#common-optimizingparallelizing-methods"><i class="fa fa-check"></i><b>9.1</b> Common optimizing/parallelizing methods</a>
+<ul>
+<li class="chapter" data-level="9.1.1" data-path="optimization.html"><a href="optimization.html#memory-optimization"><i class="fa fa-check"></i><b>9.1.1</b> Memory optimization</a></li>
+<li class="chapter" data-level="9.1.2" data-path="optimization.html"><a href="optimization.html#embarrassingly-parallel-scatter-gather"><i class="fa fa-check"></i><b>9.1.2</b> Embarrassingly Parallel Scatter-Gather</a></li>
+<li class="chapter" data-level="9.1.3" data-path="optimization.html"><a href="optimization.html#multithreading-shared-memory-parallelism"><i class="fa fa-check"></i><b>9.1.3</b> Multithreading (Shared-Memory Parallelism)</a></li>
+<li class="chapter" data-level="9.1.4" data-path="optimization.html"><a href="optimization.html#multiprocessing-distributed-memory-parallelism"><i class="fa fa-check"></i><b>9.1.4</b> Multiprocessing (Distributed-Memory Parallelism)</a></li>
+<li class="chapter" data-level="9.1.5" data-path="optimization.html"><a href="optimization.html#graphical-processing-units-gpus"><i class="fa fa-check"></i><b>9.1.5</b> Graphical Processing Units (GPUs)</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="optimization.html"><a href="optimization.html#scatter-gather-on-chromosomes"><i class="fa fa-check"></i><b>9.2</b> Scatter-Gather on chromosomes</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html"><i class="fa fa-check"></i><b>10</b> Appendix: Backends and Executors</a>
+<ul>
+<li class="chapter" data-level="10.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes"><i class="fa fa-check"></i><b>10.1</b> Commonly used runtime attributes</a></li>
+<li class="chapter" data-level="10.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#general-advice"><i class="fa fa-check"></i><b>10.2</b> General advice</a></li>
+<li class="chapter" data-level="10.3" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#executor-specific-notes"><i class="fa fa-check"></i><b>10.3</b> Executor-specific notes</a>
+<ul>
+<li class="chapter" data-level="10.3.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#cromwell"><i class="fa fa-check"></i><b>10.3.1</b> Cromwell</a></li>
+<li class="chapter" data-level="10.3.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#miniwdl"><i class="fa fa-check"></i><b>10.3.2</b> miniwdl</a></li>
+</ul></li>
+<li class="chapter" data-level="10.4" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#backend-specific-notes"><i class="fa fa-check"></i><b>10.4</b> Backend-specific notes</a>
+<ul>
+<li class="chapter" data-level="10.4.1" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#hpcs"><i class="fa fa-check"></i><b>10.4.1</b> HPCs</a></li>
+<li class="chapter" data-level="10.4.2" data-path="appendix-backends-and-executors.html"><a href="appendix-backends-and-executors.html#gcpterra"><i class="fa fa-check"></i><b>10.4.2</b> GCP/Terra</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="about-the-authors.html"><a href="about-the-authors.html"><i class="fa fa-check"></i>About the Authors</a></li>
-<li class="chapter" data-level="9" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>9</b> References</a></li>
+<li class="chapter" data-level="11" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i><b>11</b> References</a></li>
 <li class="divider"></li>
 <p style="text-align:center;"> <a href="https://github.com/jhudsl/OTTR_Template" target="blank" > This content was published with</a> <a href="https://bookdown.org/" target="blank"> bookdown by: </a> </p>
 <p style="text-align:center;"> <a href="https://hutchdatascience.org/"> The Fred Hutch Data Science Lab </a></p>
@@ -221,19 +242,19 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="appendix-backends-and-executors" class="section level1" number="8">
-<h1><span class="header-section-number">Chapter 8</span> Appendix: Backends and Executors</h1>
+<div id="appendix-backends-and-executors" class="section level1" number="10">
+<h1><span class="header-section-number">Chapter 10</span> Appendix: Backends and Executors</h1>
 <p>Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software dependencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.</p>
-<div id="commonly-used-runtime-attributes" class="section level2" number="8.1">
-<h2><span class="header-section-number">8.1</span> Commonly used runtime attributes</h2>
+<div id="commonly-used-runtime-attributes" class="section level2" number="10.1">
+<h2><span class="header-section-number">10.1</span> Commonly used runtime attributes</h2>
 <p>Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.</p>
 <table>
 <colgroup>
-<col width="5%" />
-<col width="34%" />
-<col width="12%" />
-<col width="12%" />
-<col width="34%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -275,7 +296,7 @@
 </tr>
 <tr class="odd">
 <td>memory</td>
-<td>Maximum amount of memory to use</td>
+<td>n/a</td>
 <td>n/a</td>
 <td>Maximum amount of memory to use</td>
 <td>Minimum amount of memory to use (scales with CPU)</td>
@@ -288,8 +309,8 @@
 <td>Attempt running on a preemptible instance this many times, then switch to a non-preemptible</td>
 </tr>
 <tr class="odd">
-<td>walltime</td>
-<td>How much <a href="https://en.wikipedia.org/wiki/Elapsed_real_time">walltime</a> to request for a task</td>
+<td>walltime, partition, modules, dockerSL, account</td>
+<td>See back-end notes for Fred Hutch HPC below.</td>
 <td>n/a</td>
 <td>n/a</td>
 <td>n/a</td>
@@ -297,8 +318,8 @@
 </tbody>
 </table>
 </div>
-<div id="general-advice" class="section level2" number="8.2">
-<h2><span class="header-section-number">8.2</span> General advice</h2>
+<div id="general-advice" class="section level2" number="10.2">
+<h2><span class="header-section-number">10.2</span> General advice</h2>
 <ul>
 <li>Consider using more runtime attributes, not fewer. miniwdl and Cromwell will ignore runtime attributes as necessary, so including a runtime attribute that only applies to a particular backend will not harm portability on other backends.</li>
 <li>The Dockstore CLI, as of v1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.</li>
@@ -307,23 +328,27 @@
 <li>Workflow systems with a UI like Terra may become unresponsive if you run a task scattered more than 1000x. Outputs may need to be interacted with using an API specific to that backend.</li>
 </ul>
 </div>
-<div id="executor-specific-notes" class="section level2" number="8.3">
-<h2><span class="header-section-number">8.3</span> Executor-specific notes</h2>
-<div id="cromwell" class="section level3" number="8.3.1">
-<h3><span class="header-section-number">8.3.1</span> Cromwell</h3>
+<div id="executor-specific-notes" class="section level2" number="10.3">
+<h2><span class="header-section-number">10.3</span> Executor-specific notes</h2>
+<div id="cromwell" class="section level3" number="10.3.1">
+<h3><span class="header-section-number">10.3.1</span> Cromwell</h3>
 <p>Cromwell running on a local machine has a tendency to heavily use system resources, especially when running scattered tasks. Sometimes, it will use too many resources at once. When this happens, your workflow’s tasks will tend to fail with exit code 137, or you will see hints about running out of memory in the logs of your tasks. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker. To prevent this, modify <code>concurrent-job-limit</code> for your backend in the Cromwell configuration file.</p>
+<p>The default Cromwell configuration file,, <a href="https://github.com/broadinstitute/cromwell/blob/86/cromwell.example.backends/cromwell.examples.conf">can be found on Cromwell’s GitHub repo</a>. To point Cromwell to a specific configuration file, run Cromwell with the flag <code>-Dconfig.file=</code> followed by the address of the config file to use.</p>
+<p>If you are using the Dockstore CLI, <a href="https://docs.dockstore.org/en/stable/advanced-topics/dockstore-cli/local-cromwell-config.html?highlight=cromwell">follow these instructions</a> to use a custom configuration file for Dockstore’s version of Cromwell. Because the Docker lockup issue mentioned previously isn’t uncommon, it is recommended to use a custom configuration file that limits <code>concurrent-job-limit</code> process on a local backend.</p>
 <p>Other notes:</p>
 <ul>
 <li><p>Cromwell runs as a jar file, so it is very portable and does not need to be “installed” provided you have a modern Java runtime environment.</p></li>
 <li><p>If you just want to check workflows are valid, you can run <code>womtool</code> as a jar file (available on Cromwell’s GitHub page). This will check not only the WDL file you pass it, but also any WDLs it imports.</p></li>
 <li><p>Cromwell does not use call caching on most backends, but it is the default on Terra. For non-Terra backends, it can be enabled in the Cromwell configuration file.</p></li>
 <li><p>Cromwell supports the <code>gpu</code> and <code>disks</code> runtime attributes on certain backends. If using the <code>gpu</code> runtime attribute, make sure your task is set up correctly to properly use this resource.</p></li>
-<li><p>Generally speaking, Cromwell will be able to directly modify input files by default without causing permission errors.</p></li>
+<li><p>Generally speaking, Cromwell will be able to directly modify input files by default without causing permission errors, unlike miniwdl.</p></li>
+<li><p>Cromwell uses a system known as <a href="https://cromwell.readthedocs.io/en/stable/cromwell_features/HogFactors/">hog factors</a> to adjust how task order is prioritized.</p></li>
 </ul>
 </div>
-<div id="miniwdl" class="section level3" number="8.3.2">
-<h3><span class="header-section-number">8.3.2</span> miniwdl</h3>
+<div id="miniwdl" class="section level3" number="10.3.2">
+<h3><span class="header-section-number">10.3.2</span> miniwdl</h3>
 <p>The authors of this course have informally observed that miniwdl appears to be “safer” in terms of using up too many resources than Cromwell. However, if you are sharing a compute with other users, it is still worth looking at the miniwdl configuration file and limiting how many Docker images you spin up at the same time.</p>
+<p>The default miniwdl configuration file, which you can use as a template for setting up your own configuration file for miniwdl, <a href="https://github.com/chanzuckerberg/miniwdl/blob/v1.11.1/WDL/runtime/config_templates/default.cfg">can be found on miniwdl’s GitHub repo</a>. To point miniwdl to a specific configuration file, run <code>miniwdl run</code> with the <code>--cfg</code> flag.</p>
 <p>Other notes:</p>
 <ul>
 <li><p>miniwdl is a Python program, and it must be installed via <code>pip</code> or <code>pip3</code> to use.</p></li>
@@ -334,15 +359,43 @@
 </ul>
 </div>
 </div>
-<div id="backend-specific-notes" class="section level2" number="8.4">
-<h2><span class="header-section-number">8.4</span> Backend-specific notes</h2>
-<div id="gcp" class="section level3" number="8.4.1">
-<h3><span class="header-section-number">8.4.1</span> GCP</h3>
-<div id="disk-space" class="section level4" number="8.4.1.1">
-<h4><span class="header-section-number">8.4.1.1</span> Disk space</h4>
+<div id="backend-specific-notes" class="section level2" number="10.4">
+<h2><span class="header-section-number">10.4</span> Backend-specific notes</h2>
+<div id="hpcs" class="section level3" number="10.4.1">
+<h3><span class="header-section-number">10.4.1</span> HPCs</h3>
+<p>It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:</p>
+<ul>
+<li><p>Some HPCs do not support the use of Docker due to security concerns</p>
+<ul>
+<li>HPCs that do not allow the use of Docker may be able to run WDLs using alternative container technologies such as podman or rootless Docker</li>
+</ul></li>
+<li><p>Some HPCs will use <code>disks</code> to determine which disk to run on, which can be useful for managing disk space</p></li>
+</ul>
+<div id="fred-hutch-hpc" class="section level4" number="10.4.1.1">
+<h4><span class="header-section-number">10.4.1.1</span> Fred Hutch HPC</h4>
+<ul>
+<li><p><a href="https://proof.fredhutch.org/">PROOF</a> is a Shiny frontend that launches Cromwell Server and lets you manage your jobs from a GUI. User guide can be found <a href="https://sciwiki.fredhutch.org/dasldemos/proof-how-to/">here</a>.</p></li>
+<li><p>The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow</p></li>
+<li><p>The Fred Hutch HPC supports the use of Docker, so the <code>docker</code> runtime attribute works as expected</p></li>
+<li><p><code>memory</code> and <code>gpu</code> runtime attributes are ignored, but <code>cpu</code> works as expected. Here is <a href="https://sciwiki.fredhutch.org/scicomputing/compute_jobs/#memory">some information</a> on approximating memory use.</p></li>
+<li><p><code>walltime</code> attribute is a string (“HH:MM:SS”) that specifies how much time you want to request for the task. Can also specify &gt;1 day, e.g. “1-12:00:00” is 1 day+12 hours. The amount of walltime you can request depends on which cluster partition you want to use. More info <a href="https://sciwiki.fredhutch.org/scicomputing/compute_jobs/#wall-time">here</a>.</p></li>
+<li><p><code>partition</code> attribute specifies the <a href="https://sciwiki.fredhutch.org/compdemos/gizmo_partition_index/">cluster partition</a>to use. The default is “campus-new”.</p></li>
+<li><p><code>modules</code> attribute is a a space-separated list of the <a href="https://sciwiki.fredhutch.org/scicomputing/compute_environments/">environment modules</a> you’d like to load (in that order) prior to running the task. For example, “modules:”GATK/4.2.6.1-GCCcore-11.2.0 SAMtools/1.16.1-GCC-11.2.0”, the GATK module will be loaded first, followed by the SAMtools module.</p></li>
+<li><p><code>account</code> attribute allows users connected to multiple PI accounts to specify which account to use for each task, to manage cluster allocations. An example of the value for this variable is “paguirigan_a”, following the PI’s “lastname_firstNameInitital” pattern.</p></li>
+</ul>
+</div>
+</div>
+<div id="gcpterra" class="section level3" number="10.4.2">
+<h3><span class="header-section-number">10.4.2</span> GCP/Terra</h3>
+<p>GCP powers Terra, which is a Cromwell-based platform that is commonly used for running WDL workflows, but it can also be used on its own. Some special considerations need to be taken into account when designing workflows for compatiability on this backend.</p>
+<div id="preemptibles" class="section level4" number="10.4.2.1">
+<h4><span class="header-section-number">10.4.2.1</span> Preemptibles</h4>
+<p>Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheaper (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.</p>
+</div>
+<div id="disk-space" class="section level4" number="10.4.2.2">
+<h4><span class="header-section-number">10.4.2.2</span> Disk space</h4>
 <p>Running Cromwell on GCP is one of the few times that the <code>disks</code> runtime attribute is a soft requirement. Due to how Cromwell works, it must request a certain amount of disk space from GCP before running the task’s command section. In other words, you must know roughly how much disk space your task will use before it runs. If not specified in the runtime attribute of a task, Cromwell will request 10 GB of SSD space.</p>
 <p>A helpful way to handle disk space in WDLs you anticipate will be run on GCP/Terra is to make disk size a function of the size of your task inputs. The task inputs and any private variable declarations made outside of the command section are all calculated before Cromwell requests a disk from GCP, so you can use this section to define a disk size function. For example:</p>
-<!-- TODO: make seperate file in resources and miniwdl check it --->
 <pre><code>version 1.0
 
 task do_something {
@@ -351,7 +404,7 @@ task do_something {
         File one_file
     }
     
-    Int predicted_disk_space = ceil(size(some_array_of_files), &quot;GB&quot;) + ceil(size(one_file), &quot;GB&quot;) + 1
+    Int predicted_disk_space = ceil(size(some_array_of_files, &quot;GB&quot;)) + ceil(size(one_file, &quot;GB&quot;)) + 1
     # size(x, &quot;GB&quot;) returns a float representing the size of x in gigabytes
     # ceil() is a WDL built-in function that rounds a float up into an integer
     
@@ -361,7 +414,7 @@ task do_something {
     
     runtime {
         docker: &quot;ubuntu-latest&quot;
-        disks: &quot;local-disk &quot; + predicted_disk_space &quot; HDD&quot;
+        disks: &quot;local-disk &quot; + predicted_disk_space + &quot; HDD&quot;
     }
 }</code></pre>
 <p>Common pitfalls:</p>
@@ -370,29 +423,87 @@ task do_something {
 <li><p>Not using <code>"GB"</code> when calling <code>size()</code> – if you don’t specify units for <code>size()</code> it will return bytes!</p></li>
 <li><p>Forgetting the space between “local-disk” and the integer (or the integer and “HDD”/“SSD”)</p></li>
 </ul>
-</div>
-<div id="preemptibles" class="section level4" number="8.4.1.2">
-<h4><span class="header-section-number">8.4.1.2</span> Preemptibles</h4>
-<p>Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheaper (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.</p>
-</div>
-</div>
-<div id="hpcs" class="section level3" number="8.4.2">
-<h3><span class="header-section-number">8.4.2</span> HPCs</h3>
-<p>It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:</p>
-<ul>
-<li><p>Some HPCs do not support the use of Docker due to security concerns</p>
-<ul>
-<li>HPCs that do not allow the use of Docker may be able to run WDLs using alternative container technologies such as podman or rootless Docker</li>
-</ul></li>
-<li><p>Some HPCs will use <code>disks</code> to determine which disk to run on, which can be useful for managing disk space</p></li>
-</ul>
-<div id="fred-hutch-hpc" class="section level4" number="8.4.2.1">
-<h4><span class="header-section-number">8.4.2.1</span> Fred Hutch HPC</h4>
-<ul>
-<li><p>The Fred Hutch HPC supports the use of Docker, so the <code>docker</code> runtime attribute works as expected</p></li>
-<li><p>The <code>memory</code> and <code>gpu</code> runtime attributes are ignored, but <code>cpu</code> works as expected</p></li>
-<li><p>The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow</p></li>
-</ul>
+<p>As a more in-depth example of how to use disk space, see the following WDL:</p>
+<pre><code>version 1.0
+
+task autoscale_disk_size_for_basically_anything {
+    input {
+        File ref_genome       # required file
+        File? ref_alt         # optional file
+        Array[File] fastqs    # required array of files
+        File tarball_bams     # uncompressed tarball of bam files
+        File compressed_vcfs  # compressed (tar.gz) tarball of VCFs
+        Int? addl_disk_gb     # user-defined integer 
+    }
+
+    # ref_genome always exists, so we can size() on it safely. size() returns a float,
+    # but some backends require disk size is an integer, so we use ceil() to turn
+    # that float into an integer. ceil() always rounds up.
+    # You should ALWAYS explictly defining which unit you are using with size(). I 
+    # recommend sticking with GB. If you do not define a unit, it is easy to accidentally
+    # request ludricious amounts of disk space, eg:
+    # 1 GB --&gt; 1073741824 bytes --&gt; 1073741824 GB --&gt; 1.07 exabytes
+    Int disk_ref = ceil(size(ref_genome, &quot;GB&quot;))
+
+    # ref_alt does not always exist, and size() will break if you try to use it on an
+    # undefined file. To prevent this, we use select_first to fall back on the always-
+    # defined ref_genome file if ref_alt is undefined.
+    Int disk_alt = ceil(size(select_first([ref_alt, ref_genome]), &quot;GB&quot;))
+
+    # Of course, this means that if ref_alt is undefined, then we don&#39;t really need 
+    # disk_alt, because the size of ref_genome is already covered by disk_ref.
+    Int disk_both_refs = if defined(ref_alt) then disk_alt + disk_ref else disk_ref
+
+    # You might be wondering why we don&#39;t just do this:
+    #     Int disk_alt = if defined(ref_alt) then ceil(size(ref_alt, &quot;GB&quot;)) else 0
+    # This is synatically valid, but generally speaking it is best to avoid running
+    # WDL built-in functions (except select_all, select_first, and defined) on optional
+    # variables as much as possible. 
+
+    # When dealing with arrays, size() will return the sum of all Files in the array.
+    Int disk_fastqs = ceil(size(fastqs, &quot;GB&quot;))
+
+    # If you are passing in a tarball, you will likely be expanding it. If so, consider
+    # doubling the disk size to account for it in both states.
+    Int disk_tarball = 2*ceil(size(tarball_bams, &quot;GB&quot;))
+
+    # A compressed tar.gz is harder to predict. As a very rough rule of thumb, 10x should
+    # be enough. If you are passing in a tar.gz made from an upstream task, you may want
+    # to decrease this number based on the compression ratio you used.
+    Int disk_compressed = 10*ceil(size(compressed_vcfs))
+
+    # Because addl_disk_gb is an optional integer with no fallback, you cannot add it to 
+    # another integer, eg, this will error as &quot;Non-numeric operand to + operator&quot;:
+    #    Int final_disk_size = disk_both_refs + disk_fastqs + disk_tarball + disk_compressed + addl_disk_gb
+    # We have to use select_first() to coerce it into a not-optional integer first.
+    Int disk_addl = select_first([addl_disk_gb, 0])
+
+    # Finally, let&#39;s add everything up. (Recall that disk_both_refs accounts for ref_genome and
+    # also ref_alt.)
+    Int final_disk_size = disk_both_refs + disk_fastqs + disk_tarball + disk_compressed + disk_addl
+
+    command &lt;&lt;&lt;
+    echo disk_ref: ~{disk_ref}
+    echo disk_alt: ~{disk_alt}
+    echo disk_both_refs: ~{disk_both_refs}
+    echo disk_fastqs: ~{disk_fastqs}
+    echo disk_tarball: ~{disk_tarball}
+    echo disk_compressed: ~{disk_compressed}
+    echo addl_disk_gb: ~{addl_disk_gb}
+    echo final_disk_size: ~{final_disk_size}
+    &gt;&gt;&gt;
+
+    runtime {
+        # On GCP!Cromwell, if you do not define the units in the runtime attribute, this
+        # will be interpreted as the size in GB. This is why it&#39;s so easy to accidentally
+        # request the wrong amount of disk space if you do not define the units for size();
+        # In one place WDL defaults to bytes but in the other it defaults to GB.
+        disks: &quot;local-disk &quot; + final_disk_size + &quot; HDD&quot;
+    }
+}</code></pre>
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
+Loading…
+</iframe>
 
 </div>
 </div>
@@ -412,7 +523,7 @@ task do_something {
           </div>
         </div>
       </div>
-<a href="task-aliasing.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="optimization.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="about-the-authors.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>

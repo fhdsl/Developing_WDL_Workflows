@@ -1,10 +1,10 @@
 version 1.0
 
-workflow minidata_test_alignment {
+workflow mutation_calling {
   input {
-    # Sample info
     File sampleFastq
-    # Reference Genome information
+
+    # Reference genome
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -15,7 +15,6 @@ workflow minidata_test_alignment {
     File ref_sa
   }
 
-  #  Map reads to reference
   call BwaMem {
     input:
       input_fastq = sampleFastq,
@@ -35,19 +34,23 @@ workflow minidata_test_alignment {
   }
 
   parameter_meta {
-    sampleFastq: "Filepath to sample .fastq"
-    ref_fasta: "Filepath to reference genome"
-    ref_fasta_index: "Filepath to reference genome index"
-    ref_dict: "Filepath to reference genome dictionary"
-    ref_amb: "Filepath to reference genome info"
-    ref_ann: "Filepath to reference genome info"
-    ref_bwt: "Filepath to reference genome info"
-    ref_pac: "Filepath to reference genome info"
-    ref_sa: "Filepath to reference genome info"
+    sampleFastq: "Sample .fastq (expects Illumina)"
+    ref_fasta: "Reference genome to align reads to"
+    ref_fasta_index: "Reference genome index file (created by bwa index)"
+    ref_dict: "Reference genome dictionary file (created by bwa index)"
+    ref_amb: "Reference genome non-ATCG file (created by bwa index)"
+    ref_ann: "Reference genome ref seq annotation file (created by bwa index)"
+    ref_bwt: "Reference genome binary file (created by bwa index)"
+    ref_pac: "Reference genome binary file (created by bwa index)"
+    ref_sa: "Reference genome binary file (created by bwa index)"
   }
-# End workflow
 }
 
+####################
+# Task definitions #
+####################
+
+# Align fastq file to the reference genome
 task BwaMem {
   input {
     File input_fastq
@@ -59,11 +62,14 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
-    Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
   String ref_fasta_local = basename(ref_fasta)
+
+  String read_group_id = "ID:" + base_file_name
+  String sample_name = "SM:" + base_file_name
+  String platform_info = "PL:illumina"
 
   command <<<
     set -eo pipefail
@@ -78,20 +84,18 @@ task BwaMem {
     mv "~{ref_sa}" .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
+      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
     samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
-    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
+    samtools sort -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
 
   >>>
   output {
-    File analysisReadyBam = "~{base_file_name}.aligned.bam"
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
   runtime {
     memory: "48 GB"
     cpu: 16
-    docker: "fredhutch/bwa:0.7.17"
-    disks: "local-disk 100 SSD"
+    docker: "ghcr.io/getwilds/bwa:0.7.17"
   }
 }

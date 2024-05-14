@@ -12,24 +12,18 @@ task some_aligner {
   input {
     File input_fastq
     File ref_fasta
-    Int threads
   }
 [...]
 }
 ```
 
-For some aligners, this would be a sufficient set of inputs, but we have decided to use bwa mem in particular to take us from fastq to sam. bwa mem requires a lot of index files, which we will also need to input. This can be done via an array, but for now we'll list everything separately to make sure nothing is being left out.
-
-We also want to define a default value for `threads` so that someone who does not know much about threading can still use the workflow. We want to use this workflow on human data, so we'll go a little high for the default number of threads and set it to sixteen. In WDL, we do this by declaring `Int threads = 16`. Make sure to put this in the task (or workflow) inputs section -- if you put it elsewhere, that variable cannot be changed from its default value, so it will always be 16.
+For some aligners, this would be a sufficient set of inputs, but we have decided to use `bwa mem` in particular to take us from `.fastq` to `.sam`. `bwa mem` requires a lot of index files, which we will also need as inputs. These index files can be specified via an array, but for now we'll list everything separately to make sure nothing is being left out.
 
 ```
 task BwaMem {
   input {
     # main input
     File input_fastq
-
-    # options
-    Int threads = 16
 
     # reference files
     File ref_fasta
@@ -47,14 +41,12 @@ task BwaMem {
 
 ### Referencing inputs in the command section
 
-The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
-
-Within the command section, we refer to those variables using `~{this}` syntax. For instance, if the user sets `threads` to 8, then the `-t ~{threads}` part of the command section below will be interpreted as `-t 8`.
+The command section of a WDL task is a bash script that will be run [non-interactively](https://tldp.org/LDP/abs/html/intandnonint.html) by the WDL executor. Although it is helpful to think of tasks as discrete steps in a workflow, that does not mean each task needs to be a single line of code or use only one piece of software. You could, for example, call a bioinformatics tool and then reprocess the outputs in the same WDL task. 
 
 A WDL task's input variables are generally referred to in the command section using a tilde (~) and curly braces, using heredoc syntax. 
 
 <details>
-<summary> <b>Why we use heredox syntax.</b></summary>
+<summary> <b>Why use heredox syntax?</b></summary>
 
 You may see WDLs that use this notation for the command section in a task:
 
@@ -63,7 +55,7 @@ task do_something_curly_braces {
   input {
     String some_string
   }
-  command {
+  command {                  ## note the brackets
     some_other_string="FOO"
     echo ${some_string}
     echo $some_other_string
@@ -77,11 +69,11 @@ task do_something_carrots {
   input {
     String some_string
   }
-  command <<<
+  command <<<               ## note the '<<<'
     some_other_string="FOO"
     echo ~{some_string}
     echo $some_other_string
-  >>>
+  >>>                       ## closing '>>>'
 }
 ```
 
@@ -90,7 +82,7 @@ Heredoc-style syntax for command sections can be clearer than the alternative, a
 </details>
 
 
-To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variabls, like so:
+To prevent issues with spaces in String and File types, it is often a good idea to put quotation marks around a String or File variables, like so:
 
 ```
 task cowsay {
@@ -104,7 +96,7 @@ task cowsay {
 ```
 
 <details>
-<summary><b>Why we put quotation marks around a String or File variables in Commands.</b></summary>
+<summary><b>What can happen if we don't use quotation marks around String or File variables?</b></summary>
 
 If `some_string` is "hello world" then the command section of this task is interpreted as the following:
 
@@ -123,7 +115,6 @@ task BwaMem {
   input {
     File input_fastq
     File ref_fasta
-    Int threads = 16
 
     # these variables may look as though they are unused... but bwa mem needs them!
     File ref_fasta_index
@@ -137,23 +128,31 @@ task BwaMem {
   command <<<
   # warning: this will not run on all backends! see below for an explanation!
   bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\tID:foo\tSM:foo2' \
+      -p -v 3 -t 16 -M -R '@RG\tID:foo\tSM:foo2' \
       "~{ref_fasta}" "~{input_fastq}" > my_nifty_output.sam 
   >>>
 }
 ```
 
-If we were to run this task in a workflow as-is, we might expect it to run on any backend that can handle the hardware requirements. Those hardware requirements are a bit steep -- the `-t 16` part specifically requests 16 threads, for example -- but besides that, it may look like a perfectly functional task. Unfortunately, even on backends that can provide the necessary computing power, it is quite likely this task will not run as expected. This is because of how inputs work in WDL -- or, more specifically, how input files get localized when working with WDL.
+If we were to run this task in a workflow as-is, we might expect it to run on any backend that can handle the hardware requirements. Those hardware requirements are a bit steep -- the `-t 16` part specifically requests 16 threads, for example -- but besides that, it may look like a perfectly functional task.
+
+
+::: {.notice data-latex="warning"}
+We have written this task to use 16 threads, as noted by `-t 16` in the `bwa mem` call. If you are running on a backend that cannot provide 16 threads, you may need to adjust set the number of threads to a lower number. Later on in this course, we will discuss how to account for lots of different backends using common workarounds and optional variables.
+:::
+
+
+Unfortunately, even on backends that can provide the necessary computing power, it is quite likely this task will not run as expected. This is because of how inputs work in WDL -- or, more specifically, how input files get localized when working with WDL.
 
 ### File localization
 When running a WDL, a WDL executor will typically place duplicates of the input files in a brand-new subfolder of the task's [working directory](https://www.ibm.com/docs/en/zos/3.1.0?topic=directories-working-directory). Typically, you don't know the name of the directory before runtime -- they vary depending on the backend you are running and the WDL executor itself. Thankfully, at runtime, File-type variables such as `~{input_fastq}` and `~{ref_fasta}` will be replaced with paths to their respective files.
 
 For example, if you were to run this workflow on a laptop using miniwdl, `~{ref_fasta}` would likely end up turning into `./_miniwdl_inputs/0/ref.fa` at runtime. On the other hand, if you were running the exact same workflow with Cromwell, `~{ref_fasta}` would turn into something like `/cromwell-executions/BwaMem/97c9341e-9322-9a2f-4f54-4114747b8fff/call-test_localization/inputs/-2022115965/ref.fa`. Keep in mind that these are the paths of *copies* of the input files, and that sometimes input files can be in different subfolders. For example, it's possible `~{input_fastq}` would be `./_miniwdl_inputs/0/sample.fastq` while `~{ref_fasta}` may be `./_miniwdl_inputs/1/ref.fa`.
 
-For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential. However, this aspect of WDL can occasionally cause issues. bwa mem is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making an assumption about some of your input files. Specifically, bwa mem assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc), and it does not allow you to specify otherwise.
+For many programs, an input file being at `./ref.fa` versus `/_miniwdl_inputs/0/ref.fa` is inconsequential. However, this aspect of WDL can occasionally cause issues. `bwa mem` is a great example of the type of command where this sort of thing can go haywire without proper planning, due to the program making an assumption about some of your input files. Specifically, `bwa mem` assumes that the reference fasta that you pass in shares the same folder as the other reference files (ref_amb, ref_ann, ref_bwt, etc), and it does not allow you to specify otherwise.
 
 <details>
-<summary><b>Another example of file localization issue.</b></summary>
+<summary><b>Another example of file localization issue</b></summary>
 
 bwa is not the only program that makes assumptions about where files are located, and assumptions being made do not only affect reference genome files. Bioinformatics programs that take in some sort of index file frequently assume that index file is located in the same directory as the non-index input. For example, if you were to pass in `SAMN1234.bam` into [covstats](https://github.com/brentp/goleft/tree/master/covstats), it would expect an index file named `SAMN1234.bam.bai` or `SAMN1234.bai` in the same directory as the bam file, [as seen in the source code here](https://github.com/brentp/goleft/blob/fa6b00d20d1f73a068ffbab49a5769d173cae56d/covstats/covstats.go#L239). As there is no way to specify that the index file manually, you need to take that into consideration when writing WDLs involving covstats, bwa, and other similar tools.
 
@@ -173,7 +172,6 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
-    Int threads = 16
   }
 
   command <<<
@@ -210,7 +208,7 @@ With our files now all in the working directory, we can turn our attention to th
 We recommend using the last option, as it works for essentially any input and may be more intuitive than the bash basename function. [OpenWDL explains](https://docs.openwdl.org/en/stable/WDL/basename/) how `basename()` works. The next section will provide an example of using it alongside private variables.
 
 ### Private variables
-Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables. In our case, we create `String ref_fasta_local` as `ref_fasta`'s file base name to refer to the files we have moved to the working directory. We also create `String base_file_name` as `input_fastq`'s file base name and use it to name our output files, such as `"~{base_file_name}.sorted_query_aligned.bam"`. 
+Is there a variable you wish to use in your task section that is based on another input variable, or do not want people using your workflow to be able to directly overwrite? You can define variables outside the `input {}` section to create variables that function like private variables. In our case, we create `String ref_fasta_local` as `ref_fasta`'s file base name to refer to the files we have moved to the working directory. We also create `String base_file_name` as `input_fastq`'s file base name and use it to name our output files, such as `"~{base_file_name}.sorted_query_aligned.bam"`. The variables `read_group_id`, `sample_name`, and `platform_info` are created similarly. 
 
 ```
 task BwaMem {
@@ -224,16 +222,15 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
-    Int threads = 16
   }
   
   # basename() is a built-in WDL function that acts like bash's basename
   String base_file_name = basename(input_fastq, ".fastq")
   String ref_fasta_local = basename(ref_fasta)
+  
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:illumina"
 
   command <<<
     set -eo pipefail
@@ -249,7 +246,7 @@ task BwaMem {
 
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
@@ -259,7 +256,7 @@ task BwaMem {
 ```
 
 ## Runtime attributes
-The runtime attributes of a task tell the WDL executor important information about how to run the task. For a bwa mem task, we want to make sure we have plenty of hardware resources available. We also need to include a reference to the docker image we want the task to actually run in.
+The runtime attributes of a task tell the WDL executor important information about how to run the task. For a `bwa mem` task, we want to make sure we have plenty of hardware resources available. We also need to include a reference to the docker image we want the task to actually run in.
 
 ```
   runtime {
@@ -285,7 +282,7 @@ This can lead to some pitfalls:
 When writing WDL 1.0 workflows with specific hardware requirements, keep in mind what your backend and executor is able to interpret. It is also helpful to consider that other people running your workflow may be doing so on different backends and executors. More information can be found in the appendix, where we talk about designing WDLs for specific backends. For now, we will stick with `memory`, `cpu`, `docker`, and `disks` as this group of four runtime attributes will help us run this workflow on the majority of backends and executors. Even though the Fred Hutch HPC will ignore the `memory` and `disks` attributes, for instance, their inclusion will not cause the workflow to fail, but they will allow the workflow to run on Terra.
 
 <details>
-<summary><b>Some differences between WDL 1.0 and 1.1 on Runtime attributes.</b></summary>
+<summary><b>Some differences between WDL 1.0 and 1.1 on Runtime attributes</b></summary>
 
 Although the focus of this course is on WDL 1.0, it is worth noting that in the [WDL 1.1 spec](https://github.com/openwdl/wdl/blob/main/versions/1.1/SPEC.md#runtime-section), a very different approach to runtime attributes is taken:
 
@@ -306,12 +303,12 @@ WDL is built to make use of Docker as it makes handling software dependencies mu
 
 * You may not have permission to install software if you are using an institute HPC or other shared resource
 
-When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. This container sandbox is derived from a template called a Docker image, which packages installed software in a special file system. This is one of the main features of a Docker image -- because a Docker image packages the software you need, you can skip much of the installation and dependency issues associated with using new software, and because you take actions within a Docker container sandbox, it's unlikely for you to "mess up" your main system's files. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine, and the official Docker GUI is called Docker Desktop.
+When you run a WDL task that has a `docker` runtime attribute, your task will be executed in a Docker container sandbox environment. This container sandbox is derived from a template called a *Docker image*, which packages installed software in a special file system. This is one of the main features of a Docker image -- because a Docker image packages the software you need, you can skip much of the installation and dependency issues associated with using new software. Because you take actions within a Docker container sandbox, it's unlikely for you to "mess up" your main system's files. Although a Docker container is, strictly speaking, not the same as a virtual machine, it is helpful to think of it as one if you are new to Docker. Docker containers are managed by Docker Engine/Apptainer, and the official Docker GUI is called Docker Desktop.
 
 <details>
-<summary><b>More information on finding and developing Docker images. </b></summary>
+<summary><b>More information on finding and developing Docker images</b></summary>
 
-Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles -- plaintext files which compile Docker images when run via `docker build` -- to write your own WDLs. Most popular bioinformatic software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
+Although you will generally need to be able to run Docker in order to run WDLs, you do not need to know how to create Dockerfiles -- plaintext files which compile Docker images when run via `docker build` -- to write your own WDLs. Most popular bioinformatics software packages already have ready-to-use Docker images available, which you can typically find on [Docker Hub](https://hub.docker.com/search?q=). Other registries include quay.io and the Google Container Registry. With that being said, if you would like to create your own Docker images, there are many tutorials and [guidelines](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/) available online. You can also learn more about the details of Docker (and why they technically aren't virtual machines) in [Docker's official curriculum](https://docker-curriculum.com/#introduction).
 
 </details>
 
@@ -320,7 +317,7 @@ Although you will generally need to be able to run Docker in order to run WDLs, 
 
 ## Outputs
 
-The outputs of a task are defined in the `output` section of your task. Typically, this will take the form of directly outputting a file that was created in the command section. When these file outputs are referenced in the `output` section, you can refer to their path in the Docker container directly. You can also make outputs a function of input variables, including private input variables. This can be helpful if you intend on running this WDL on many different files -- each one will get a unique filename based on the input fastq, instead of every sample ending up being named something generic like "converted.sam". For our bwa mem task, one way to write the output section would be as follows:
+The outputs of a task are defined in the `output` section of your task. Typically, this will take the form of directly outputting a file that was created in the command section. When these file outputs are referenced in the `output` section, you can refer to their path in the Docker container directly. You can also make outputs a function of input variables, including private input variables. This can be helpful if you intend on running this WDL on many different files -- each one will get a unique filename based on the input fastq, instead of every sample ending up being named something generic like "converted.sam". For our `bwa mem` task, one way to write the output section would be as follows:
 
 ```
   output {
@@ -341,7 +338,7 @@ If the output was not in the working directory, we would need to change the outp
 Below are some some additional ways you can handle task outputs.
 
 <details>
-<summary><b>Ouputs as functions of other outputs in the same task.</b></summary>
+<summary><b>Ouputs as functions of other outputs in the same task</b></summary>
 
 Outputs can (generally, see warning below) also be functions of other outputs in the same task, as long as those outputs are declared first.
 
@@ -401,14 +398,13 @@ task one_word_per_file {
 
 ## The whole task
 
-We've now designed a bwa mem task that can run on essentially any backend that supports WDL and can handle the hardware requirements. Issues involving bwa mem expecting reference files to be in the same folder and/or putting output files into input folders have been sidestepped thanks to careful design and consideration. The runtime section clearly defines the expected hardware requirements, and the outputs section defines what we expect the task to give us when all is said and done. We're now ready to continue with the rest of our workflow.
-
+We've now designed a `bwa mem` task that can run on almost any backend that supports WDL and can handle the hardware requirements. Issues involving `bwa mem` expecting reference files to be in the same folder and/or putting output files into input folders have been sidestepped thanks to careful design and consideration. The runtime section clearly defines the expected hardware requirements, and the outputs section defines what we expect the task to give us when all is said and done. We're now ready to continue with the rest of our workflow.
+  
 ```         
 task BwaMem {
   input {
     File input_fastq
     referenceGenome refGenome
-    Int threads = 16
   }
   
   String base_file_name = basename(input_fastq, ".fastq")
@@ -416,14 +412,11 @@ task BwaMem {
 
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
-
+  String platform_info = "PL:illumina"
 
   command <<<
     set -eo pipefail
 
-    #can we iterate through a struct??
     mv ~{refGenome.ref_fasta} .
     mv ~{refGenome.ref_fasta_index} .
     mv ~{refGenome.ref_dict} .
@@ -434,7 +427,7 @@ task BwaMem {
     mv ~{refGenome.ref_sa} .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       ~{ref_fasta_local} ~{input_fastq} > ~{base_file_name}.sam 
     samtools view -1bS -@ 15 -o ~{base_file_name}.aligned.bam ~{base_file_name}.sam
     samtools sort -@ 15 -o ~{base_file_name}.sorted_query_aligned.bam ~{base_file_name}.aligned.bam
@@ -462,9 +455,9 @@ version 1.0
 
 workflow mutation_calling {
   input {
-    # Sample info
-    File tumorFastq
-    # Reference Genome information
+    File sampleFastq
+
+    # Reference genome
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -473,14 +466,11 @@ workflow mutation_calling {
     File ref_bwt
     File ref_pac
     File ref_sa
-    #Optional BwaMem threading variable
-    Int? bwa_mem_threads
   }
 
-  #  Map reads to reference
   call BwaMem {
     input:
-      input_fastq = input_fastq,
+      input_fastq = sampleFastq,
       ref_fasta = ref_fasta,
       ref_fasta_index = ref_fasta_index,
       ref_dict = ref_dict,
@@ -488,9 +478,7 @@ workflow mutation_calling {
       ref_ann = ref_ann,
       ref_bwt = ref_bwt,
       ref_pac = ref_pac,
-      ref_sa = ref_sa,
-      threads = bwa_mem_threads
-
+      ref_sa = ref_sa
   }
    
   # Outputs that will be retained when execution is complete
@@ -501,7 +489,7 @@ workflow mutation_calling {
   parameter_meta {
     sampleFastq: "Sample .fastq (expects Illumina)"
     ref_fasta: "Reference genome to align reads to"
-    ref_fasta_index: "Reference genome index file (created by bwa index)
+    ref_fasta_index: "Reference genome index file (created by bwa index)"
     ref_dict: "Reference genome dictionary file (created by bwa index)"
     ref_amb: "Reference genome non-ATCG file (created by bwa index)"
     ref_ann: "Reference genome ref seq annotation file (created by bwa index)"
@@ -509,9 +497,13 @@ workflow mutation_calling {
     ref_pac: "Reference genome binary file (created by bwa index)"
     ref_sa: "Reference genome binary file (created by bwa index)"
   }
-# End workflow
 }
 
+####################
+# Task definitions #
+####################
+
+# Align fastq file to the reference genome
 task BwaMem {
   input {
     File input_fastq
@@ -523,13 +515,14 @@ task BwaMem {
     File ref_bwt
     File ref_pac
     File ref_sa
-    Int threads = 16
   }
   
+  String base_file_name = basename(input_fastq, ".fastq")
+  String ref_fasta_local = basename(ref_fasta)
+
   String read_group_id = "ID:" + base_file_name
   String sample_name = "SM:" + base_file_name
-  String platform = "illumina"
-  String platform_info = "PL:" + platform   # Create the platform information
+  String platform_info = "PL:illumina"
 
   command <<<
     set -eo pipefail
@@ -544,21 +537,19 @@ task BwaMem {
     mv "~{ref_sa}" .
 
     bwa mem \
-      -p -v 3 -t ~{threads} -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
+      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
       "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
     samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
-    samtools sort -n -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
+    samtools sort -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
 
   >>>
   output {
-    File analysisReadyBam = "~{base_file_name}.aligned.bam"
     File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
   }
   runtime {
     memory: "48 GB"
     cpu: 16
     docker: "ghcr.io/getwilds/bwa:0.7.17"
-    disks: "local-disk 100 SSD"
   }
 }
 ```
@@ -567,10 +558,29 @@ task BwaMem {
 
 To test your first task and your workflow, you should have expectation of output is. For this first `BwaMem` task, we just care that the BAM file is created with aligned reads. You can use `samtools view output.sorted_query_aligned.bam` to examine the reads and pipe it to wordcount `wc` to get the number of total reads. This number should be almost identical as the number of reads from your input FASTQ file if you run `wc input.fastq`. In other tasks, we might have a more precise expectation of what the output file should be, such as containing the specific somatic mutation call that we have curated.
 
-Here is an example JSON with the test data needed to run this single-task workflow:
+Here is an example JSON with the [test data](https://figshare.com/articles/dataset/WDL_101_Dataset/25447528) needed to run this single-task workflow:
+
 ```
 {
-  "mutation_calling.tumorFastq": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq",
+  "mutation_calling.sampleFastq": "/path/to/Tumor_2_EGFR_HCC4006_combined.fastq",
+  "mutation_calling.ref_fasta": "/path/to/Homo_sapiens_assembly19.fasta",
+  "mutation_calling.ref_fasta_index": "/path/to/Homo_sapiens_assembly19.fasta.fai",
+  "mutation_calling.ref_dict": "/path/to/Homo_sapiens_assembly19.dict",
+  "mutation_calling.ref_pac": "/path/to/Homo_sapiens_assembly19.fasta.pac",
+  "mutation_calling.ref_sa": "/path/to/Homo_sapiens_assembly19.fasta.sa",
+  "mutation_calling.ref_amb": "/path/to/Homo_sapiens_assembly19.fasta.amb",
+  "mutation_calling.ref_ann": "/path/to/Homo_sapiens_assembly19.fasta.ann",
+  "mutation_calling.ref_bwt": "/path/to/Homo_sapiens_assembly19.fasta.bwt"
+}
+```
+
+<details>
+<summary><b>The example JSON using the Fred Hutch HPC</b></summary>
+
+
+```
+{
+  "mutation_calling.sampleFastq": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq",
   "mutation_calling.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
   "mutation_calling.ref_fasta_index": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai",
   "mutation_calling.ref_dict": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict",
@@ -578,9 +588,12 @@ Here is an example JSON with the test data needed to run this single-task workfl
   "mutation_calling.ref_sa": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa",
   "mutation_calling.ref_amb": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb",
   "mutation_calling.ref_ann": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann",
-  "mutation_calling.ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt",
-  "mutation_calling.ref_name": "hg19"
+  "mutation_calling.ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt"
 }
 ```
 
-If you are not running on the Fred Hutch HPC, you'll need to modify your JSON file to point to wherever you have the data files stored. You can download the same fastq we're using from [our sandbox repo](https://github.com/fhdsl/WDL-sandbox/tree/main/data), and the reference files can be generated via `samtools index` or [downloaded from the Broad Institute's mirror](https://data.broadinstitute.org/snowman/hg19/).
+</details>
+
+
+
+<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
