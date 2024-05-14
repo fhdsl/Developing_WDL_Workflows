@@ -21,6 +21,10 @@ output:
 
 The course is intended for first time developers of the [WDL workflow language](https://github.com/openwdl/wdl), who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore. 
 
+### Relevant Resources
+
+If you are new to WDL, [OpenWDL Docs](https://docs.openwdl.org/en/stable/) is an excellent WDL companion resource to help you get started and is platform agnostic. OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.
+
 ## Why WDL?
 
 You may have encountered other workflow tools, such as Snakemake or Nextflow, and those are highly capable. Why learn a brand new workflow language? Let's review some WDL Pros and Cons:
@@ -35,11 +39,12 @@ WDL has some really helpful advantages compared to other frameworks:
 
 - **Sharing**. A WDL workflow is much easier to share with colleagues and is a good way to get credit for work you do everyday. If you spent time building it, why not share it? WDL is also an open standard and supported by a number of software tools.
 
-- **Running and Making WDL workflows is a transferrable skill.** Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry. 
+- **Running and Making WDL workflows is a transferable skill.** Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry. 
 
 ### WDL Cons
 
 Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:
+
  - Basics of Docker
  - Understanding the WDL framework
  - WDLizing your bash scripts into tasks
@@ -47,8 +52,12 @@ Of course, nothing is free. WDL does require you to understand the basic concept
 
 ## Curriculum
 
-The course covers the following: how to write an effective WDL task, link multiple WDL tasks together in a workflow, organize variables via structs, scale multiple samples via Arrays, reuse repeated tasks via task aliasing, and configure settings for the execution engine. 
+The course covers the following: 
 
-## Relevant resources
+- How to write an effective WDL task
+- Link multiple WDL tasks together in a workflow 
+- Organize variables via structs, scale multiple samples via Arrays
+- Reuse repeated tasks via task aliasing
+- Configure settings for the execution engine
 
-An excellent WDL companion resource that is not platform dependent is [OpenWDL Docs](https://docs.openwdl.org/en/stable/). OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.
+
