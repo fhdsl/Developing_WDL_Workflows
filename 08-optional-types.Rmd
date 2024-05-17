@@ -400,7 +400,7 @@ if defined(some_integer) { # needed to define real_some_integer, beware of chang
 
 ## The final workflow
 
-At this point, we've completeled our workflow. Here's what it looks like now:
+At this point, we've completed our workflow. Here's what it looks like now:
 
 ```
 version 1.0
