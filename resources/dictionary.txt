@@ -20,6 +20,7 @@ bwt
 carcinogenesis
 CALU
 chapt
+chr
 CLI
 conda
 Coursera
@@ -47,11 +48,14 @@ FHDaSL
 Funder
 fyi
 GATK
+gatherBams
+GatherBams
 GDSCN
 GitHub
 Github
 GH
 glycine
+GPUs
 HCC
 heredoc
 hireable
@@ -70,11 +74,13 @@ Leanpub
 Licensor
 LICENSOR
 Markua
+MEM
 mentorship
 MERCHANTABILITY
 missense
 miniwdl
 miniwdl's
+Mycobacterium
 MOLM
 Moorthi
 multithreading
@@ -89,13 +95,16 @@ OpenWDL's
 OTTR
 ottrpal
 parallely
+parallelizing
 parallelization
 Paguirigan
+paguirigan
 Pandoc
 Pharma
 plaintext
 png
 podman
+profilers
 proto
 preemptible
 preemptibles
@@ -116,6 +125,7 @@ structs
 synched
 UE
 UE5
+UShER
 Videographer
 Videography
 WIPO
@@ -151,3 +161,4 @@ jsonlint
 sam
 subfolder
 subfolders
+H37Rv
