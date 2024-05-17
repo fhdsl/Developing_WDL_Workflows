@@ -111,7 +111,7 @@ task BwaMem {
 <summary><b>Here's another way of providing a fallback value for optional inputs within a task.</b></summary>
 
 
-In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we're using (`ashedpotatoes/usher-plus:0.0.2`) already contains the H37Rv reference genome, which is the standard reference genome for *Mycobacterium tuberculosis*. If we are working with tuberuclosis samples, there is no reason to provide a reference genome -- we might as well use the one that's already in the Docker image.
+In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we're using (`ashedpotatoes/usher-plus:0.0.2`) already contains the H37Rv reference genome, which is the standard reference genome for *Mycobacterium tuberculosis*. If we are working with tuberculosis samples, there is no reason to provide a reference genome -- we might as well use the one that's already in the Docker image.
 
 ```
 task usher_sampled_diff {
@@ -203,7 +203,7 @@ task usher_sampled_diff {
 If we want, we can make this task-level output a workflow-level output -- perhaps we use a backend that does not save task-level outputs, or it is simply easier to access workflow-level outputs on this particular backend. Provided that the task is not scattered, this is very easy to do. (We'll talk about scattered tasks later, as they complicate matters.) In the workflow output sections, we simply define the output as optional like we did in the task itself.
 
 ### Making an entire task optional
-Let's say we want to make an entire task optional. Perhaps it provides additional QC information, or isn't relevent to certain data types.
+Let's say we want to make an entire task optional. Perhaps it provides additional QC information, or isn't relevant to certain data types.
 
 Although WDL has a concept of `if`, it does not have any concept of `else`, so to make mutually exclusive tasks, you essentially need use two mutually exclusive if-statements. In the example below, we use two mutually exclusive if-statements to decide whether to run task_x or task_y. This is a valid way of doing things, and will work as expected:
 
