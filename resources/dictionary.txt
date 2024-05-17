@@ -47,8 +47,10 @@ dropdown
 EGFR
 enforceability
 exome
+fai
 faq
 favicon
+fh
 FHDaSL
 firstNameInitital
 frontend
@@ -71,6 +73,7 @@ homolog
 https
 iframe
 impactful
+io
 ITCR
 itcrtraining
 iteratively
@@ -104,6 +107,7 @@ oncogenic
 OpenWDL's
 OTTR
 ottrpal
+pac
 parallely
 parallelizing
 parallelization
@@ -121,8 +125,10 @@ preemptible
 preemptibles
 recalibration
 recalibrated
+ReferenceDataSets
 repo
 reproducibility
+sa
 Savonen
 scalable
 Scalability
@@ -171,6 +177,7 @@ fastqs
 GCP
 jsonlint
 sam
+sampleFastq
 SAMtools
 subfolder
 subfolders
