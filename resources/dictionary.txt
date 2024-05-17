@@ -99,7 +99,7 @@ multithreading
 Muschelli
 MuTect
 Mutect
-NextFlow
+Nextflow
 NCI
 NHGRI
 O'Farrell
@@ -174,6 +174,7 @@ fasta
 fastas
 fastq
 fastqs
+
 GCP
 jsonlint
 sam
@@ -181,4 +182,5 @@ sampleFastq
 SAMtools
 subfolder
 subfolders
+splitBamByChr
 H37Rv
