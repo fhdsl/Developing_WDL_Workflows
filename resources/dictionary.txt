@@ -1,4 +1,6 @@
 AnVIL
+ApplyBaseRecalibrator
+Apptainer
 audiographer
 audiography
 backend
@@ -79,6 +81,7 @@ lastname
 Leanpub
 Licensor
 LICENSOR
+MarkDuplicates
 Markua
 MEM
 mentorship
@@ -92,6 +95,7 @@ Moorthi
 multithreading
 Muschelli
 MuTect
+Mutect
 NextFlow
 NCI
 NHGRI
