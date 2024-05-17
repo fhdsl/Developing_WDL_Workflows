@@ -23,6 +23,7 @@ chapt
 chr
 CLI
 conda
+config
 Coursera
 covstats
 cpu
@@ -35,8 +36,10 @@ DISCOVERABLE
 Dockerfile
 Dockerhub
 Docker's
+dockerSL
 DockerException
 Dockstore
+Dockstore's
 DNAnexus
 dropdown
 EGFR
@@ -45,6 +48,8 @@ exome
 faq
 favicon
 FHDaSL
+firstNameInitital
+frontend
 Funder
 fyi
 GATK
@@ -70,6 +75,7 @@ iteratively
 ITN
 KRAS
 Laderas
+lastname
 Leanpub
 Licensor
 LICENSOR
@@ -101,6 +107,7 @@ Paguirigan
 paguirigan
 Pandoc
 Pharma
+PI's
 plaintext
 png
 podman
@@ -133,6 +140,7 @@ UI
 unintuitive
 underserved
 VCF
+walltime
 WDLizing
 wordcount
 www
@@ -159,6 +167,7 @@ fastqs
 GCP
 jsonlint
 sam
+SAMtools
 subfolder
 subfolders
 H37Rv
