@@ -111,7 +111,7 @@ task BwaMem {
 <summary><b>Here's another way of providing a fallback value for optional inputs within a task.</b></summary>
 
 
-In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we're using (`ashedpotatoes/usher-plus:0.0.2`) already contains the H37Rv reference genome, which is the standard reference genome for *Mycobacterium tuberculosis*. If we are working with tuberuclosis samples, there is no reason to provide a reference genome -- we might as well use the one that's already in the Docker image.
+In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we're using (`ashedpotatoes/usher-plus:0.0.2`) already contains the H37Rv reference genome, which is the standard reference genome for *Mycobacterium tuberculosis*. If we are working with tuberculosis samples, there is no reason to provide a reference genome -- we might as well use the one that's already in the Docker image.
 
 ```
 task usher_sampled_diff {
@@ -203,7 +203,7 @@ task usher_sampled_diff {
 If we want, we can make this task-level output a workflow-level output -- perhaps we use a backend that does not save task-level outputs, or it is simply easier to access workflow-level outputs on this particular backend. Provided that the task is not scattered, this is very easy to do. (We'll talk about scattered tasks later, as they complicate matters.) In the workflow output sections, we simply define the output as optional like we did in the task itself.
 
 ### Making an entire task optional
-Let's say we want to make an entire task optional. Perhaps it provides additional QC information, or isn't relevent to certain data types.
+Let's say we want to make an entire task optional. Perhaps it provides additional QC information, or isn't relevant to certain data types.
 
 Although WDL has a concept of `if`, it does not have any concept of `else`, so to make mutually exclusive tasks, you essentially need use two mutually exclusive if-statements. In the example below, we use two mutually exclusive if-statements to decide whether to run task_x or task_y. This is a valid way of doing things, and will work as expected:
 
@@ -378,7 +378,7 @@ Instead of using `defined()` on an array, consider simply checking its length. A
 
 Coercing arrays with optional components
 
-Optional arrays can be difficult to work with. One of the reasons for this is that they sometimes give unexpected values for `defined()`. As mentioned earlier, this can be somewhat allievated by checking the length of an array rather than whether or not it is defined, but the problems do not end there: Attempting to scatter on an optional array can cause issues that are difficult to debug.
+Optional arrays can be difficult to work with. One of the reasons for this is that they sometimes give unexpected values for `defined()`. As mentioned earlier, this can be somewhat alleviated by checking the length of an array rather than whether or not it is defined, but the problems do not end there: Attempting to scatter on an optional array can cause issues that are difficult to debug.
 
 It's generally best to coerce optional arrays into not-optional arrays as much as possible. Thankfully, we can use `select_all()` to select only the defined elements of an array. For our example above, we can go even further by creating an array that will always have a defined value, whether or not `do_x` is true. We combine the power of `select_all()` and `flatten()` to create the following:
 
@@ -400,7 +400,7 @@ if defined(some_integer) { # needed to define real_some_integer, beware of chang
 
 ## The final workflow
 
-At this point, we've completeled our workflow. Here's what it looks like now:
+At this point, we've completed our workflow. Here's what it looks like now:
 
 <script src="https://gist.github.com/fhdsl-robot/3728a566a06e4ac2900a1ef0e888f124.js"></script>
 
