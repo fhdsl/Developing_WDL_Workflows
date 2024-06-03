@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 2 Defining a workflow plan | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 2 Defining a workflow plan | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="introduction-to-wdl.html"/>
 <link rel="next" href="the-first-task.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -242,11 +245,11 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="defining-a-workflow-plan" class="section level1" number="2">
-<h1><span class="header-section-number">Chapter 2</span> Defining a workflow plan</h1>
+<div id="defining-a-workflow-plan" class="section level1 hasAnchor" number="2">
+<h1><span class="header-section-number">Chapter 2</span> Defining a workflow plan<a href="defining-a-workflow-plan.html#defining-a-workflow-plan" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Our WDL guide will center around building a workflow from scratch. As we build out this workflow step-by-step, you will see what strategies and resources are used to develop a workflow that is iterative, reproducible, and efficient in terms of time and resource used. The goal is to use this workflow to illustrate common lessons in writing WDL workflows.</p>
-<div id="somatic-mutation-calling-workflow" class="section level2" number="2.1">
-<h2><span class="header-section-number">2.1</span> Somatic mutation calling workflow</h2>
+<div id="somatic-mutation-calling-workflow" class="section level2 hasAnchor" number="2.1">
+<h2><span class="header-section-number">2.1</span> Somatic mutation calling workflow<a href="defining-a-workflow-plan.html#somatic-mutation-calling-workflow" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The workflow used as the example here is tailored to detect somatic mutations in two tumor samples. Initially, the workflow takes as input FASTQ-formatted sequencing data from two tumor specimens and one normal sample (a single normal sample is used here, but typically each tumor might have its own associated normal). Subsequently, it aligns the FASTQ files of each sample with the human reference genome (hg19), proceeds to identify and mark PCR duplicates, and conducts base quality recalibration. Following these steps, the workflow engages in somatic mutation calling, operating in a paired mode, to pinpoint mutations unique to the tumor samples in comparison to the normal one. Concluding the process, the workflow undertakes the annotation of the identified mutations, enriching the dataset with additional insights into the nature of the mutations detected.</p>
 <p>The workflow diagram:</p>
 <p><a href="assets/WDL_101_Course.png"><img src="assets/WDL_101_Course.png" alt="Workflow Diagram" /></a></p>
@@ -300,8 +303,8 @@
 </tbody>
 </table>
 </div>
-<div id="workflow-testing-strategy" class="section level2" number="2.2">
-<h2><span class="header-section-number">2.2</span> Workflow testing strategy</h2>
+<div id="workflow-testing-strategy" class="section level2 hasAnchor" number="2.2">
+<h2><span class="header-section-number">2.2</span> Workflow testing strategy<a href="defining-a-workflow-plan.html#workflow-testing-strategy" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>As we build out our workflow, how can we verify that it is running correctly besides getting a message such as “Workflow finished with status ‘Succeeded’” or an exit code 0? In <a href="https://www.atlassian.com/continuous-delivery/software-testing">software development</a>, it is essential to test your code to see whether it generates the expected output given a specified input. This principle applies into bioinformatics workflow development also:</p>
 <ol style="list-style-type: decimal">
 <li><p><em>Unit Testing</em>: We need to incorporate tests to ensure that each task we develop is correct.</p></li>
@@ -315,27 +318,27 @@
 <li><p>The data you use for testing is ideally open access so others can verify your workflow also.</p></li>
 </ul>
 </div>
-<div id="test-samples" class="section level2" number="2.3">
-<h2><span class="header-section-number">2.3</span> Test samples</h2>
+<div id="test-samples" class="section level2 hasAnchor" number="2.3">
+<h2><span class="header-section-number">2.3</span> Test samples<a href="defining-a-workflow-plan.html#test-samples" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>To serve as an example we use here whole exome sequencing data from three cell lines from the <a href="https://pubmed.ncbi.nlm.nih.gov/31068700/">Cancer Cell Line Encyclopedia</a>.</p>
-<div id="tumor-1-hcc4006" class="section level3" number="2.3.1">
-<h3><span class="header-section-number">2.3.1</span> Tumor 1 : HCC4006</h3>
+<div id="tumor-1-hcc4006" class="section level3 hasAnchor" number="2.3.1">
+<h3><span class="header-section-number">2.3.1</span> Tumor 1 : HCC4006<a href="defining-a-workflow-plan.html#tumor-1-hcc4006" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>HCC4006 is a lung cancer cell line that has a mutation in the gene <em>EGFR</em> (Epithelial Growth Factor Receptor), a proto-oncogene. Mutations in <em>EGFR</em> result in the abnormal constitutive activation of the EGFR signaling pathway and drive cancer. In this cell-line specifically, the <em>EGFR</em> mutation is an in-frame deletion in Exon 19. This mutation results in the constitutive activation of the EGFR protein and is therefore oncogenic.</p>
 </div>
-<div id="tumor-2-calu1" class="section level3" number="2.3.2">
-<h3><span class="header-section-number">2.3.2</span> Tumor 2 : CALU1</h3>
+<div id="tumor-2-calu1" class="section level3 hasAnchor" number="2.3.2">
+<h3><span class="header-section-number">2.3.2</span> Tumor 2 : CALU1<a href="defining-a-workflow-plan.html#tumor-2-calu1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>CALU1 is a lung cancer cell line that has a mutation in the gene <em>KRAS</em> (Kirsten rat sarcoma viral oncogene homolog) . <em>KRAS</em> is also a proto-oncogene and the most common cancer-causing mutations lock the protein in an active conformation. Constitutive activation of <em>KRAS</em> results in carcinogenesis. In this cell-line <em>KRAS</em> has a point/missense mutation resulting in the substitution of the amino acid glycine (G) with cysteine (C) at position 12 of the KRAS protein (commonly known as the KRAS G12C mutation). This mutation results in the constitutive activation of KRAS and drives carcinogenesis.</p>
 </div>
-<div id="normal-molm13" class="section level3" number="2.3.3">
-<h3><span class="header-section-number">2.3.3</span> Normal : MOLM13</h3>
+<div id="normal-molm13" class="section level3 hasAnchor" number="2.3.3">
+<h3><span class="header-section-number">2.3.3</span> Normal : MOLM13<a href="defining-a-workflow-plan.html#normal-molm13" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>MOLM 13 is a human leukemia cell line commonly used in research. While it is also a cancer cell line for the purposes of this workflow example we are going to consider it as a “normal”. This cell line does not have mutations in <em>EGFR</em> nor in <em>KRAS</em> and therefore is a practical surrogate in lieu of a conventional normal sample</p>
 </div>
-<div id="test-data-details" class="section level3" number="2.3.4">
-<h3><span class="header-section-number">2.3.4</span> Test data details</h3>
+<div id="test-data-details" class="section level3 hasAnchor" number="2.3.4">
+<h3><span class="header-section-number">2.3.4</span> Test data details<a href="defining-a-workflow-plan.html#test-data-details" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Fastq files for all these three samples were derived from their respective whole exome sequencing. However, for the purpose of this guide we have limited the sequencing reads to span +/- 200 bp around the mutation sites for both genes. In doing so we are able to shrink the data files for quick testing.</p>
 </div>
-<div id="access-to-files" class="section level3" number="2.3.5">
-<h3><span class="header-section-number">2.3.5</span> Access to files</h3>
+<div id="access-to-files" class="section level3 hasAnchor" number="2.3.5">
+<h3><span class="header-section-number">2.3.5</span> Access to files<a href="defining-a-workflow-plan.html#access-to-files" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>All files needed to run the workflow can be <a href="https://figshare.com/articles/dataset/WDL_101_Dataset/25447528">downloaded here</a>.</p>
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
 <p>Loading…</p>
