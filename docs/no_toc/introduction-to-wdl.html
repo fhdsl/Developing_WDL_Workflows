@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 1 Introduction to WDL | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 1 Introduction to WDL | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="index.html"/>
 <link rel="next" href="defining-a-workflow-plan.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -242,15 +245,15 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="introduction-to-wdl" class="section level1" number="1">
-<h1><span class="header-section-number">Chapter 1</span> Introduction to WDL</h1>
-<div id="introduction" class="section level2" number="1.1">
-<h2><span class="header-section-number">1.1</span> Introduction</h2>
+<div id="introduction-to-wdl" class="section level1 hasAnchor" number="1">
+<h1><span class="header-section-number">Chapter 1</span> Introduction to WDL<a href="introduction-to-wdl.html#introduction-to-wdl" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="introduction" class="section level2 hasAnchor" number="1.1">
+<h2><span class="header-section-number">1.1</span> Introduction<a href="introduction-to-wdl.html#introduction" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Welcome to building your first WDL workflow! This guide will help you strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used.</p>
 <p>To make sure that we are on the same page, this guide assumes that you are able to run a WDL on a computing engine of your choice, such as Cromwell, miniwdl, or a cloud computing environment such as Terra, AnVIL, or Dockstore. This guide also assumes that you have a beginner’s understanding of the WDL syntax, and we will link out to additional resources to fill in the knowledge gap as needed! If you have never seen the WDL language in action, a great place to start is <a href="https://docs.openwdl.org/en/stable/">OpenWDL docs</a> – it teaches you the basic syntax and showcases WDL features via concrete examples.</p>
 </div>
-<div id="review-of-basic-wdl-syntax" class="section level2" number="1.2">
-<h2><span class="header-section-number">1.2</span> Review of basic WDL syntax</h2>
+<div id="review-of-basic-wdl-syntax" class="section level2 hasAnchor" number="1.2">
+<h2><span class="header-section-number">1.2</span> Review of basic WDL syntax<a href="introduction-to-wdl.html#review-of-basic-wdl-syntax" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>We will do some review of the WDL syntax. A WDL workflow consists of at least one task.</p>
 <!-- resources/basic_01.wdl -->
 <pre><code>version 1.0
@@ -351,8 +354,8 @@ workflow my_workflow {
     }
 }</code></pre>
 </div>
-<div id="using-jsons-to-control-workflow-inputs" class="section level2" number="1.3">
-<h2><span class="header-section-number">1.3</span> Using JSONs to control workflow inputs</h2>
+<div id="using-jsons-to-control-workflow-inputs" class="section level2 hasAnchor" number="1.3">
+<h2><span class="header-section-number">1.3</span> Using JSONs to control workflow inputs<a href="introduction-to-wdl.html#using-jsons-to-control-workflow-inputs" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Running a WDL workflow generally requires two files: A <code>.wdl</code> file, which contains the actual workflow, and a <code>.json</code> file, which provides the inputs for the workflow.</p>
 <p>In the example we showed earlier, the workflow takes in a file referred to by the input variable <code>fq</code>. This needs to be provided by the user. Typically, this is done with a JSON file. Here’s what a JSON file for this workflow might look like:</p>
 <!-- resources/basic_04.json -->
@@ -385,8 +388,8 @@ If you are having difficulty writing valid JSON files, considering using <a href
 </ul>
 </div>
 </div>
-<div id="running-wdl-via-a-computing-engine" class="section level2" number="1.4">
-<h2><span class="header-section-number">1.4</span> Running WDL via a computing engine</h2>
+<div id="running-wdl-via-a-computing-engine" class="section level2 hasAnchor" number="1.4">
+<h2><span class="header-section-number">1.4</span> Running WDL via a computing engine<a href="introduction-to-wdl.html#running-wdl-via-a-computing-engine" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>In order to run a WDL workflow, we need a <em>computing engine</em> to execute it. The two most popular WDL executors are <a href="https://miniwdl.readthedocs.io/en/latest/index.html">miniwdl</a> and <a href="https://cromwell.readthedocs.io/en/stable/">Cromwell</a>. Both computing engines can run WDLs on multiple configurations:</p>
 <ul>
 <li>A local machine</li>
@@ -403,19 +406,19 @@ If you are having difficulty writing valid JSON files, considering using <a href
 <p>Not every WDL workflow will run well on a laptop, but it can be helpful to have a basic setup for testing and catching simple syntax errors. Let’s quickly set up a WDL executor to run our WDLs.</p>
 <p>In this course, we will be using miniwdl, but everything in this course will also be compatible with Cromwell unless explicitly stated otherwise. Additionally, almost all WDLs use Docker images, so you will also need to install Docker or a Docker-like alternative.</p>
 <p><strong>Installing Docker and miniwdl is not required to use this course.</strong> We don’t want anybody to get stuck here! If you already have a method for submitting workflows, such as Terra, feel free to use that for this course instead of running workflows directly on your local machine. If you don’t have any way of running workflows at the moment, that’s also okay – we have provided plenty of examples for following along.</p>
-<div id="installing-docker" class="section level3" number="1.4.1">
-<h3><span class="header-section-number">1.4.1</span> Installing Docker</h3>
+<div id="installing-docker" class="section level3 hasAnchor" number="1.4.1">
+<h3><span class="header-section-number">1.4.1</span> Installing Docker<a href="introduction-to-wdl.html#installing-docker" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p><strong>Note: Although Docker’s own docs recommend installing Docker Desktop for Linux, <a href="https://github.com/dockstore/dockstore/issues/5135">it has been reported</a> that some WDL executors work better on Linux when installing only Docker Engine (aka Docker CE).</strong> To install Docker on your machine, follow the instructions specific to your operating system <a href="https://docs.docker.com/get-docker/">on Docker’s website</a>. To specifically install only Docker Engine, <a href="https://docs.docker.com/engine/install/">use these instructions instead</a>.</p>
 <p>If you are unable to install Docker on your machine, Dockstore (not affiliated with Docker) <a href="https://docs.dockstore.org/en/stable/advanced-topics/docker-alternatives.html">provides some experimental alternatives</a>. Dockstore also provides <a href="https://docs.dockstore.org/en/stable/getting-started/getting-started-with-docker.html?highlight=engine#where-can-i-run-docker">a comprehensive introduction to Docker itself</a>, including how to write a Dockerfile. Much of that information is outside the scope of this WDL-focused course, but it may be helpful for those looking to eventually create their own Docker images.</p>
 </div>
-<div id="installing-miniwdl" class="section level3" number="1.4.2">
-<h3><span class="header-section-number">1.4.2</span> Installing miniwdl</h3>
+<div id="installing-miniwdl" class="section level3 hasAnchor" number="1.4.2">
+<h3><span class="header-section-number">1.4.2</span> Installing miniwdl<a href="introduction-to-wdl.html#installing-miniwdl" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>miniwdl is based on Python. If you do not already have Python 3.6 or higher installed, <a href="https://www.python.org/downloads/">you can install Python from here</a>.</p>
 <p>Once Python is installed on your system, you can run <code>pip3 install miniwdl</code> from the command line to install miniwdl. For those who prefer to use conda, use <code>conda install -c conda-forge miniwdl</code> instead. Once miniwdl is installed, you can verify it works properly by running <code>miniwdl run_self_test</code>. This will run a built-in hello world workflow.</p>
 <p>For more information, see <a href="https://github.com/chanzuckerberg/miniwdl">miniwdl’s GitHub repository</a>.</p>
 </div>
-<div id="launching-a-workflow-locally-with-miniwdl" class="section level3" number="1.4.3">
-<h3><span class="header-section-number">1.4.3</span> Launching a workflow locally with miniwdl</h3>
+<div id="launching-a-workflow-locally-with-miniwdl" class="section level3 hasAnchor" number="1.4.3">
+<h3><span class="header-section-number">1.4.3</span> Launching a workflow locally with miniwdl<a href="introduction-to-wdl.html#launching-a-workflow-locally-with-miniwdl" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The generic method for running a WDL with miniwdl is the following:</p>
 <pre><code>miniwdl run [path_to_wdl_file] -i [path_to_inputs_json]</code></pre>
 <p>If you have successfully installed miniwdl, create the following WDL file and name it greetings.wdl:</p>
@@ -467,16 +470,16 @@ workflow my_workflow {
   }
 }</code></pre>
 </div>
-<div id="troubleshooting" class="section level3" number="1.4.4">
-<h3><span class="header-section-number">1.4.4</span> Troubleshooting</h3>
-<div id="dockerexception" class="section level4" number="1.4.4.1">
-<h4><span class="header-section-number">1.4.4.1</span> DockerException</h4>
+<div id="troubleshooting" class="section level3 hasAnchor" number="1.4.4">
+<h3><span class="header-section-number">1.4.4</span> Troubleshooting<a href="introduction-to-wdl.html#troubleshooting" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="dockerexception" class="section level4 hasAnchor" number="1.4.4.1">
+<h4><span class="header-section-number">1.4.4.1</span> DockerException<a href="introduction-to-wdl.html#dockerexception" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>If you are seeing a verbose error message that begins with text like this:</p>
 <pre><code>2023-12-27 13:43:37.525 wdl.w:my_workflow.t:call-greet task greet (greetings.wdl Ln 3 Col 1) failed :: dir: &quot;/Users/sammy/github/WDL_Workflows_Guide/resources/20231227_134337_my_workflow/call-greet&quot;, error: &quot;DockerException&quot;, message: &quot;Error while fetching server API version: (&#39;Connection aborted.&#39;, FileNotFoundError(2, &#39;No such file or directory&#39;))&quot;, traceback: [&quot;Traceback (most recent call last):&quot;, &quot;  File \&quot;/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/urllib3/connectionpool.py\&quot;, line 790, in urlopen&quot;, &quot;    response = self._make_request(&quot;, &quot;               ^^^^^^^^^^^^^^^^^^^&quot;, &quot;  File \&quot;/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/urllib3/connectionpool.py\&quot;,</code></pre>
 <p>This is likely caused by miniwdl being unable to connect to Docker Daemon, the underlying technology that runs Docker images. This is necessary with miniwdl even though our example WDL does not specify a Docker image. Make sure you have Docker installed correctly, and make sure Docker is actively running on your machine. If you installed Docker Desktop, simply opening the Docker Desktop app should start Docker Engine. If you installed Docker without Docker Desktop, running <code>dockerd</code> in your command-line should start it. Be aware that starting the Docker Daemon may take a few minutes.</p>
 </div>
-<div id="missing-required-inputs" class="section level4" number="1.4.4.2">
-<h4><span class="header-section-number">1.4.4.2</span> Missing required inputs</h4>
+<div id="missing-required-inputs" class="section level4 hasAnchor" number="1.4.4.2">
+<h4><span class="header-section-number">1.4.4.2</span> Missing required inputs<a href="introduction-to-wdl.html#missing-required-inputs" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>If you forget to add <code>-i greetings.json</code> to your call, you will see something like this:</p>
 <pre><code>my_workflow (greetings.wdl)
 ---------------------------
@@ -490,8 +493,8 @@ outputs:
 missing required inputs for my_workflow: username</code></pre>
 <p>You may also see this error if you remember to include a JSON file, but it is missing a required input.</p>
 </div>
-<div id="check-json-input" class="section level4" number="1.4.4.3">
-<h4><span class="header-section-number">1.4.4.3</span> Check JSON input</h4>
+<div id="check-json-input" class="section level4 hasAnchor" number="1.4.4.3">
+<h4><span class="header-section-number">1.4.4.3</span> Check JSON input<a href="introduction-to-wdl.html#check-json-input" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>If you see an error message like this:</p>
 <pre><code>check JSON input; unknown input/output: greetings.username</code></pre>
 <p>Double-check your input JSON. The first part of your JSON’s keys refer to the name of the workflow in the WDL file, not the filename of the WDL itself. Even though our WDL is saved as <code>greetings.wdl</code>, within that file, the workflow is named <code>my_workflow</code>. This means that the input JSON must say <code>"my_workflow.username"</code>, not <code>"greetings.username"</code>.</p>

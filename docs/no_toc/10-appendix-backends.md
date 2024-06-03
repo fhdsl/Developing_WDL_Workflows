@@ -82,7 +82,7 @@ It is difficult to provide specific advice on HPCs, as they can vary greatly. So
 
 #### Fred Hutch HPC
 
--   [PROOF](https://proof.fredhutch.org/) is a Shiny frontend that launches Cromwell Server and lets you manage your jobs from a GUI. User guide can be found [here](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/).
+-   [PROOF](https://sciwiki.fredhutch.org/datascience/proof/) is a Shiny frontend that launches Cromwell Server and lets you manage your jobs from a GUI. User guide can be found [here](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/).
 
 -   The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow
 
@@ -100,7 +100,7 @@ It is difficult to provide specific advice on HPCs, as they can vary greatly. So
 
 ### GCP/Terra
 
-GCP powers Terra, which is a Cromwell-based platform that is commonly used for running WDL workflows, but it can also be used on its own. Some special considerations need to be taken into account when designing workflows for compatiability on this backend.
+GCP powers Terra, which is a Cromwell-based platform that is commonly used for running WDL workflows, but it can also be used on its own. Some special considerations need to be taken into account when designing workflows for compatibility on this backend.
 
 #### Preemptibles
 

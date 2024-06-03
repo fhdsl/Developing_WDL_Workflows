@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 
 <link rel="next" href="introduction-to-wdl.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -244,24 +247,24 @@
 </div>
 <div id="header">
 <h1 class="title">Developing WDL Workflows</h1>
-<p class="date"><em>May, 2024</em></p>
+<p class="date"><em>June, 2024</em></p>
 </div>
-<div id="about-this-course" class="section level1 unnumbered">
-<h1>About this Course</h1>
+<div id="about-this-course" class="section level1 unnumbered hasAnchor">
+<h1>About this Course<a href="index.html#about-this-course" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>“Developing WDL Workflows” shows a bioinformatics workflow developer how to strategically develop and scale up a WDL workflow that is iterative, reproducible, and efficient in terms of time and resource used. This guide is flexible regardless of where the data is, what computing resources are being used, and what software is being used.</p>
-<div id="target-audience" class="section level2" number="0.1">
-<h2><span class="header-section-number">0.1</span> Target Audience</h2>
-<p>The course is intended for first time developers of the <a href="https://github.com/openwdl/wdl">WDL workflow language</a>, who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore.</p>
-<div id="relevant-resources" class="section level3" number="0.1.1">
-<h3><span class="header-section-number">0.1.1</span> Relevant Resources</h3>
+<div id="target-audience" class="section level2 hasAnchor" number="0.1">
+<h2><span class="header-section-number">0.1</span> Target Audience<a href="index.html#target-audience" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The course is intended for first time developers of the <a href="https://github.com/openwdl/wdl">WDL workflow language</a>, who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniwdl, or a cloud computing environment such as Terra, AnVIL, or Dockstore.</p>
+<div id="relevant-resources" class="section level3 hasAnchor" number="0.1.1">
+<h3><span class="header-section-number">0.1.1</span> Relevant Resources<a href="index.html#relevant-resources" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>If you are new to WDL, <a href="https://docs.openwdl.org/en/stable/">OpenWDL Docs</a> is an excellent WDL companion resource to help you get started and is platform agnostic. OpenWDL Docs focuses on the basic grammar of WDL as well as providing excellent cookbook recipes of common WDL workflow structures. In this guide we will reference these basic grammar structures and common workflow cookbook recipes.</p>
 </div>
 </div>
-<div id="why-wdl" class="section level2" number="0.2">
-<h2><span class="header-section-number">0.2</span> Why WDL?</h2>
+<div id="why-wdl" class="section level2 hasAnchor" number="0.2">
+<h2><span class="header-section-number">0.2</span> Why WDL?<a href="index.html#why-wdl" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>You may have encountered other workflow tools, such as Snakemake or Nextflow, and those are highly capable. Why learn a brand new workflow language? Let’s review some WDL Pros and Cons:</p>
-<div id="wdl-pros" class="section level3" number="0.2.1">
-<h3><span class="header-section-number">0.2.1</span> WDL Pros</h3>
+<div id="wdl-pros" class="section level3 hasAnchor" number="0.2.1">
+<h3><span class="header-section-number">0.2.1</span> WDL Pros<a href="index.html#wdl-pros" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>WDL has some really helpful advantages compared to other frameworks:</p>
 <ul>
 <li><p><strong>Portability</strong>. WDL can run on nearly any system, whether it be your local computer, or on an HPC cluster, or on the Cloud, with platforms such as DNAnexus. In fact, a lot of developers will prototype a WDL workflow on their own local computer before moving it to the cloud.</p></li>
@@ -270,8 +273,8 @@
 <li><p><strong>Running and Making WDL workflows is a transferable skill.</strong> Genomics and Pharma companies rely on WDL workflows to process thousands of FASTA/VCF files for their studies. They need more experts. It makes you more hireable within both Academia and Industry.</p></li>
 </ul>
 </div>
-<div id="wdl-cons" class="section level3" number="0.2.2">
-<h3><span class="header-section-number">0.2.2</span> WDL Cons</h3>
+<div id="wdl-cons" class="section level3 hasAnchor" number="0.2.2">
+<h3><span class="header-section-number">0.2.2</span> WDL Cons<a href="index.html#wdl-cons" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Of course, nothing is free. WDL does require you to understand the basic concepts and terminologies including:</p>
 <ul>
 <li><p>Basics of Docker</p></li>
@@ -280,8 +283,8 @@
 </ul>
 </div>
 </div>
-<div id="curriculum" class="section level2" number="0.3">
-<h2><span class="header-section-number">0.3</span> Curriculum</h2>
+<div id="curriculum" class="section level2 hasAnchor" number="0.3">
+<h2><span class="header-section-number">0.3</span> Curriculum<a href="index.html#curriculum" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The course covers the following:</p>
 <ul>
 <li>How to write an effective WDL task</li>

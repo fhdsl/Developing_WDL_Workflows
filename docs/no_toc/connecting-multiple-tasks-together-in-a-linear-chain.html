@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 4 Connecting multiple tasks together in a linear chain | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="the-first-task.html"/>
 <link rel="next" href="organizing-variables-via-structs.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -242,19 +245,19 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="connecting-multiple-tasks-together-in-a-linear-chain" class="section level1" number="4">
-<h1><span class="header-section-number">Chapter 4</span> Connecting multiple tasks together in a linear chain</h1>
+<div id="connecting-multiple-tasks-together-in-a-linear-chain" class="section level1 hasAnchor" number="4">
+<h1><span class="header-section-number">Chapter 4</span> Connecting multiple tasks together in a linear chain<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#connecting-multiple-tasks-together-in-a-linear-chain" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Now that you have a first task in a workflow up and running, the next step is to continue building out the workflow as described in our Workflow Plan:</p>
 <ol style="list-style-type: decimal">
 <li><code>BwaMem</code> aligns the samples to the reference genome.</li>
 <li><code>MarkDuplicates</code> marks PCR duplicates.</li>
 <li><code>ApplyBaseRecalibrator</code> applies base recalibration.</li>
-<li><code>Mutect2</code> performs somatic mutation calling. For this current iteration, we start with <code>Mutect2TumorOnly</code> which only uses the tumor sample. Later on, we will switch to a version of mutect that will allow for comparing tumor samples against a non-tumor normal sample.</li>
+<li><code>Mutect2</code> performs somatic mutation calling. For this current iteration, we start with <code>Mutect2TumorOnly</code> which only uses the tumor sample. Later on, we will switch to a version that will allow for comparing tumor samples against a non-tumor normal sample.</li>
 <li><code>annovar</code> annotates the called somatic mutations.</li>
 </ol>
 <p>We do this via a <strong>linear chain</strong>, in which we feed the output of one task to the input of the next task. Let’s see how to build a linear chain in a workflow.</p>
-<div id="how-to-connect-tasks-together-in-a-workflow" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> How to connect tasks together in a workflow</h2>
+<div id="how-to-connect-tasks-together-in-a-workflow" class="section level2 hasAnchor" number="4.1">
+<h2><span class="header-section-number">4.1</span> How to connect tasks together in a workflow<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#how-to-connect-tasks-together-in-a-workflow" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>We can easily connect tasks together because of the following: <em>The output variables of a task can be accessed at the workflow level as inputs for the subsequent task.</em></p>
 <p>For instance, let’s see the output of our <code>BwaMem</code> task.</p>
 <pre><code>output {
@@ -309,11 +312,11 @@ To see other examples of linear chain and variations, see <a href="https://docs.
 </ul>
 </div>
 </div>
-<div id="writing-markduplicates-task" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Writing <code>MarkDuplicates</code> task</h2>
+<div id="writing-markduplicates-task" class="section level2 hasAnchor" number="4.2">
+<h2><span class="header-section-number">4.2</span> Writing <code>MarkDuplicates</code> task<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#writing-markduplicates-task" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Of course, the task <code>MarkDuplicates</code> hasn’t been written yet! Let’s go through it together:</p>
-<div id="input" class="section level3" number="4.2.1">
-<h3><span class="header-section-number">4.2.1</span> Input</h3>
+<div id="input" class="section level3 hasAnchor" number="4.2.1">
+<h3><span class="header-section-number">4.2.1</span> Input<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#input" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The task takes an input bam file that has been aligned to the reference genome. It needs to be a File <code>input_bam</code> based on how we introduced it in the workflow above. That is easy to write up:</p>
 <pre><code>task MarkDuplicates {
   input {
@@ -321,8 +324,8 @@ To see other examples of linear chain and variations, see <a href="https://docs.
   }
 }</code></pre>
 </div>
-<div id="private-variables-in-the-task" class="section level3" number="4.2.2">
-<h3><span class="header-section-number">4.2.2</span> Private variables in the task</h3>
+<div id="private-variables-in-the-task" class="section level3 hasAnchor" number="4.2.2">
+<h3><span class="header-section-number">4.2.2</span> Private variables in the task<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#private-variables-in-the-task" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Similar to the <code>BwaMem</code> task, we will name our output files based on the base name of the original input file in the workflow. Therefore, it makes sense to create a private String variable <code>base_file_name</code> that contains this base name of <code>input_bam</code>. We will use <code>base_file_name</code> in the Command section to specify the output bam and metrics files.</p>
 <pre><code>task MarkDuplicates {
   input {
@@ -331,8 +334,8 @@ To see other examples of linear chain and variations, see <a href="https://docs.
   String base_file_name = basename(input_bam, &quot;.sorted_query_aligned.bam&quot;)
 }</code></pre>
 </div>
-<div id="command" class="section level3" number="4.2.3">
-<h3><span class="header-section-number">4.2.3</span> Command</h3>
+<div id="command" class="section level3 hasAnchor" number="4.2.3">
+<h3><span class="header-section-number">4.2.3</span> Command<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#command" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>As we have been doing all along, we refer to any defined variables from the input or private variables using ~{this} syntax.</p>
 <pre><code>task MarkDuplicates {
   input {
@@ -352,8 +355,8 @@ To see other examples of linear chain and variations, see <a href="https://docs.
   &gt;&gt;&gt;
 }</code></pre>
 </div>
-<div id="runtime-and-output" class="section level3" number="4.2.4">
-<h3><span class="header-section-number">4.2.4</span> Runtime and Output</h3>
+<div id="runtime-and-output" class="section level3 hasAnchor" number="4.2.4">
+<h3><span class="header-section-number">4.2.4</span> Runtime and Output<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#runtime-and-output" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>We specify a different Docker image that contains the GATK software, and the relevant computing needs. We also specify three different output files, two of which are specified in the command section, and the third is a bam index file that is automatically created by the command section.</p>
 <p>Below is the task all together. It has a form very similar to our first task <code>BwaMem</code>.</p>
 <pre><code> task MarkDuplicates {
@@ -386,13 +389,13 @@ To see other examples of linear chain and variations, see <a href="https://docs.
   }
 }</code></pre>
 </div>
-<div id="testing-the-workflow" class="section level3" number="4.2.5">
-<h3><span class="header-section-number">4.2.5</span> Testing the workflow</h3>
+<div id="testing-the-workflow" class="section level3 hasAnchor" number="4.2.5">
+<h3><span class="header-section-number">4.2.5</span> Testing the workflow<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#testing-the-workflow" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>As before, when you add a new task to the workflow, you should always test that it works on your test sample. To check that <code>MarkDuplicates</code> is indeed marking PCR duplicates, you could check for the presence of the <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360051306171-MarkDuplicates-Picard">PCR duplicate flag in reads</a>, which has a decimal value of 1024 in the SAM Flags Field.</p>
 </div>
 </div>
-<div id="the-rest-of-the-linear-chain-workflow" class="section level2" number="4.3">
-<h2><span class="header-section-number">4.3</span> The rest of the linear chain workflow</h2>
+<div id="the-rest-of-the-linear-chain-workflow" class="section level2 hasAnchor" number="4.3">
+<h2><span class="header-section-number">4.3</span> The rest of the linear chain workflow<a href="connecting-multiple-tasks-together-in-a-linear-chain.html#the-rest-of-the-linear-chain-workflow" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>We build out the rest of the tasks in a very similar fashion. Tasks <code>ApplyBaseRecalibrator</code> and <code>Mutect2TumorOnly</code> both have files that need to be localized, but otherwise all the tasks have a very similar form as <code>BwaMem</code> and <code>MarkDuplicates</code>. For this current iteration, we use only the tumor sample for mutation calling. In the following chapters, we will use additional WDL features to make use of tumor and normal samples for mutation calling.</p>
 <pre><code>version 1.0
 
