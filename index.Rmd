@@ -49,7 +49,7 @@ Of course, nothing is free. WDL does require you to understand the basic concept
 
  - Understanding the WDL framework
 
- - WDLizing your bash scripts into tasks
+ - Converting your bash scripts into WDL tasks and workflows
 
 
 ## Curriculum
