@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 8 Optional types | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 8 Optional types | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="task-aliasing.html"/>
 <link rel="next" href="optimization.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -242,11 +245,11 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="optional-types" class="section level1" number="8">
-<h1><span class="header-section-number">Chapter 8</span> Optional types</h1>
+<div id="optional-types" class="section level1 hasAnchor" number="8">
+<h1><span class="header-section-number">Chapter 8</span> Optional types<a href="optional-types.html#optional-types" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>WDL supports defining optional variables, which are denoted with a question mark next to the type declaration. These variables may or may not defined. Optional types are powerful, but they can quickly cause problems in complicated workflows. This is especially the case when working with scattered tasks. In this section, we’ll go over how optional variables can be used, and where they can cause problems.</p>
-<div id="optional-inputs" class="section level2" number="8.1">
-<h2><span class="header-section-number">8.1</span> Optional inputs</h2>
+<div id="optional-inputs" class="section level2 hasAnchor" number="8.1">
+<h2><span class="header-section-number">8.1</span> Optional inputs<a href="optional-types.html#optional-inputs" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The most common use case for optional variables are optional inputs for the user to provide some sort of file, for example, a reference genome or a metadata file. Sometimes, you will want optional inputs to fall back on a known file or value.</p>
 <p>A good place to use optional types in our workflow would be in the <code>bwa mem</code> task. <code>bwa mem</code> on default settings may attempt to use too many threads, which could cause this task to fail if it ran on weaker hardware such as a laptop. In order to allow the user to adjust how many threads <code>bwa mem</code> uses, and by extension make our WDL run on a wider variety of machines, we can edit the task to add a new variable. This new variable will replace <code>-t 16</code> in our call to <code>bwa mem</code>.</p>
 <pre><code>task BwaMem {
@@ -330,7 +333,7 @@
 <summary>
 <b>Here’s another way of providing a fallback value for optional inputs within a task.</b>
 </summary>
-<p>In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we’re using (<code>ashedpotatoes/usher-plus:0.0.2</code>) already contains the H37Rv reference genome, which is the standard reference genome for <em>Mycobacterium tuberculosis</em>. If we are working with tuberuclosis samples, there is no reason to provide a reference genome – we might as well use the one that’s already in the Docker image.</p>
+<p>In the following task, the phylogenetic tree program UShER expects a reference genome, an input phylogenetic tree, samples in the form of diff files, and an output file name. However, the Docker image we’re using (<code>ashedpotatoes/usher-plus:0.0.2</code>) already contains the H37Rv reference genome, which is the standard reference genome for <em>Mycobacterium tuberculosis</em>. If we are working with tuberculosis samples, there is no reason to provide a reference genome – we might as well use the one that’s already in the Docker image.</p>
 <pre><code>task usher_sampled_diff {
     input {
         File diff
@@ -364,11 +367,11 @@
 }</code></pre>
 </details>
 </div>
-<div id="optional-outputs" class="section level2" number="8.2">
-<h2><span class="header-section-number">8.2</span> Optional outputs</h2>
+<div id="optional-outputs" class="section level2 hasAnchor" number="8.2">
+<h2><span class="header-section-number">8.2</span> Optional outputs<a href="optional-types.html#optional-outputs" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Optional outputs are usually created by explicitly declaring a task or workflow’s output variable to be optional. They can also be created by enclosing a task within an if-block, which will cause all outputs of that task to be considered optional.</p>
-<div id="declaring-a-tasks-output-to-be-optional" class="section level3" number="8.2.1">
-<h3><span class="header-section-number">8.2.1</span> Declaring a task’s output to be optional</h3>
+<div id="declaring-a-tasks-output-to-be-optional" class="section level3 hasAnchor" number="8.2.1">
+<h3><span class="header-section-number">8.2.1</span> Declaring a task’s output to be optional<a href="optional-types.html#declaring-a-tasks-output-to-be-optional" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Most backends will save the task-level outputs of a task, even if those outputs are not workflow-level outputs. This can be very useful if you want to be able to check intermediate files, or perhaps log files for certain bioinformatic tools. However, if you’re not actively debugging, those files may take up a lot of space on your backend if you’re running on many samples over time.</p>
 <p>You could change the workflow every time you wish to keep those intermediate inputs, but it would be easier to make the output optional.</p>
 <pre><code>task usher_sampled_diff {
@@ -412,9 +415,9 @@
 }</code></pre>
 <p>If we want, we can make this task-level output a workflow-level output – perhaps we use a backend that does not save task-level outputs, or it is simply easier to access workflow-level outputs on this particular backend. Provided that the task is not scattered, this is very easy to do. (We’ll talk about scattered tasks later, as they complicate matters.) In the workflow output sections, we simply define the output as optional like we did in the task itself.</p>
 </div>
-<div id="making-an-entire-task-optional" class="section level3" number="8.2.2">
-<h3><span class="header-section-number">8.2.2</span> Making an entire task optional</h3>
-<p>Let’s say we want to make an entire task optional. Perhaps it provides additional QC information, or isn’t relevent to certain data types.</p>
+<div id="making-an-entire-task-optional" class="section level3 hasAnchor" number="8.2.2">
+<h3><span class="header-section-number">8.2.2</span> Making an entire task optional<a href="optional-types.html#making-an-entire-task-optional" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Let’s say we want to make an entire task optional. Perhaps it provides additional QC information, or isn’t relevant to certain data types.</p>
 <p>Although WDL has a concept of <code>if</code>, it does not have any concept of <code>else</code>, so to make mutually exclusive tasks, you essentially need use two mutually exclusive if-statements. In the example below, we use two mutually exclusive if-statements to decide whether to run task_x or task_y. This is a valid way of doing things, and will work as expected:</p>
 <pre><code>workflow do_x_or_y {
     input {
@@ -560,7 +563,7 @@ workflow do_x_or_y {
 <b>Working with optional arrays and advanced usage of <code>select_first()</code></b>
 </summary>
 <p>Coercing arrays with optional components</p>
-<p>Optional arrays can be difficult to work with. One of the reasons for this is that they sometimes give unexpected values for <code>defined()</code>. As mentioned earlier, this can be somewhat allievated by checking the length of an array rather than whether or not it is defined, but the problems do not end there: Attempting to scatter on an optional array can cause issues that are difficult to debug.</p>
+<p>Optional arrays can be difficult to work with. One of the reasons for this is that they sometimes give unexpected values for <code>defined()</code>. As mentioned earlier, this can be somewhat alleviated by checking the length of an array rather than whether or not it is defined, but the problems do not end there: Attempting to scatter on an optional array can cause issues that are difficult to debug.</p>
 <p>It’s generally best to coerce optional arrays into not-optional arrays as much as possible. Thankfully, we can use <code>select_all()</code> to select only the defined elements of an array. For our example above, we can go even further by creating an array that will always have a defined value, whether or not <code>do_x</code> is true. We combine the power of <code>select_all()</code> and <code>flatten()</code> to create the following:</p>
 <pre><code>Array[File] x_or_y_outfiles = flatten(select_all(x.outfile), select_all(y.outfile))</code></pre>
 <p>Make sure not to use <code>flatten(select_all(x.outfile, y.outfile))</code>! That would result in an Array[File] that has a null value, which can cause hard-to-diagnose issues later on in your pipeline.</p>
@@ -571,9 +574,9 @@ workflow do_x_or_y {
 </details>
 </div>
 </div>
-<div id="the-final-workflow" class="section level2" number="8.3">
-<h2><span class="header-section-number">8.3</span> The final workflow</h2>
-<p>At this point, we’ve completeled our workflow. Here’s what it looks like now:</p>
+<div id="the-final-workflow" class="section level2 hasAnchor" number="8.3">
+<h2><span class="header-section-number">8.3</span> The final workflow<a href="optional-types.html#the-final-workflow" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>At this point, we’ve completed our workflow. Here’s what it looks like now:</p>
 <pre><code>version 1.0
 ## WDL 101 example workflow
 ## 

@@ -20,7 +20,7 @@ Changing usage of any of these resources often affect other resources. For insta
 
 ### Memory optimization
 
-To optimizie the amount of memory used for a task, you can profile the task to understand how much memory is being used and where the bottlenecks are. Most programming languages have a large selection of memory profilers to analyze the performance of your code, and they can be starting points to consider how to use less memory. When a bottleneck is found, you might consider to use a more efficient algorithm to reduce memory usage. Or, perhaps you might use more optimal data structures, such as databases or sparse data structures, that better fit the data type of your problem.
+To optimize the amount of memory used for a task, you can profile the task to understand how much memory is being used and where the bottlenecks are. Most programming languages have a large selection of memory profilers to analyze the performance of your code, and they can be starting points to consider how to use less memory. When a bottleneck is found, you might consider to use a more efficient algorithm to reduce memory usage. Or, perhaps you might use more optimal data structures, such as databases or sparse data structures, that better fit the data type of your problem.
 
 Another common memory analysis is to understand how memory usage scales relative to the input for the task. For example, as you increase the VCF file size for a task, how much does the memory usage scale? Is there something you can do so that it scales with a smaller magnitude?
 
@@ -88,7 +88,7 @@ task splitBamByChr {
 ```
 ![GatherBams](assets/gather_bams.png)
 
-We also need a task to gather all the BAMs together, which takes in an array of Files, and ouputs a merged BAM. The input array of Files is referred as `bams`, and illustrated in the diagram as `chr_array`. 
+We also need a task to gather all the BAMs together, which takes in an array of Files, and outputs a merged BAM. The input array of Files is referred as `bams`, and illustrated in the diagram as `chr_array`. 
 
 ```         
 #Gather an array of BAMs

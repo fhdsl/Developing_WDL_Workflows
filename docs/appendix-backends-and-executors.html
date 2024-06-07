@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 10 Appendix: Backends and Executors | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 10 Appendix: Backends and Executors | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="optimization.html"/>
 <link rel="next" href="about-the-authors.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -242,11 +245,11 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="appendix-backends-and-executors" class="section level1" number="10">
-<h1><span class="header-section-number">Chapter 10</span> Appendix: Backends and Executors</h1>
+<div id="appendix-backends-and-executors" class="section level1 hasAnchor" number="10">
+<h1><span class="header-section-number">Chapter 10</span> Appendix: Backends and Executors<a href="appendix-backends-and-executors.html#appendix-backends-and-executors" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Generally speaking, WDL workflows are quite portable thanks to their usage of Docker images to maintain software dependencies. However, the executor used to run WDLs and what backend they are being run upon can lead to specific scenarios where minor tweaks to your WDL are necessary to ensure portability.</p>
-<div id="commonly-used-runtime-attributes" class="section level2" number="10.1">
-<h2><span class="header-section-number">10.1</span> Commonly used runtime attributes</h2>
+<div id="commonly-used-runtime-attributes" class="section level2 hasAnchor" number="10.1">
+<h2><span class="header-section-number">10.1</span> Commonly used runtime attributes<a href="appendix-backends-and-executors.html#commonly-used-runtime-attributes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Runtime attributes do not behave the same on all platforms. Here are how some of the most commonly used runtime attributes work on some of the most common WDL setups.</p>
 <table>
 <colgroup>
@@ -318,8 +321,8 @@
 </tbody>
 </table>
 </div>
-<div id="general-advice" class="section level2" number="10.2">
-<h2><span class="header-section-number">10.2</span> General advice</h2>
+<div id="general-advice" class="section level2 hasAnchor" number="10.2">
+<h2><span class="header-section-number">10.2</span> General advice<a href="appendix-backends-and-executors.html#general-advice" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <ul>
 <li>Consider using more runtime attributes, not fewer. miniwdl and Cromwell will ignore runtime attributes as necessary, so including a runtime attribute that only applies to a particular backend will not harm portability on other backends.</li>
 <li>The Dockstore CLI, as of v1.15, uses Cromwell to run WDLs. Advice about Cromwell will therefore also apply to the Dockstore CLI.</li>
@@ -328,10 +331,10 @@
 <li>Workflow systems with a UI like Terra may become unresponsive if you run a task scattered more than 1000x. Outputs may need to be interacted with using an API specific to that backend.</li>
 </ul>
 </div>
-<div id="executor-specific-notes" class="section level2" number="10.3">
-<h2><span class="header-section-number">10.3</span> Executor-specific notes</h2>
-<div id="cromwell" class="section level3" number="10.3.1">
-<h3><span class="header-section-number">10.3.1</span> Cromwell</h3>
+<div id="executor-specific-notes" class="section level2 hasAnchor" number="10.3">
+<h2><span class="header-section-number">10.3</span> Executor-specific notes<a href="appendix-backends-and-executors.html#executor-specific-notes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="cromwell" class="section level3 hasAnchor" number="10.3.1">
+<h3><span class="header-section-number">10.3.1</span> Cromwell<a href="appendix-backends-and-executors.html#cromwell" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Cromwell running on a local machine has a tendency to heavily use system resources, especially when running scattered tasks. Sometimes, it will use too many resources at once. When this happens, your workflow’s tasks will tend to fail with exit code 137, or you will see hints about running out of memory in the logs of your tasks. You may also observe Docker becoming unresponsive. You can fix Docker by restarting Docker or your machine, but you will likely want to prevent this issue rather than keep having to restart Docker. To prevent this, modify <code>concurrent-job-limit</code> for your backend in the Cromwell configuration file.</p>
 <p>The default Cromwell configuration file,, <a href="https://github.com/broadinstitute/cromwell/blob/86/cromwell.example.backends/cromwell.examples.conf">can be found on Cromwell’s GitHub repo</a>. To point Cromwell to a specific configuration file, run Cromwell with the flag <code>-Dconfig.file=</code> followed by the address of the config file to use.</p>
 <p>If you are using the Dockstore CLI, <a href="https://docs.dockstore.org/en/stable/advanced-topics/dockstore-cli/local-cromwell-config.html?highlight=cromwell">follow these instructions</a> to use a custom configuration file for Dockstore’s version of Cromwell. Because the Docker lockup issue mentioned previously isn’t uncommon, it is recommended to use a custom configuration file that limits <code>concurrent-job-limit</code> process on a local backend.</p>
@@ -345,8 +348,8 @@
 <li><p>Cromwell uses a system known as <a href="https://cromwell.readthedocs.io/en/stable/cromwell_features/HogFactors/">hog factors</a> to adjust how task order is prioritized.</p></li>
 </ul>
 </div>
-<div id="miniwdl" class="section level3" number="10.3.2">
-<h3><span class="header-section-number">10.3.2</span> miniwdl</h3>
+<div id="miniwdl" class="section level3 hasAnchor" number="10.3.2">
+<h3><span class="header-section-number">10.3.2</span> miniwdl<a href="appendix-backends-and-executors.html#miniwdl" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>The authors of this course have informally observed that miniwdl appears to be “safer” in terms of using up too many resources than Cromwell. However, if you are sharing a compute with other users, it is still worth looking at the miniwdl configuration file and limiting how many Docker images you spin up at the same time.</p>
 <p>The default miniwdl configuration file, which you can use as a template for setting up your own configuration file for miniwdl, <a href="https://github.com/chanzuckerberg/miniwdl/blob/v1.11.1/WDL/runtime/config_templates/default.cfg">can be found on miniwdl’s GitHub repo</a>. To point miniwdl to a specific configuration file, run <code>miniwdl run</code> with the <code>--cfg</code> flag.</p>
 <p>Other notes:</p>
@@ -359,10 +362,10 @@
 </ul>
 </div>
 </div>
-<div id="backend-specific-notes" class="section level2" number="10.4">
-<h2><span class="header-section-number">10.4</span> Backend-specific notes</h2>
-<div id="hpcs" class="section level3" number="10.4.1">
-<h3><span class="header-section-number">10.4.1</span> HPCs</h3>
+<div id="backend-specific-notes" class="section level2 hasAnchor" number="10.4">
+<h2><span class="header-section-number">10.4</span> Backend-specific notes<a href="appendix-backends-and-executors.html#backend-specific-notes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="hpcs" class="section level3 hasAnchor" number="10.4.1">
+<h3><span class="header-section-number">10.4.1</span> HPCs<a href="appendix-backends-and-executors.html#hpcs" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>It is difficult to provide specific advice on HPCs, as they can vary greatly. Some general notes:</p>
 <ul>
 <li><p>Some HPCs do not support the use of Docker due to security concerns</p>
@@ -371,10 +374,10 @@
 </ul></li>
 <li><p>Some HPCs will use <code>disks</code> to determine which disk to run on, which can be useful for managing disk space</p></li>
 </ul>
-<div id="fred-hutch-hpc" class="section level4" number="10.4.1.1">
-<h4><span class="header-section-number">10.4.1.1</span> Fred Hutch HPC</h4>
+<div id="fred-hutch-hpc" class="section level4 hasAnchor" number="10.4.1.1">
+<h4><span class="header-section-number">10.4.1.1</span> Fred Hutch HPC<a href="appendix-backends-and-executors.html#fred-hutch-hpc" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <ul>
-<li><p><a href="https://proof.fredhutch.org/">PROOF</a> is a Shiny frontend that launches Cromwell Server and lets you manage your jobs from a GUI. User guide can be found <a href="https://sciwiki.fredhutch.org/dasldemos/proof-how-to/">here</a>.</p></li>
+<li><p><a href="https://sciwiki.fredhutch.org/datascience/proof/">PROOF</a> is a Shiny frontend that launches Cromwell Server and lets you manage your jobs from a GUI. User guide can be found <a href="https://sciwiki.fredhutch.org/dasldemos/proof-how-to/">here</a>.</p></li>
 <li><p>The Fred Hutch HPC supports the use of multiple JSON files going into the same workflow</p></li>
 <li><p>The Fred Hutch HPC supports the use of Docker, so the <code>docker</code> runtime attribute works as expected</p></li>
 <li><p><code>memory</code> and <code>gpu</code> runtime attributes are ignored, but <code>cpu</code> works as expected. Here is <a href="https://sciwiki.fredhutch.org/scicomputing/compute_jobs/#memory">some information</a> on approximating memory use.</p></li>
@@ -385,15 +388,15 @@
 </ul>
 </div>
 </div>
-<div id="gcpterra" class="section level3" number="10.4.2">
-<h3><span class="header-section-number">10.4.2</span> GCP/Terra</h3>
-<p>GCP powers Terra, which is a Cromwell-based platform that is commonly used for running WDL workflows, but it can also be used on its own. Some special considerations need to be taken into account when designing workflows for compatiability on this backend.</p>
-<div id="preemptibles" class="section level4" number="10.4.2.1">
-<h4><span class="header-section-number">10.4.2.1</span> Preemptibles</h4>
+<div id="gcpterra" class="section level3 hasAnchor" number="10.4.2">
+<h3><span class="header-section-number">10.4.2</span> GCP/Terra<a href="appendix-backends-and-executors.html#gcpterra" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>GCP powers Terra, which is a Cromwell-based platform that is commonly used for running WDL workflows, but it can also be used on its own. Some special considerations need to be taken into account when designing workflows for compatibility on this backend.</p>
+<div id="preemptibles" class="section level4 hasAnchor" number="10.4.2.1">
+<h4><span class="header-section-number">10.4.2.1</span> Preemptibles<a href="appendix-backends-and-executors.html#preemptibles" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>Preemptible machines are an excellent way to save money when running workflows. A preemptible machine is a Google Cloud machine that is significantly cheaper (often less than half the price) than a standard one, at the cost of potentially being stopped suddenly. When running a task on a preemptible machine using Cromwell, if the preemptible is preempted (stopped suddenly), Cromwell will automatically retry the task. This does mean that in a worst case scenario, such a task could take about twice as long to run as normal and end up slightly more expensive, so you will want to weigh the costs and benefits. As a general rule of thumb, if you expect a task to take less than 2 hours, it is usually worth trying to use preemptible machines.</p>
 </div>
-<div id="disk-space" class="section level4" number="10.4.2.2">
-<h4><span class="header-section-number">10.4.2.2</span> Disk space</h4>
+<div id="disk-space" class="section level4 hasAnchor" number="10.4.2.2">
+<h4><span class="header-section-number">10.4.2.2</span> Disk space<a href="appendix-backends-and-executors.html#disk-space" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>Running Cromwell on GCP is one of the few times that the <code>disks</code> runtime attribute is a soft requirement. Due to how Cromwell works, it must request a certain amount of disk space from GCP before running the task’s command section. In other words, you must know roughly how much disk space your task will use before it runs. If not specified in the runtime attribute of a task, Cromwell will request 10 GB of SSD space.</p>
 <p>A helpful way to handle disk space in WDLs you anticipate will be run on GCP/Terra is to make disk size a function of the size of your task inputs. The task inputs and any private variable declarations made outside of the command section are all calculated before Cromwell requests a disk from GCP, so you can use this section to define a disk size function. For example:</p>
 <pre><code>version 1.0

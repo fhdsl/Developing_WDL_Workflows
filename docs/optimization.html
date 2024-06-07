@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 9 Optimization | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 9 Optimization | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="optional-types.html"/>
 <link rel="next" href="appendix-backends-and-executors.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -242,8 +245,8 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="optimization" class="section level1" number="9">
-<h1><span class="header-section-number">Chapter 9</span> Optimization</h1>
+<div id="optimization" class="section level1 hasAnchor" number="9">
+<h1><span class="header-section-number">Chapter 9</span> Optimization<a href="optimization.html#optimization" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>In our last chapter, we will explore ways to optimize our completed workflow.</p>
 <p>Generally, in computing, we are working with the following finite resources:</p>
 <ul>
@@ -253,41 +256,41 @@
 <li><p><strong>Disk usage</strong>: A task usually requires some input data and have an output, and needs disk storage to store the information when the task isn’t running.</p></li>
 </ul>
 <p>Changing usage of any of these resources often affect other resources. For instance, there’s often a tradeoff between computing time and memory usage. In order to be efficient with these finite resources, we will introduce some optimization methods that are common in building an efficient workflow, and provide an example on a simple optimization method, “Embarrassingly Parallel Scatter-Gather”.</p>
-<div id="common-optimizingparallelizing-methods" class="section level2" number="9.1">
-<h2><span class="header-section-number">9.1</span> Common optimizing/parallelizing methods</h2>
-<div id="memory-optimization" class="section level3" number="9.1.1">
-<h3><span class="header-section-number">9.1.1</span> Memory optimization</h3>
-<p>To optimizie the amount of memory used for a task, you can profile the task to understand how much memory is being used and where the bottlenecks are. Most programming languages have a large selection of memory profilers to analyze the performance of your code, and they can be starting points to consider how to use less memory. When a bottleneck is found, you might consider to use a more efficient algorithm to reduce memory usage. Or, perhaps you might use more optimal data structures, such as databases or sparse data structures, that better fit the data type of your problem.</p>
+<div id="common-optimizingparallelizing-methods" class="section level2 hasAnchor" number="9.1">
+<h2><span class="header-section-number">9.1</span> Common optimizing/parallelizing methods<a href="optimization.html#common-optimizingparallelizing-methods" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="memory-optimization" class="section level3 hasAnchor" number="9.1.1">
+<h3><span class="header-section-number">9.1.1</span> Memory optimization<a href="optimization.html#memory-optimization" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>To optimize the amount of memory used for a task, you can profile the task to understand how much memory is being used and where the bottlenecks are. Most programming languages have a large selection of memory profilers to analyze the performance of your code, and they can be starting points to consider how to use less memory. When a bottleneck is found, you might consider to use a more efficient algorithm to reduce memory usage. Or, perhaps you might use more optimal data structures, such as databases or sparse data structures, that better fit the data type of your problem.</p>
 <p>Another common memory analysis is to understand how memory usage scales relative to the input for the task. For example, as you increase the VCF file size for a task, how much does the memory usage scale? Is there something you can do so that it scales with a smaller magnitude?</p>
 <p>A technique you may want to consider if your memory usage scales with your input data size is that you could break down the input into smaller parts, and run your task on these smaller parts, each requesting smaller amount of memory. This wouldn’t reduce the total amount of memory you use, but many computing backends prefer many tasks using small amounts of a memory instead of a single job requiring a large amount of memory. This would also help optimizing computing time. Below, we look at different ways of parallelization.</p>
 </div>
-<div id="embarrassingly-parallel-scatter-gather" class="section level3" number="9.1.2">
-<h3><span class="header-section-number">9.1.2</span> Embarrassingly Parallel Scatter-Gather</h3>
+<div id="embarrassingly-parallel-scatter-gather" class="section level3 hasAnchor" number="9.1.2">
+<h3><span class="header-section-number">9.1.2</span> Embarrassingly Parallel Scatter-Gather<a href="optimization.html#embarrassingly-parallel-scatter-gather" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>A sub-task is called “Embarrassingly Parallel” if the sub-task can be run completely independent of other sub-tasks to finish the task. When we run multiple samples in our workflow, it is a form of “Embarrassingly Parallel”, because processing each tumor-normal pair through the workflow is done independently of other samples on separate computers (also known in high performance computing as “nodes”). This technique reduces the computing time and breaks down CPU and memory usage into smaller, more affordable resource requests. Later in this chapter we will show an detailed example of using this technique to split a BAM into individual chromosomes to run a resource demanding task.</p>
 </div>
-<div id="multithreading-shared-memory-parallelism" class="section level3" number="9.1.3">
-<h3><span class="header-section-number">9.1.3</span> Multithreading (Shared-Memory Parallelism)</h3>
+<div id="multithreading-shared-memory-parallelism" class="section level3 hasAnchor" number="9.1.3">
+<h3><span class="header-section-number">9.1.3</span> Multithreading (Shared-Memory Parallelism)<a href="optimization.html#multithreading-shared-memory-parallelism" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Sometimes, you want to use multiple CPUs on a single computer to run sub-components of your task in parallel. This is called “multithreading”. Here, a single task accesses multiple CPUs on a computer to split up the task, and these CPUs share the same memory. Due to shared memory, each of these CPUs are not quite independent, and some communication is needed between CPUs to make this efficient. Well-documented and optimized bioinformatics software will often have usage options to use multiple cores to speed up the task. In our previous chapters, we used BWA MEM with an optional default of 16 CPUs. If you are developing your own task, then there are many built in operations that can make use of multiple CPUs, as well as low-level threading methods to help you develop a multi-threaded program.</p>
 </div>
-<div id="multiprocessing-distributed-memory-parallelism" class="section level3" number="9.1.4">
-<h3><span class="header-section-number">9.1.4</span> Multiprocessing (Distributed-Memory Parallelism)</h3>
+<div id="multiprocessing-distributed-memory-parallelism" class="section level3 hasAnchor" number="9.1.4">
+<h3><span class="header-section-number">9.1.4</span> Multiprocessing (Distributed-Memory Parallelism)<a href="optimization.html#multiprocessing-distributed-memory-parallelism" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Sometimes, the scale of the work requires coordination of multiple computers working dependently of each other. This is called “multiprocessing”. This is common in working with large scale data, using tools such as Spark or Hadoop. We will not be talking about multiprocessing extensively in this guide.</p>
 </div>
-<div id="graphical-processing-units-gpus" class="section level3" number="9.1.5">
-<h3><span class="header-section-number">9.1.5</span> Graphical Processing Units (GPUs)</h3>
+<div id="graphical-processing-units-gpus" class="section level3 hasAnchor" number="9.1.5">
+<h3><span class="header-section-number">9.1.5</span> Graphical Processing Units (GPUs)<a href="optimization.html#graphical-processing-units-gpus" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Graphical processing units are an additional processing tool to CPUs, in which a different computer hardware is used. There are usually a few handful of CPUs on a computer, but there can be thousands of GPUs, each capable of doing a small and simple task quickly. GPUs are used for graphical displays, and scientific computing problems such as training neutral networks and solving differential equations. We will not be talking about GPUs extensively in this guide.</p>
 </div>
 </div>
-<div id="scatter-gather-on-chromosomes" class="section level2" number="9.2">
-<h2><span class="header-section-number">9.2</span> Scatter-Gather on chromosomes</h2>
-<div class="figure">
-<img src="assets/scatter_by_chr_full.png" alt="" />
-<p class="caption">Scatter-Gather By Chromosome</p>
+<div id="scatter-gather-on-chromosomes" class="section level2 hasAnchor" number="9.2">
+<h2><span class="header-section-number">9.2</span> Scatter-Gather on chromosomes<a href="optimization.html#scatter-gather-on-chromosomes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="float">
+<img src="assets/scatter_by_chr_full.png" alt="Scatter-Gather By Chromosome" />
+<div class="figcaption">Scatter-Gather By Chromosome</div>
 </div>
 <p>Suppose that one our tasks, <code>ApplyBaseRecalibrator</code>, is taking too long to run and taking on too much memory. We might first look into the <a href="https://gatk.broadinstitute.org/hc/en-us/articles/360036898312-BaseRecalibrator">tool’s documentation</a> to see if there are ways use it more optimally, such as provide more CPUs, but we don’t see it. We turn to Embarrassingly Parallel Scatter-Gather, in which we split a BAM file by its chromosomes to create 23 BAM files, run <code>ApplyBaseRecalibrator</code> on each of these BAMs, and merge all of these calibrated BAM files together. This is called “Scatter-Gather” because we have to scatter our BAMs into smaller parts to run, and then gather them together in the end.</p>
-<div class="figure">
-<img src="assets/split_by_chr.png" alt="" />
-<p class="caption">Split By Chromosome</p>
+<div class="float">
+<img src="assets/split_by_chr.png" alt="Split By Chromosome" />
+<div class="figcaption">Split By Chromosome</div>
 </div>
 <p>We first write a new task to split our BAM file, which takes the original BAM, an array of chromosomes to scatter, and outputs an array of Files of the smaller BAM files. The output array of Files is stored as <code>bams</code> and <code>indexFiles</code>, and illustrated in the diagram as “chr_array”.</p>
 <pre><code># Split a BAM file by chromosomes
@@ -322,11 +325,11 @@ task splitBamByChr {
     docker: &quot;fredhutch/bwa:0.7.17&quot;
     cpu: 4
   }</code></pre>
-<div class="figure">
-<img src="assets/gather_bams.png" alt="" />
-<p class="caption">GatherBams</p>
+<div class="float">
+<img src="assets/gather_bams.png" alt="GatherBams" />
+<div class="figcaption">GatherBams</div>
 </div>
-<p>We also need a task to gather all the BAMs together, which takes in an array of Files, and ouputs a merged BAM. The input array of Files is referred as <code>bams</code>, and illustrated in the diagram as <code>chr_array</code>.</p>
+<p>We also need a task to gather all the BAMs together, which takes in an array of Files, and outputs a merged BAM. The input array of Files is referred as <code>bams</code>, and illustrated in the diagram as <code>chr_array</code>.</p>
 <pre><code>#Gather an array of BAMs
 task gatherBams {
   input {
@@ -354,9 +357,9 @@ task gatherBams {
   }
 }</code></pre>
 <p>In our workflow, after <code>MarkDuplicates</code> task, we first use <code>splitBamByChr</code> to divvy up our BAM file, and then use a scatter over the output array of scattered BAMs to run <code>ApplyBaseRecalibrator</code> on each of the scatted BAMs. Finally, we take the output of <code>ApplyBaseRecalibrator</code> as an array to be merged together via <code>gatherBams</code>:</p>
-<div class="figure">
-<img src="assets/scatter_by_chr_full.png" alt="" />
-<p class="caption">Scatter Gather Full Workflow</p>
+<div class="float">
+<img src="assets/scatter_by_chr_full.png" alt="Scatter Gather Full Workflow" />
+<div class="figcaption">Scatter Gather Full Workflow</div>
 </div>
 <pre><code>#Split by chromosomes
   call splitBamByChr as tumorSplitBamByChr {

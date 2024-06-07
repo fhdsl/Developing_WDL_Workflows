@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Chapter 6 Parallelization via Arrays | Developing WDL Workflows</title>
   <meta name="description" content="Description about Course/Book." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39.1 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 6 Parallelization via Arrays | Developing WDL Workflows" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="Description about Course/Book." />
   
@@ -31,7 +30,6 @@
   <link rel="shortcut icon" href="assets/dasl_favicon.ico" type="image/x-icon" />
 <link rel="prev" href="organizing-variables-via-structs.html"/>
 <link rel="next" href="task-aliasing.html"/>
-<script src="libs/header-attrs-2.10/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -49,8 +47,9 @@
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
  
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N5Q1FEXP22"></script>
@@ -65,6 +64,10 @@
 
 
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 <link rel="stylesheet" href="assets/style.css" type="text/css" />
 </head>
@@ -242,8 +245,8 @@
 <div class="hero-image-container"> 
   <img class= "hero-image" src="assets/dasl_thin_main_image.png">
 </div>
-<div id="parallelization-via-arrays" class="section level1" number="6">
-<h1><span class="header-section-number">Chapter 6</span> Parallelization via Arrays</h1>
+<div id="parallelization-via-arrays" class="section level1 hasAnchor" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Parallelization via Arrays<a href="parallelization-via-arrays.html#parallelization-via-arrays" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>We have a workflow that runs on a single sample. What if we want to process multiple samples at once? Let’s look at the various ways we can run our workflow more efficiently, as well as processing many samples in parallel. This is where WDL really shines.</p>
 <p>In this chapter, we’ll be going over:</p>
 <ul>
@@ -252,8 +255,8 @@
 <li><p>How to reference arrays in a task’s command section</p></li>
 <li><p>How arrays differ from Structs</p></li>
 </ul>
-<div id="the-array-type" class="section level2" number="6.1">
-<h2><span class="header-section-number">6.1</span> The array type</h2>
+<div id="the-array-type" class="section level2 hasAnchor" number="6.1">
+<h2><span class="header-section-number">6.1</span> The array type<a href="parallelization-via-arrays.html#the-array-type" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Arrays are essentially lists of another <a href="https://en.wikipedia.org/wiki/Primitive_data_type">primitive type</a>. It is most common to see Array[File] in WDLs, but an array can contain integers, floats, strings, and the like. An array can only have one of a given primitive type. For example, an Array[String] could contain the strings “cat” and “dog” but not the integer 1965 (however, it could have “1965” as a string).</p>
 <p>In chapter 5, we went over the struct data type and used it to handle a myriad of reference genome files. Arrays differ from structs in that arrays are numerically indexed, which means that a member of the array can be accessed by its position in the array. On the other hand, each variable within a struct has its own name, and you use that name to reference it rather than a numerical index.</p>
 <p>In WDL, arrays are 0 indexed, so the “first” value in an array is referenced by <code>[0]</code>. As per the WDL spec, arrays retain their order and are <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a> – if you explicitly define an Array[String] with the members [“foo”, “bar”, “bizz”], you can be confident that “foo” will always be at index 0.</p>
@@ -265,18 +268,18 @@ String foo = foobarbizz[0]  # will always be &quot;foo&quot;
 Array[Array[String]] foobarbizz_but_with_bonus_foo = [foobarbizz, foo, foo, foo]  # [[&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;], &quot;foo&quot;, &quot;foo&quot;, &quot;foo&quot;]
 Array[String] foobarbizzfoofoofoo = flatten(foobarbizz_but_with_bonus_foo)        # [&quot;foo&quot;, &quot;bar&quot;, &quot;bizz&quot;, &quot;foo&quot;, &quot;foo&quot;, &quot;foo&quot;]</code></pre>
 </div>
-<div id="scattered-tasks" class="section level2" number="6.2">
-<h2><span class="header-section-number">6.2</span> Scattered tasks</h2>
+<div id="scattered-tasks" class="section level2 hasAnchor" number="6.2">
+<h2><span class="header-section-number">6.2</span> Scattered tasks<a href="parallelization-via-arrays.html#scattered-tasks" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Scattered tasks allow us to run a WDL task in parallel. This is especially useful on highly scalable backends such as HPCs or the cloud, as it allows us to potentially run hundreds or even thousands of instances of a task at the same time. The most common use case for this is processing many samples at the same time, but it can also be used for processing a single sample’s chromosomes in parallel, or similar situations where breaking up data into discrete “chunks” makes sense.</p>
 <p>It should be noted that a scattered task does not work the same way as multithreading, nor does it correlate with the <code>cpu</code> WDL runtime attribute. Every instance of a scattered task takes place in a new Docker image, and is essentially “unaware” of all other instances of that scattered task, with one exception: If an instance of a scattered task errors out, a WDL executor may attempt to shut down other ongoing instances of that scattered task.</p>
-<div id="troubleshooting-1" class="section level3" number="6.2.1">
-<h3><span class="header-section-number">6.2.1</span> Troubleshooting</h3>
+<div id="troubleshooting-1" class="section level3 hasAnchor" number="6.2.1">
+<h3><span class="header-section-number">6.2.1</span> Troubleshooting<a href="parallelization-via-arrays.html#troubleshooting-1" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Scattered tasks are relatively simple in theory, but the way they interact with optional types can be unintuitive. As a general rule, you should avoid using optional types as the input of a scattered task whenever possible.</p>
 <p>Generally speaking, a WDL executor will try to run as many instances of a scattered task as it thinks your backend’s hardware can handle at once. Sometimes the WDL executor will overestimate what the backend is capable of and run too many instances of a scattered task at once. This almost never happens on scalable cloud-based backends such as Terra, but isn’t uncommon when running scattered tasks on a local machine.</p>
 </div>
 </div>
-<div id="making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays" class="section level2" number="6.3">
-<h2><span class="header-section-number">6.3</span> Making our workflow run on multiple samples at once using scattered tasks and arrays</h2>
+<div id="making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays" class="section level2 hasAnchor" number="6.3">
+<h2><span class="header-section-number">6.3</span> Making our workflow run on multiple samples at once using scattered tasks and arrays<a href="parallelization-via-arrays.html#making-our-workflow-run-on-multiple-samples-at-once-using-scattered-tasks-and-arrays" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>When we originally wrote our workflow, we designed it to only run on a single sample at a time. However, we’ll likely want to run this workflow on multiple samples at the same time. For some workflows, this is a great way to directly compare samples to each other, but for our purposes we simply want to avoid running a workflow 100 times if we can instead run one workflow that handles 100 samples at once.</p>
 <p>For starters, we’ll want to change our workflow-level sample variables from File to Array[File]. However, we don’t need to change any of the reference genome files, because every instance of our tasks will be taking in the same reference genome files. In other words, our struct is unchanged.</p>
 <pre><code>version 1.0
@@ -344,8 +347,8 @@ workflow mutation_calling {
   }</code></pre>
 <p>You can reference a full copy of this workflow at the end of this chapter.</p>
 </div>
-<div id="referencing-an-array-in-a-task" class="section level2" number="6.4">
-<h2><span class="header-section-number">6.4</span> Referencing an array in a task</h2>
+<div id="referencing-an-array-in-a-task" class="section level2 hasAnchor" number="6.4">
+<h2><span class="header-section-number">6.4</span> Referencing an array in a task<a href="parallelization-via-arrays.html#referencing-an-array-in-a-task" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>In our example, each task only takes in one sample, so we are not directly inputting arrays into a file. However, it’s important to know how to input arrays in a task’s command section. If a task’s input variable is an array, we must include an array separator. In WDL 1.0, this is done using the <code>sep=</code> expression placeholder. Every value in the WDL Array[String] will be separated by whatever value is declared via <code>sep</code>. In this example, that is a simple space, as that is one way how to construct a bash variable.</p>
 <pre><code>task count_words {
   input {
@@ -379,8 +382,8 @@ workflow mutation_calling {
   }
 }</code></pre>
 </div>
-<div id="the-workflow-so-far" class="section level2" number="6.5">
-<h2><span class="header-section-number">6.5</span> The workflow so far</h2>
+<div id="the-workflow-so-far" class="section level2 hasAnchor" number="6.5">
+<h2><span class="header-section-number">6.5</span> The workflow so far<a href="parallelization-via-arrays.html#the-workflow-so-far" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Let’s take another look at our workflow.</p>
 <pre><code>version 1.0
 

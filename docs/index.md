@@ -1,6 +1,6 @@
 ---
 title: "Developing WDL Workflows"
-date: "May, 2024"
+date: "June, 2024"
 site: bookdown::bookdown_site
 documentclass: book
 bibliography: [book.bib]
@@ -19,7 +19,7 @@ output:
 
 ## Target Audience
 
-The course is intended for first time developers of the [WDL workflow language](https://github.com/openwdl/wdl), who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniWDL, or a cloud computing environment such as Terra, AnVIL, or Dockstore. 
+The course is intended for first time developers of the [WDL workflow language](https://github.com/openwdl/wdl), who wants to iteratively develop a WDL bioinformatics workflow. In order to use this guide the audience should be able to comprehend introductory WDL syntax, and should be able to run a WDL workflow on a computing engine of their choice, such as Cromwell, miniwdl, or a cloud computing environment such as Terra, AnVIL, or Dockstore. 
 
 ### Relevant Resources
 
@@ -49,7 +49,7 @@ Of course, nothing is free. WDL does require you to understand the basic concept
 
  - Understanding the WDL framework
 
- - WDLizing your bash scripts into tasks
+ - Converting your bash scripts into WDL tasks and workflows
 
 
 ## Curriculum
@@ -58,9 +58,13 @@ Of course, nothing is free. WDL does require you to understand the basic concept
 The course covers the following: 
 
 - How to write an effective WDL task
+
 - Link multiple WDL tasks together in a workflow 
+
 - Organize variables via structs, scale multiple samples via Arrays
+
 - Reuse repeated tasks via task aliasing
+
 - Configure settings for the execution engine
 
 
