@@ -613,107 +613,7 @@
 <h2><span class="header-section-number">3.5</span> Putting the workflow together<a href="the-first-task.html#putting-the-workflow-together" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>A workflow is needed to run the <code>BwaMem</code> task we just built. The workflow’s input variables are defined by the workflow JSON metadata, and are then passed on as inputs in our <code>BwaMem</code> call. When the <code>BwaMem</code> call is complete, the workflow’s output File variable is defined based on the task’s output. Lastly, we have a parameter_meta component in our workflow that describes each workflow input variable as documentation.</p>
 <p>For the workflow to actually “see” the task, the task will either need to be imported at the top of the workflow (just under the <code>version 1.0</code> string), or included in the same file as the workflow. For simplicity, we will put the workflow and the task in the same file.</p>
-<pre><code>version 1.0
-
-workflow mutation_calling {
-  input {
-    File sampleFastq
-
-    # Reference genome
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-  }
-
-  call BwaMem {
-    input:
-      input_fastq = sampleFastq,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict,
-      ref_amb = ref_amb,
-      ref_ann = ref_ann,
-      ref_bwt = ref_bwt,
-      ref_pac = ref_pac,
-      ref_sa = ref_sa
-  }
-   
-  # Outputs that will be retained when execution is complete
-  output {
-    File alignedBamSorted = BwaMem.analysisReadySorted
-  }
-
-  parameter_meta {
-    sampleFastq: &quot;Sample .fastq (expects Illumina)&quot;
-    ref_fasta: &quot;Reference genome to align reads to&quot;
-    ref_fasta_index: &quot;Reference genome index file (created by bwa index)&quot;
-    ref_dict: &quot;Reference genome dictionary file (created by bwa index)&quot;
-    ref_amb: &quot;Reference genome non-ATCG file (created by bwa index)&quot;
-    ref_ann: &quot;Reference genome ref seq annotation file (created by bwa index)&quot;
-    ref_bwt: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_pac: &quot;Reference genome binary file (created by bwa index)&quot;
-    ref_sa: &quot;Reference genome binary file (created by bwa index)&quot;
-  }
-}
-
-####################
-# Task definitions #
-####################
-
-# Align fastq file to the reference genome
-task BwaMem {
-  input {
-    File input_fastq
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-  }
-  
-  String base_file_name = basename(input_fastq, &quot;.fastq&quot;)
-  String ref_fasta_local = basename(ref_fasta)
-
-  String read_group_id = &quot;ID:&quot; + base_file_name
-  String sample_name = &quot;SM:&quot; + base_file_name
-  String platform_info = &quot;PL:illumina&quot;
-
-  command &lt;&lt;&lt;
-    set -eo pipefail
-
-    mv &quot;~{ref_fasta}&quot; .
-    mv &quot;~{ref_fasta_index}&quot; .
-    mv &quot;~{ref_dict}&quot; .
-    mv &quot;~{ref_amb}&quot; .
-    mv &quot;~{ref_ann}&quot; .
-    mv &quot;~{ref_bwt}&quot; .
-    mv &quot;~{ref_pac}&quot; .
-    mv &quot;~{ref_sa}&quot; .
-
-    bwa mem \
-      -p -v 3 -t 16 -M -R &#39;@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}&#39; \
-      &quot;~{ref_fasta_local}&quot; &quot;~{input_fastq}&quot; &gt; &quot;~{base_file_name}.sam&quot;
-    samtools view -1bS -@ 15 -o &quot;~{base_file_name}.aligned.bam&quot; &quot;~{base_file_name}.sam&quot;
-    samtools sort -@ 15 -o &quot;~{base_file_name}.sorted_query_aligned.bam&quot; &quot;~{base_file_name}.aligned.bam&quot;
-
-  &gt;&gt;&gt;
-  output {
-    File analysisReadySorted = &quot;~{base_file_name}.sorted_query_aligned.bam&quot;
-  }
-  runtime {
-    memory: &quot;48 GB&quot;
-    cpu: 16
-    docker: &quot;ghcr.io/getwilds/bwa:0.7.17&quot;
-  }
-}</code></pre>
+<script src="https://gist.github.com/fhdsl-robot/e0c75399546cd4557cab717d6b6aa109.js"></script>
 </div>
 <div id="testing-your-first-task" class="section level2 hasAnchor" number="3.6">
 <h2><span class="header-section-number">3.6</span> Testing your first task<a href="the-first-task.html#testing-your-first-task" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -734,17 +634,17 @@ task BwaMem {
 <summary>
 <b>The example JSON using the Fred Hutch HPC</b>
 </summary>
-<pre><code>{
-  &quot;mutation_calling.sampleFastq&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq&quot;,
-  &quot;mutation_calling.ref_fasta&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta&quot;,
-  &quot;mutation_calling.ref_fasta_index&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai&quot;,
-  &quot;mutation_calling.ref_dict&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict&quot;,
-  &quot;mutation_calling.ref_pac&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac&quot;,
-  &quot;mutation_calling.ref_sa&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa&quot;,
-  &quot;mutation_calling.ref_amb&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb&quot;,
-  &quot;mutation_calling.ref_ann&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann&quot;,
-  &quot;mutation_calling.ref_bwt&quot;: &quot;/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt&quot;
-}</code></pre>
+<p>{
+“mutation_calling.sampleFastq”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq”,
+“mutation_calling.ref_fasta”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta”,
+“mutation_calling.ref_fasta_index”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.fai”,
+“mutation_calling.ref_dict”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.dict”,
+“mutation_calling.ref_pac”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.pac”,
+“mutation_calling.ref_sa”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.sa”,
+“mutation_calling.ref_amb”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.amb”,
+“mutation_calling.ref_ann”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann”,
+“mutation_calling.ref_bwt”: “/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt”
+}</p>
 </details>
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeEKGWTJOowBhFlWftPUjFU8Rfj-d9iXIHENyd8_HGS8PM7kw/viewform?embedded=true" width="640" height="886" frameborder="0" marginheight="0" marginwidth="0">
 Loading…
