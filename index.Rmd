@@ -58,9 +58,13 @@ Of course, nothing is free. WDL does require you to understand the basic concept
 The course covers the following: 
 
 - How to write an effective WDL task
+
 - Link multiple WDL tasks together in a workflow 
+
 - Organize variables via structs, scale multiple samples via Arrays
+
 - Reuse repeated tasks via task aliasing
+
 - Configure settings for the execution engine
 
 
