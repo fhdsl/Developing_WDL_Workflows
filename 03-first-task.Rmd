@@ -452,115 +452,17 @@ task BwaMem {
 A workflow is needed to run the `BwaMem` task we just built. The workflow's input variables are defined by the workflow JSON metadata, and are then passed on as inputs in our `BwaMem` call. When the `BwaMem` call is complete, the workflow's output File variable is defined based on the task's output. Lastly, we have a parameter_meta component in our workflow that describes each workflow input variable as documentation.
 
 For the workflow to actually "see" the task, the task will either need to be imported at the top of the workflow (just under the `version 1.0` string), or included in the same file as the workflow. For simplicity, we will put the workflow and the task in the same file.
-```         
-version 1.0
 
-workflow mutation_calling {
-  input {
-    File sampleFastq
+<script src="https://gist.github.com/fhdsl-robot/e0c75399546cd4557cab717d6b6aa109.js"></script>
 
-    # Reference genome
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-  }
-
-  call BwaMem {
-    input:
-      input_fastq = sampleFastq,
-      ref_fasta = ref_fasta,
-      ref_fasta_index = ref_fasta_index,
-      ref_dict = ref_dict,
-      ref_amb = ref_amb,
-      ref_ann = ref_ann,
-      ref_bwt = ref_bwt,
-      ref_pac = ref_pac,
-      ref_sa = ref_sa
-  }
-   
-  # Outputs that will be retained when execution is complete
-  output {
-    File alignedBamSorted = BwaMem.analysisReadySorted
-  }
-
-  parameter_meta {
-    sampleFastq: "Sample .fastq (expects Illumina)"
-    ref_fasta: "Reference genome to align reads to"
-    ref_fasta_index: "Reference genome index file (created by bwa index)"
-    ref_dict: "Reference genome dictionary file (created by bwa index)"
-    ref_amb: "Reference genome non-ATCG file (created by bwa index)"
-    ref_ann: "Reference genome ref seq annotation file (created by bwa index)"
-    ref_bwt: "Reference genome binary file (created by bwa index)"
-    ref_pac: "Reference genome binary file (created by bwa index)"
-    ref_sa: "Reference genome binary file (created by bwa index)"
-  }
-}
-
-####################
-# Task definitions #
-####################
-
-# Align fastq file to the reference genome
-task BwaMem {
-  input {
-    File input_fastq
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-  }
-  
-  String base_file_name = basename(input_fastq, ".fastq")
-  String ref_fasta_local = basename(ref_fasta)
-
-  String read_group_id = "ID:" + base_file_name
-  String sample_name = "SM:" + base_file_name
-  String platform_info = "PL:illumina"
-
-  command <<<
-    set -eo pipefail
-
-    mv "~{ref_fasta}" .
-    mv "~{ref_fasta_index}" .
-    mv "~{ref_dict}" .
-    mv "~{ref_amb}" .
-    mv "~{ref_ann}" .
-    mv "~{ref_bwt}" .
-    mv "~{ref_pac}" .
-    mv "~{ref_sa}" .
-
-    bwa mem \
-      -p -v 3 -t 16 -M -R '@RG\t~{read_group_id}\t~{sample_name}\t~{platform_info}' \
-      "~{ref_fasta_local}" "~{input_fastq}" > "~{base_file_name}.sam"
-    samtools view -1bS -@ 15 -o "~{base_file_name}.aligned.bam" "~{base_file_name}.sam"
-    samtools sort -@ 15 -o "~{base_file_name}.sorted_query_aligned.bam" "~{base_file_name}.aligned.bam"
-
-  >>>
-  output {
-    File analysisReadySorted = "~{base_file_name}.sorted_query_aligned.bam"
-  }
-  runtime {
-    memory: "48 GB"
-    cpu: 16
-    docker: "ghcr.io/getwilds/bwa:0.7.17"
-  }
-}
-```
 
 ## Testing your first task
 
 To test your first task and your workflow, you should have expectation of output is. For this first `BwaMem` task, we just care that the BAM file is created with aligned reads. You can use `samtools view output.sorted_query_aligned.bam` to examine the reads and pipe it to wordcount `wc` to get the number of total reads. This number should be almost identical as the number of reads from your input FASTQ file if you run `wc input.fastq`. In other tasks, we might have a more precise expectation of what the output file should be, such as containing the specific somatic mutation call that we have curated.
 
 Here is an example JSON with the [test data](https://figshare.com/articles/dataset/WDL_101_Dataset/25447528) needed to run this single-task workflow:
+
+
 
 ```
 {
@@ -579,8 +481,6 @@ Here is an example JSON with the [test data](https://figshare.com/articles/datas
 <details>
 <summary><b>The example JSON using the Fred Hutch HPC</b></summary>
 
-
-```
 {
   "mutation_calling.sampleFastq": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/workflow_testing_data/WDL/wdl_101/HCC4006_final.fastq",
   "mutation_calling.ref_fasta": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta",
@@ -592,7 +492,7 @@ Here is an example JSON with the [test data](https://figshare.com/articles/datas
   "mutation_calling.ref_ann": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.ann",
   "mutation_calling.ref_bwt": "/fh/fast/paguirigan_a/pub/ReferenceDataSets/genome_data/human/hg19/Homo_sapiens_assembly19.fasta.bwt"
 }
-```
+
 
 </details>
 
