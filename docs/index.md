@@ -1,6 +1,6 @@
 ---
 title: "Developing WDL Workflows"
-date: "June, 2024"
+date: "January, 2025"
 site: bookdown::bookdown_site
 documentclass: book
 bibliography: [book.bib]
